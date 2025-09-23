@@ -32,7 +32,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # This assumes the SDL source is available in vendored/SDL
 add_subdirectory(SDL)
 add_subdirectory(freetype-2.14.1)
-add_subdirectory(SDL_ttf EXCLUDE_FROM_ALL)
 add_subdirectory(glm-1.0.1)
 
 set(
