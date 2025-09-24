@@ -132,8 +132,8 @@ void Engine::BrushTest(){
 void Engine::Render(){
 
     level->DrawPhase(graphics.get());
-    //graphics->DrawPartialSprite("face", Vector2f(-600.0f, 0.0f), Vector2f(800.0f, 600.0f), Vector2f(0.0f, 0.0f), Vector2f(1.0f, 1.0f),
-    //    Vector2f(0.5f, 0.5f) ,Vector2f(2.0f, 2.0f) , 0.0f, ufo::Colour(255,255,255,255));
+    graphics->DrawPartialSprite("face", Vector2f(50.0f, 50.0f), Vector2f(800.0f, 600.0f), Vector2f(0.0f, 0.0f), Vector2f(0.5f, 0.5f),
+        Vector2f(600.0f, 0.0f),Vector2f(200.0f, 600.0f) , 0.0f, ufo::Colour(255,255,255,255));
 
     text_renderer.Test();
 

@@ -239,6 +239,68 @@ void OpenGLv4_5_Graphics::DrawRectangleExtra(Vector2f _position, Vector2f _size,
 
 void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key, glm::vec2 _position, glm::vec2 _size, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour){
 
+    //Change vertecies
+
+    unsigned int VBO;
+    /*float verticies[] = {
+        //position  //texture
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f
+    };*/
+
+    //unsigned int texture_width = _sample_size.x/engine->asset_manager.textures.at(_texture_key).width;
+    //unsigned int texture_height = _sample_size.y/engine->asset_manager.textures.at(_texture_key).height;
+    glm::vec2 sample_size_normalised = _sample_size/_size;
+
+    glm::vec2 sample_position_normalised = _sample_position/_size;
+
+    Console::PrintLine("Sample size normalised",sample_size_normalised.x, sample_size_normalised.y);
+
+    float verticies[] = {
+        //position  //texture
+        0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
+        sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+        
+        0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
+        sample_size_normalised.x, sample_size_normalised.y, sample_size_normalised.x, sample_size_normalised.y,
+        sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f
+    };
+
+    glGenVertexArrays(1, &quadVAO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glGenBuffers(1, &VBO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindVertexArray(quadVAO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glEnableVertexAttribArray(0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindVertexArray(0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    //Change vertecies
+
     partial_sprite_shader.Use();
 
     //Are these all ones?
@@ -256,8 +318,8 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
 
     partial_sprite_shader.SetMatrix4("model", model);
     partial_sprite_shader.SetVector3f("spriteColor", _colour);
-    partial_sprite_shader.SetVector2f("sample_position", _sample_position);
-    partial_sprite_shader.SetVector2f("sample_size", _sample_size);
+    partial_sprite_shader.SetVector2f("sample_position", sample_position_normalised);
+    partial_sprite_shader.SetVector2f("sample_size", sample_size_normalised);
 
     glActiveTexture(GL_TEXTURE0);
     //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);

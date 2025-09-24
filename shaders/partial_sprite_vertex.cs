@@ -9,11 +9,10 @@ uniform mat4 model;
 
 //Projection matrix?
 uniform mat4 projection;
-
 uniform vec2 sample_position;
 uniform vec2 sample_size;
 
 void main(){
     TexCoords = vertex.zw+sample_position;
-    gl_Position = projection * model * vec4(vertex.xy+sample_size, 0.0, 1.0);
+    gl_Position = projection * model * vec4(vertex.xy, 0.0, 1.0);
 }
