@@ -237,7 +237,7 @@ void OpenGLv4_5_Graphics::DrawRectangleExtra(Vector2f _position, Vector2f _size,
 
 }
 
-void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key, glm::vec2 _position, glm::vec2 _size, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour){
+void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key, glm::vec2 _position, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour){
 
     //Change vertecies
 
@@ -253,13 +253,14 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
         1.0f, 0.0f, 1.0f, 0.0f
     };*/
 
-    //unsigned int texture_width = _sample_size.x/engine->asset_manager.textures.at(_texture_key).width;
-    //unsigned int texture_height = _sample_size.y/engine->asset_manager.textures.at(_texture_key).height;
-    glm::vec2 sample_size_normalised = _sample_size/_size;
+    unsigned int texture_width = engine->asset_manager.textures.at(_texture_key).width;
+    unsigned int texture_height = engine->asset_manager.textures.at(_texture_key).height;
+    
+    glm::vec2 size = glm::vec2((float)texture_width, (float)texture_height);
+    
+    glm::vec2 sample_size_normalised = _sample_size/size;
 
-    glm::vec2 sample_position_normalised = _sample_position/_size;
-
-    Console::PrintLine("Sample size normalised",sample_size_normalised.x, sample_size_normalised.y);
+    glm::vec2 sample_position_normalised = _sample_position/size;
 
     float verticies[] = {
         //position  //texture
@@ -314,7 +315,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
-    model = glm::scale(model, glm::vec3(_size, 1.0f));
+    model = glm::scale(model, glm::vec3(size, 1.0f));
 
     partial_sprite_shader.SetMatrix4("model", model);
     partial_sprite_shader.SetVector3f("spriteColor", _colour);
@@ -333,11 +334,13 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
     glBindVertexArray(0);
     //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
+    InitialiseRenderData();
+
 }
 
-void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour){
+void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour){
 
-    glm_DrawPartialSprite(_texture_key, glm::vec2(_position.x, _position.y), glm::vec2(_size.x, _size.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
+    glm_DrawPartialSprite(_texture_key, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
 
 }
 

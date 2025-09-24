@@ -32,7 +32,7 @@ public:
     
     virtual void DrawRectangleExtra(Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, float _rotation, ufo::Colour _colour) = 0;
 
-    virtual void DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour) = 0;
+    virtual void DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour) = 0;
 
     virtual ~Graphics() = default;
 
