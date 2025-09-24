@@ -17,13 +17,14 @@ public:
     bool visible = true;
     ufo::Colour tint = olc::WHITE;
 
-    Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation) :
+    Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
     key{_key},
     Actor(_position),
     offset{_offset},
     frame_size{_frame_size},
     scale{_scale},
-    rotation{_rotation}
+    rotation{_rotation},
+    current_frame_index{_frame_index}
     {
         
     }
