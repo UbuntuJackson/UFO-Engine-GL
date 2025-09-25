@@ -13,8 +13,8 @@ Texture2D::Texture2D() :
     image_format{GL_RGB},
     wrapping_mode_s_axis{GL_REPEAT},
     wrapping_mode_t_axis{GL_REPEAT},
-    filter_mode_min{GL_LINEAR},
-    filter_mode_max{GL_LINEAR}
+    filter_mode_min{GL_NEAREST},
+    filter_mode_max{GL_NEAREST}
 {
     Console::PrintLine("Texture2D()",id);
 }

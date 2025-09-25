@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../utils/console.h"
-#include "../utils/file.h"
+#include "../file/file.h"
 #include "shader.h"
 #include "../utils/opengl_utils.h"
 #include "../utils/ufo_macros.h"

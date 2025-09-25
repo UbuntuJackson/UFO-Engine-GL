@@ -49,8 +49,11 @@ set(
     src/text_rendering.cpp
     src/control_settings.cpp
     glad/src/glad.c
-    utils/file.cpp
     utils/stb_image_implementation.cpp
+    file/file.cpp
+    json/json_variant.cpp
+    json/json.cpp
+    external/cJSON.c
 
     ufo_maths/ufo_maths.cpp
     shapes/circle.cpp

@@ -1,8 +1,8 @@
+#include "../file/file.h"
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "console.h"
-#include "file.h"
+#include "../utils/console.h"
 
 File::File() : contents{""}{}
 

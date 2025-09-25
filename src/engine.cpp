@@ -9,6 +9,8 @@
 #include "sprite_renderer.h"
 #include "engine.h"
 #include "input.h"
+#include "../file/file.h"
+#include "../json/json_variant.h"
 
 namespace ufo{
 
@@ -26,6 +28,16 @@ Engine::Init(){
     level->actors.reserve(50);
     level->engine = this;
     Console::PrintLine("Space for number of actors:", level->actors.size());
+
+    if(!File::Exists("../loaded_assets.json")){
+        Console::PrintLine("No loaded_assets.json found");
+    }
+    else{
+        JsonDictionary d = JsonDictionary::Read("../loaded_assets.json");
+        for(const auto& asset : d.Get("assets").AsArray().Iterable()){
+            asset_manager.LoadTexture(asset->AsDictionary().Get("path").AsString(), asset->AsDictionary().Get("alias").AsString(), true);
+        }
+    }
 }
 
 Engine::~Engine(){
