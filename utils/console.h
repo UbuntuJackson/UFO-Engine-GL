@@ -3,8 +3,27 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <fstream>
 class Console{
 public:
+    inline static std::streambuf *buffer, *backup;
+
+    inline static std::ofstream file_stream;
+
+    inline static
+    void EnableLoggingFile(){
+        Console::file_stream.open("engine_log.txt");
+
+        Console::backup = std::cout.rdbuf();
+        buffer = file_stream.rdbuf();
+
+        std::cout.rdbuf(Console::buffer);
+    }
+
+    inline static void CloseLoggingFile(){
+        Console::file_stream.close();
+    }
+
     template<typename Arg, typename ...Args>
     static void Out(Arg&& arg, Args&& ...args){
         std::cout << arg;
