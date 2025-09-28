@@ -20,6 +20,7 @@ public:
 Main();
 
 void Start(std::unique_ptr<Engine> _custom_engine);
+void StartWithImGUI(std::unique_ptr<Engine> _custom_engine);
 
 };
 }

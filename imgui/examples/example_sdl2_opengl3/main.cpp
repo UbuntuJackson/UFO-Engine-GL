@@ -1,115 +1,102 @@
-#include <SDL3/SDL.h>
-#include <SDL3/SDL_main.h>
-#include <SDL3/SDL_events.h>
-#include "../utils/console.h"
-#include "../glad/include/glad/glad.h"
-#include <SDL3/SDL_opengl.h>
-#include "../file/file.h"
-#include "../src/openglv4_5_asset_manager.h"
-#include "../src/engine.h"
-#include "../src/input.h"
-#include "../src/opengl_debug_output.h"
-#include "../external/olcPixelGameEngine.h"
-#include "../src/sprite_renderer.h"
-#include "Main.h"
-//Imgui
-#include "../imgui/imgui.h"
-#include "../imgui/backends/imgui_impl_opengl3.h"
-#include "../imgui/backends/imgui_impl_sdl3.h"
+// Dear ImGui: standalone example application for SDL2 + OpenGL
+// (SDL is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
 
-#ifndef USE_PGE
+// Learn about Dear ImGui:
+// - FAQ                  https://dearimgui.com/faq
+// - Getting Started      https://dearimgui.com/getting-started
+// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
+// - Introduction, links and more at the top of imgui.cpp
 
-namespace ufo{
+#include "imgui.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl3.h"
+#include <stdio.h>
+#include <SDL.h>
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <SDL_opengles2.h>
+#else
+#include <SDL_opengl.h>
+#endif
+#ifdef _WIN32
+#include <windows.h>        // SetProcessDPIAware()
+#endif
 
-Main::Main(){
+// This example can also compile and run with Emscripten! See 'Makefile.emscripten' for details.
+#ifdef __EMSCRIPTEN__
+#include "../libs/emscripten/emscripten_mainloop_stub.h"
+#endif
 
-    bool vsync_on = false;
-
-    window = nullptr;
-    //SDL_GL_Context is unassigned here
-
-    if(SDL_Init(SDL_INIT_VIDEO) < 0){
-        Console::PrintLine("Couldn't initialise SDL", SDL_GetError());
-        exit(2);
+// Main code
+int main(int, char**)
+{
+    // Setup SDL
+#ifdef _WIN32
+    ::SetProcessDPIAware();
+#endif
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
+    {
+        printf("Error: %s\n", SDL_GetError());
+        return -1;
     }
 
-    //Tutorial says "Default OpenGL is fine."
-    //That makes NO sense to me as they JUST said they were going to
-    // show how to use OpenGL 4.5
-    SDL_GL_LoadLibrary(nullptr);
+    // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+    // GL ES 2.0 + GLSL 100 (WebGL 1.0)
+    const char* glsl_version = "#version 100";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+    // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
+    const char* glsl_version = "#version 300 es";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+    // GL 3.2 Core + GLSL 150
+    const char* glsl_version = "#version 150";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
 
-    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    // From 2.0.18: Enable native IME.
+#ifdef SDL_HINT_IME_SHOW_UI
+    SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
 
-    //Request a depth buffer
+    // Create window with graphics context
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-
-    window = SDL_CreateWindow("Hello GL", 800,600, SDL_WINDOW_OPENGL);
-
-    if(window == nullptr){
-        Console::PrintLine("Window is null");
-        exit(2);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    float main_scale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
+    SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
+    SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, (int)(1280 * main_scale), (int)(800 * main_scale), window_flags);
+    if (window == nullptr)
+    {
+        printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
+        return -1;
     }
 
-    open_gl_context = SDL_GL_CreateContext(window);
-    if(open_gl_context == nullptr){
-        Console::PrintLine("Failed to create context");
-        exit(2);
+    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
+    if (gl_context == nullptr)
+    {
+        printf("Error: SDL_GL_CreateContext(): %s\n", SDL_GetError());
+        return -1;
     }
 
-    gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
-    Console::PrintLine("Vendor", glGetString(GL_VENDOR));
-    Console::PrintLine("Renderer", glGetString(GL_RENDERER));
-    Console::PrintLine("Version", glGetString(GL_VERSION));
-
-    /*int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if(flags & GL_CONTEXT_FLAG_DEBUG_BIT){
-        Console::PrintLine("initialise debug output...");
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glDebugOutput, nullptr);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-    }*/
-
-    //vsync
-    SDL_GL_SetSwapInterval(int(vsync_on));
-
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-
-    int w = 0;
-    int h = 0;
-    SDL_GetWindowSize(window, &w,&h);
-
-    glViewport(0,0,w,h);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //This is where the main loop was before with the engine
-}
-
-void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
-    engine = std::move(_custom_engine);
-
-    Console::PrintLine("level memory address",engine->level.get());
-
-    engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
-    engine->Init();
-    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
-
-    engine->level->Load();
-
-    /*ForImGUI*/
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-    //Imgui stuff
-
-    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+    SDL_GL_MakeCurrent(window, gl_context);
+    SDL_GL_SetSwapInterval(1); // Enable vsync
 
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
@@ -141,8 +128,7 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
     }
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL3_InitForOpenGL(window, open_gl_context);
-    const char* glsl_version = "#version 130";
+    ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
@@ -165,45 +151,43 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
     // Our state
     bool show_demo_window = true;
     bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    /*ForIMGUI END*/
-
-    while(!engine->quit){
+    // Main loop
+    bool done = false;
+#ifdef __EMSCRIPTEN__
+    // For an Emscripten build we are disabling file-system access, so let's not attempt to do a fopen() of the imgui.ini file.
+    // You may manually call LoadIniSettingsFromMemory() to load settings from your own storage.
+    io.IniFilename = nullptr;
+    EMSCRIPTEN_MAINLOOP_BEGIN
+#else
+    while (!done)
+#endif
+    {
+        // Poll and handle events (inputs, window resize, etc.)
+        // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+        // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
+        // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
+        // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
         SDL_Event event;
-
-        engine->mouse.ResetTemporaryStates();
-
-        while(SDL_PollEvent(&event)){
-
-            /*ForImGUi*/
-
-            ImGui_ImplSDL3_ProcessEvent(&event);
-            if (event.type == SDL_EVENT_QUIT)
-                engine->quit = true;
-            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
-                engine->quit = true;
-
-            /*ForImGUI END*/
-
-            if(event.type == SDL_EVENT_QUIT){
-                engine->quit = true;
-            }
-
-            engine->keyboard.CheckEvents(event);
-
-            engine->mouse.CheckEvents(event);
-            
+        while (SDL_PollEvent(&event))
+        {
+            ImGui_ImplSDL2_ProcessEvent(&event);
+            if (event.type == SDL_QUIT)
+                done = true;
+            if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+                done = true;
         }
-
-        /*ForImGUI*/
+        if (SDL_GetWindowFlags(window) & SDL_WINDOW_MINIMIZED)
+        {
+            SDL_Delay(10);
+            continue;
+        }
 
         // Start the Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
-
-        bool show_demo_window = true;
-        bool show_another_window = false;
 
         // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
         if (show_demo_window)
@@ -244,14 +228,9 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
 
         // Rendering
         ImGui::Render();
-
-        engine->Update();
-        engine->keyboard.ClearPressedAndReleased();
-
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
-        engine->Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
@@ -267,108 +246,19 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
         }
 
         SDL_GL_SwapWindow(window);
-
-        /*ForIMGUI END*/
-
-        //Test start
-        /*if(app.keyboard.GetKey(SDLK_RIGHT).is_pressed){
-            Console::PrintLine("right key pressed");
-        }
-
-        if(app.keyboard.GetKey(SDLK_RIGHT).is_released){
-            Console::PrintLine("right key released");
-        }
-
-        if(app.keyboard.GetKey(SDLK_LEFT).is_held){
-            Console::PrintLine("left key held down, not to be confused with pressed");
-        }
-
-        if(app.mouse.is_left_button_pressed) Console::PrintLine("left mouse pressed");
-        if(app.mouse.is_left_button_released) Console::PrintLine("left mouse released");*/
-
-        //Test end
-    
-        //
-
-        unsigned char data[20*20*4]= {0};
-
     }
-
-    engine->asset_manager.Clear();
-
-    SDL_GL_DestroyContext(open_gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-void Main::Start(std::unique_ptr<Engine> _custom_engine){
-    engine = std::move(_custom_engine);
-
-    Console::PrintLine("level memory address",engine->level.get());
-
-    engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
-    engine->Init();
-    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
-
-    engine->level->Load();
-
-    while(!engine->quit){
-        SDL_Event event;
-
-        engine->mouse.ResetTemporaryStates();
-
-        while(SDL_PollEvent(&event)){
-
-            if(event.type == SDL_EVENT_QUIT){
-                engine->quit = true;
-            }
-
-            engine->keyboard.CheckEvents(event);
-
-            engine->mouse.CheckEvents(event);
-            
-        }
-
-        //Test start
-        /*if(app.keyboard.GetKey(SDLK_RIGHT).is_pressed){
-            Console::PrintLine("right key pressed");
-        }
-
-        if(app.keyboard.GetKey(SDLK_RIGHT).is_released){
-            Console::PrintLine("right key released");
-        }
-
-        if(app.keyboard.GetKey(SDLK_LEFT).is_held){
-            Console::PrintLine("left key held down, not to be confused with pressed");
-        }
-
-        if(app.mouse.is_left_button_pressed) Console::PrintLine("left mouse pressed");
-        if(app.mouse.is_left_button_released) Console::PrintLine("left mouse released");*/
-
-        //Test end
-
-        engine->Update();
-        engine->keyboard.ClearPressedAndReleased();
-
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        engine->Render();
-
-        SDL_GL_SwapWindow(window);
-    
-        //
-
-        unsigned char data[20*20*4]= {0};
-
-    }
-
-    engine->asset_manager.Clear();
-
-    SDL_GL_DestroyContext(open_gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
-}
-
-}
-
+#ifdef __EMSCRIPTEN__
+    EMSCRIPTEN_MAINLOOP_END;
 #endif
+
+    // Cleanup
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
+    SDL_GL_DeleteContext(gl_context);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    return 0;
+}

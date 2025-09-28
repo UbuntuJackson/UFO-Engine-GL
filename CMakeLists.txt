@@ -63,6 +63,17 @@ set(
     shapes/rectangle.cpp
     external/olcPixelGameEngine.cpp
     random/random_number_generator.cpp
+
+    #ImGui
+
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_tables.cpp
+    imgui/imgui_widgets.cpp
+    imgui/imgui.cpp
+    imgui/backends/imgui_impl_opengl3.cpp
+    imgui/backends/imgui_impl_sdl3.cpp
+    imgui/misc/cpp/imgui_stdlib.cpp
 )
 
 # Create your game executable target as usual
