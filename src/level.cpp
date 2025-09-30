@@ -47,6 +47,9 @@ Level::Load(){
 void Level::UpdatePhrase(float _delta_time){
     AddNewActors();
 
+    //Run local OnUpdate function on level too
+    OnUpdate(_delta_time);
+
     for(const auto& actor : actors){
         actor->Update(_delta_time);
     }
