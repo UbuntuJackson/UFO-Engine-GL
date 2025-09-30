@@ -21,7 +21,7 @@
 
 namespace ufo{
 
-Main::Main(){
+Main::Main(unsigned int _width, unsigned int _height){
 
     bool vsync_on = false;
 
@@ -48,7 +48,7 @@ Main::Main(){
 
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    window = SDL_CreateWindow("Hello GL", 800,600, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("Hello GL", _width, _height, SDL_WINDOW_OPENGL);
 
     if(window == nullptr){
         Console::PrintLine("Window is null");
@@ -82,24 +82,21 @@ Main::Main(){
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    int w = 0;
-    int h = 0;
-    SDL_GetWindowSize(window, &w,&h);
-
-    glViewport(0,0,w,h);
+    glViewport(0,0,_width,_height);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     //This is where the main loop was before with the engine
 }
 
-void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
+void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     engine = std::move(_custom_engine);
 
     Console::PrintLine("level memory address",engine->level.get());
 
+    engine->Init(this);
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
-    engine->Init();
+    
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
     engine->level->Load();
@@ -142,7 +139,7 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForOpenGL(window, open_gl_context);
-    const char* glsl_version = "#version 130";
+    const char* glsl_version = "#version 450";
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // Load Fonts
@@ -163,7 +160,7 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
     //IM_ASSERT(font != nullptr);
 
     // Our state
-    bool show_demo_window = true;
+    bool show_demo_window = false;
     bool show_another_window = false;
 
     /*ForIMGUI END*/
@@ -202,51 +199,11 @@ void Main::StartWithImGUI(std::unique_ptr<Engine> _custom_engine){
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
 
-        bool show_demo_window = true;
-        bool show_another_window = false;
-
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
-
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
-
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
+        engine->Update();
+        engine->keyboard.ClearPressedAndReleased();
 
         // Rendering
         ImGui::Render();
-
-        engine->Update();
-        engine->keyboard.ClearPressedAndReleased();
 
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
@@ -306,8 +263,8 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
 
     Console::PrintLine("level memory address",engine->level.get());
 
+    engine->Init(this);
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
-    engine->Init();
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
     engine->level->Load();
@@ -355,10 +312,6 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
         engine->Render();
 
         SDL_GL_SwapWindow(window);
-    
-        //
-
-        unsigned char data[20*20*4]= {0};
 
     }
 

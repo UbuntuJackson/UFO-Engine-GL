@@ -17,10 +17,10 @@ public:
     SDL_GLContext open_gl_context;
     std::unique_ptr<Engine> engine = nullptr;
 
-Main();
+Main(unsigned int _width, unsigned int _height);
 
 void Start(std::unique_ptr<Engine> _custom_engine);
-void StartWithImGUI(std::unique_ptr<Engine> _custom_engine);
+void StartWithImGui(std::unique_ptr<Engine> _custom_engine);
 
 };
 }

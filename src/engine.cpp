@@ -11,18 +11,21 @@
 #include "input.h"
 #include "../file/file.h"
 #include "../json/json_variant.h"
+#include "Main.h"
 
 namespace ufo{
 
-Engine::Engine(int _width, int _height) :
-    width{_width},
-    height{_height}
+Engine::Engine()
 {
     
 }
 
 void
-Engine::Init(){
+Engine::Init(Main* _main){
+    SDL_GetWindowSize(_main->window, &width, &height);
+
+    Console::PrintLine("Init width, height =",width, height);
+
     text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
     level->actors.reserve(50);

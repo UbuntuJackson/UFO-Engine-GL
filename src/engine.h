@@ -16,10 +16,15 @@ enum PaintingMethods{
     RECTANGLE_BRUSH_PixelBufferObject
 };
 
+class Main;
+
 class Engine{
 public:
     bool quit = false;
-    const std::string engine_path = "../UFO-Engine";
+    
+    //This is for when loading default assets.
+    //The engine utilises the relative path to the executable location
+    std::string engine_path = "../UFO-Engine";
 
     //Width and height of window
     int width;
@@ -41,8 +46,8 @@ public:
     ControlSettings control_settings;
     Mouse mouse;
 
-    Engine(int _width, int _height);
-    void Init();
+    Engine();
+    void Init(Main* _main);
 
     virtual ~Engine();
     
