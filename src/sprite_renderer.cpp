@@ -62,6 +62,8 @@ OpenGLv4_5_Graphics::OpenGLv4_5_Graphics(Engine* _engine) : engine{_engine}{
     partial_sprite_shader.SetInt("image", 0);
     partial_sprite_shader.SetMatrix4("projection", projection);
 
+    CreateFrameBuffer();
+
     InitialiseRenderData();
 
 }
@@ -342,6 +344,56 @@ void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vec
 
     glm_DrawPartialSprite(_texture_key, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
 
+}
+
+void OpenGLv4_5_Graphics::CreateFrameBuffer(){
+    glGenBuffers(1, &FBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+
+    glGenTextures(1, &texture_id);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, engine->width, engine->height,
+        0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id,0);
+
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+        engine->width, engine->height);
+    
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+
+    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
+        Console::PrintLine("Error, framebuffer no good");
+    }
+
+    glBindFramebuffer(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
+void OpenGLv4_5_Graphics::BindFrameBuffer(){
+    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+}
+
+void OpenGLv4_5_Graphics::UnbindFrameBuffer(){
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void OpenGLv4_5_Graphics::RescaleFrameBuffer(){
+    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, engine->width, engine->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id,0);
+
+    glGenRenderbuffers(1, &RBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
+        engine->width, engine->height);
 }
 
 }

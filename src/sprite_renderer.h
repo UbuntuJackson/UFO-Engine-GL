@@ -47,6 +47,18 @@ public:
     void DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour);
 
     void InitialiseRenderData();
+
+    unsigned int FBO;
+    unsigned int RBO;
+    GLuint texture_id;
+
+    void CreateFrameBuffer();
+
+    void BindFrameBuffer();
+
+    void UnbindFrameBuffer();
+
+    void RescaleFrameBuffer();
 };
 
 }

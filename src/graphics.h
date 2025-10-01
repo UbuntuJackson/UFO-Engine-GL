@@ -34,6 +34,14 @@ public:
 
     virtual void DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour) = 0;
 
+    virtual void CreateFrameBuffer() = 0;
+
+    virtual void BindFrameBuffer() = 0;
+
+    virtual void UnbindFrameBuffer() = 0;
+
+    virtual void RescaleFrameBuffer() = 0;
+
     virtual ~Graphics() = default;
 
 };
