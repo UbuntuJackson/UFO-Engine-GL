@@ -150,6 +150,10 @@ void Engine::Render(){
 
 }
 
+void Engine::EditorRender(){
+    level->EditorDrawPhase();
+}
+
 void Engine::GarbageCollect(){
     level->InvokeGarbageCollector();
 }

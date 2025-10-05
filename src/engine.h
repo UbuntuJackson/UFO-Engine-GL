@@ -57,6 +57,7 @@ public:
     void BrushTest();
 
     void Render();
+    void EditorRender();
 
     void GarbageCollect();
 };
