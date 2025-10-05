@@ -202,7 +202,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
         glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        engine->level->EmbeddedRender();
+        engine->level->EditorDrawPhase();
 
         engine->graphics->UnbindFrameBuffer();
 
