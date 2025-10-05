@@ -52,6 +52,7 @@ public:
     virtual ~Engine();
     
     void Update();
+    void EditorUpdate();
     void UpdatePixelGameEngine(float _delta_time);
 
     void BrushTest();

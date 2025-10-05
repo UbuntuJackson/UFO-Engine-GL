@@ -87,6 +87,20 @@ BrushRectangle CutOutRectangle(BrushRectangle _borders, BrushRectangle _brush){
     
 }
 
+void Engine::EditorUpdate(){
+
+    // Handle Timing
+    m_tp2 = std::chrono::system_clock::now();
+    std::chrono::duration<float> elapsedTime = m_tp2 - m_tp1;
+    m_tp1 = m_tp2;
+
+    // Our time per frame coefficient
+    float fElapsedTime = elapsedTime.count();
+    fLastElapsed = fElapsedTime;
+
+    level->EditorUpdatePhase(fLastElapsed);
+}
+
 void Engine::Update(){
     if(keyboard.GetKey(SDLK_ESCAPE).is_pressed) quit = true;
 

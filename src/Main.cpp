@@ -196,6 +196,10 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
             
         }
 
+        //For UFO Engine Studio
+
+        engine->EditorUpdate();
+
         engine->graphics->BindFrameBuffer();
 
         glViewport(0, 0, engine->width, engine->height);
