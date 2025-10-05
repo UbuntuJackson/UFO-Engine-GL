@@ -92,6 +92,18 @@ public:
 
     }
 
+    //This is a virtual function used to invoke the BEAM Garbage Collector.
+    virtual void OnInvokeGarbageCollector(){
+        
+    }
+    
+    void InvokeGarbageCollector(){
+        OnInvokeGarbageCollector();
+        for(const auto& actor : actors){
+            actor->InvokeGarbageCollector();
+        }
+    }
+
     template<typename tActor>
     tActor* DynamicCast(){
         return dynamic_cast<tActor*>(this);

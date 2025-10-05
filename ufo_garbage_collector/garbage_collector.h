@@ -1,19 +1,11 @@
-/*
-
-    DISCLAIMER
-
-    This garbage collector and the components associated with it are
-    purely experimental. For the time being it is reserved for research-
-    related purposes
-    /jackson.
-
-*/
-
 #pragma once
 #include <vector>
+
 namespace ufo{
 
+namespace gc{
 class Object;
+}
 
 class GarbageCollector{
 public:

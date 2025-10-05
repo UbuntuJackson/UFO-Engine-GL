@@ -64,6 +64,10 @@ set(
     external/olcPixelGameEngine.cpp
     random/random_number_generator.cpp
 
+    #The Beam garbage collector
+    ufo_garbage_collector/garbage_collector.cpp
+    ufo_garbage_collector/gc_json.cpp
+
     #ImGui
 
     imgui/imgui_demo.cpp
@@ -81,6 +85,7 @@ add_library(UFO ${SRC})
 
 target_include_directories(UFO PUBLIC src)
 target_include_directories(UFO PUBLIC ufo_maths)
+target_include_directories(UFO PUBLIC ufo_garbage_collector)
 target_include_directories(UFO PUBLIC utils)
 
 if(NOT WIN32)

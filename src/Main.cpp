@@ -46,6 +46,8 @@ Main::Main(unsigned int _width, unsigned int _height){
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
     window = SDL_CreateWindow("Hello GL", _width, _height, SDL_WINDOW_OPENGL);
@@ -96,6 +98,8 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
 
     engine->Init(this);
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
+
+    engine->graphics->CreateFrameBuffer();
     
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
@@ -192,6 +196,16 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
             
         }
 
+        engine->graphics->BindFrameBuffer();
+
+        glViewport(0, 0, engine->width, engine->height);
+        glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        engine->level->EmbeddedRender();
+
+        engine->graphics->UnbindFrameBuffer();
+
         /*ForImGUI*/
 
         // Start the Dear ImGui frame
@@ -209,6 +223,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
         glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
         glClear(GL_COLOR_BUFFER_BIT);
         engine->Render();
+
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // Update and Render additional Platform Windows
@@ -224,30 +239,6 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
         }
 
         SDL_GL_SwapWindow(window);
-
-        /*ForIMGUI END*/
-
-        //Test start
-        /*if(app.keyboard.GetKey(SDLK_RIGHT).is_pressed){
-            Console::PrintLine("right key pressed");
-        }
-
-        if(app.keyboard.GetKey(SDLK_RIGHT).is_released){
-            Console::PrintLine("right key released");
-        }
-
-        if(app.keyboard.GetKey(SDLK_LEFT).is_held){
-            Console::PrintLine("left key held down, not to be confused with pressed");
-        }
-
-        if(app.mouse.is_left_button_pressed) Console::PrintLine("left mouse pressed");
-        if(app.mouse.is_left_button_released) Console::PrintLine("left mouse released");*/
-
-        //Test end
-    
-        //
-
-        unsigned char data[20*20*4]= {0};
 
     }
 
@@ -310,6 +301,8 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         engine->Render();
+
+        engine->GarbageCollect();
 
         SDL_GL_SwapWindow(window);
 

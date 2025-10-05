@@ -57,6 +57,8 @@ public:
     void BrushTest();
 
     void Render();
+
+    void GarbageCollect();
 };
 
 }

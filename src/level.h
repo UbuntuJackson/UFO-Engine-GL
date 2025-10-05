@@ -55,4 +55,8 @@ public:
 
     void DrawPhase(ufo::Graphics* _graphics);
 
+    virtual void EmbeddedRender(){
+
+    }
+
 };
