@@ -44,7 +44,7 @@ Level::Load(){
 
 }
 
-void Level::Update(){}
+void Level::Update(float _delta_time){}
 
 void Level::UpdatePhrase(float _delta_time){
     AddNewActors();

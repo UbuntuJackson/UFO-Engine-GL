@@ -51,7 +51,7 @@ public:
 
     virtual ~Level(){}
 
-    void Update();
+    void Update(float _delta_time);
 
     void UpdatePhrase(float _delta_time);
 
