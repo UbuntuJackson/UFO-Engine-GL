@@ -51,6 +51,8 @@ public:
 
     virtual ~Level(){}
 
+    void Update();
+
     void UpdatePhrase(float _delta_time);
 
     void DrawPhase(ufo::Graphics* _graphics);

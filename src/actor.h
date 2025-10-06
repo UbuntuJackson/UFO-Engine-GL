@@ -64,7 +64,7 @@ public:
 
     virtual void OnAddActor(Actor* _actor);
 
-    void Update(float _delta_time);
+    virtual void Update(float _delta_time);
 
     virtual void OnUpdate(float _delta_time){
 
