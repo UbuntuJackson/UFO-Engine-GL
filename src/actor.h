@@ -127,7 +127,7 @@ public:
 
     virtual void UpdateEditorTree(int _index){
         
-        bool tree_node_opened = ImGui::TreeNodeEx(std::to_string((int)this).c_str());
+        bool tree_node_opened = ImGui::TreeNodeEx(std::to_string((unsigned long long)this).c_str());
         if(tree_node_opened){
         
             OnUpdateEditorTree(_index);
