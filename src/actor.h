@@ -145,7 +145,7 @@ public:
         bool tree_node_opened = ImGui::TreeNodeEx(editor_name.c_str());
         
         if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)){
-            dragged_actor_where_abouts = DraggedActorWhereAbouts{this, _index};
+            dragged_actor_where_abouts = DraggedActorWhereAbouts{parent, _index};
 
             ImGui::SetDragDropPayload("ActorDragDrop", &dragged_actor_where_abouts, sizeof(DraggedActorWhereAbouts));
             ImGui::Text(editor_name.c_str());
@@ -160,7 +160,11 @@ public:
                     DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
 
                     Console::PrintLine(dragged_actor_where_abouts_->parent, dragged_actor_where_abouts_->index);
-                    
+
+                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]));
+
+                    dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
+
                 }
             //}
 
