@@ -161,6 +161,8 @@ public:
 
                     Console::PrintLine(dragged_actor_where_abouts_->parent, dragged_actor_where_abouts_->index);
 
+                    dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]->parent = this;
+
                     actors.push_back(std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]));
 
                     dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
