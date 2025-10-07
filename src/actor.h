@@ -3,6 +3,7 @@
 #include <vector>
 #include "../ufo_maths/ufo_maths.h"
 #include "graphics.h"
+#include "../imgui/imgui.h"
 
 namespace ufo{
     class Engine;
@@ -117,4 +118,90 @@ public:
     virtual ~Actor(){
         
     }
+
+    //For UFO-Engine Studio Editor actor tree widget
+
+    virtual void OnUpdateEditorTree(int _index){
+
+    }
+
+    virtual void UpdateEditorTree(int _index){
+        
+        bool tree_node_opened = ImGui::TreeNodeEx(std::to_string((int)this).c_str());
+        if(tree_node_opened){
+        
+            OnUpdateEditorTree(_index);
+
+            for(int i = 0; i < actors.size(); i++){
+                actors[i]->UpdateEditorTree(i);
+            }
+
+            for(int i = actors.size()-1; i != -1; i--){
+                //if(actors[i]->to_be_moved){
+
+                //}
+            }
+            
+            ImGui::TreePop();
+        }
+    }
+
+    class EditorAttribute{
+    public:
+        std::string variable_name;
+        std::string alias;
+    };
+
+    class EditorAttributeInt : public EditorAttribute{
+    public:
+        int value;
+
+        EditorAttributeInt(int _value) : value{_value}{}
+
+    };
+
+    class EditorAttributeIntSlider : public EditorAttribute{
+
+    };
+
+    class EditorAttributeIntRange : public EditorAttribute{
+
+    };
+
+    class EditorAttributeOptionStringDropDownMenu : public EditorAttribute{
+
+    };
+
+    class EditorAttributeOptionStringRadioButton : public EditorAttribute{
+
+    };
+
+    class EditorAttributeFloat : public EditorAttribute{
+
+    };
+
+    class EditorAttributeFloatSlider : public EditorAttribute{
+
+    };
+
+    class EditorAttributeFloatRange : public EditorAttribute{
+
+    };
+
+    class EditorAttributeVector2f : public EditorAttribute{
+    public:
+        Vector2f v;
+
+        EditorAttributeVector2f(Vector2f _v) : v{_v}{}
+
+    };
+
+    std::vector<std::unique_ptr<EditorAttribute>> editor_attributes;
+
+    EditorAttributeVector2f* editor_attribute_local_position = nullptr;
+
+    void UpdateDefaultAttributes(){
+        editor_attribute_local_position->v = local_position;
+    }
+
 };
