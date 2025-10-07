@@ -4,7 +4,8 @@
 #include "../utils/console.h"
 
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}{
-
+    editor_id++;
+    editor_name = "Actor"+std::to_string(editor_id);
 }
 
 Vector2f Actor::GetGlobalPosition(){

@@ -121,13 +121,29 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
+    static inline int editor_id = 0;
+
+    std::string editor_name = "Actor";
+
+    bool marked_for_drag = false;
+    bool marked_for_drop = false;
+
     virtual void OnUpdateEditorTree(int _index){
 
     }
 
     virtual void UpdateEditorTree(int _index){
         
-        bool tree_node_opened = ImGui::TreeNodeEx(std::to_string((unsigned long long)this).c_str());
+        bool tree_node_opened = ImGui::TreeNodeEx(editor_name.c_str());
+        
+        if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)){
+            
+            ImGui::SetDragDropPayload("FileDragDrop", this, sizeof(Actor));
+            ImGui::Text(editor_name.c_str());
+
+            ImGui::EndDragDropSource();
+        }
+        
         if(tree_node_opened){
         
             OnUpdateEditorTree(_index);
