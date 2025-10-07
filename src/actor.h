@@ -4,6 +4,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "graphics.h"
 #include "../imgui/imgui.h"
+#include "../utils/console.h"
 
 namespace ufo{
     class Engine;
@@ -132,16 +133,38 @@ public:
 
     }
 
+    struct DraggedActorWhereAbouts{
+        Actor* parent;
+        int index;
+    };
+
+    DraggedActorWhereAbouts dragged_actor_where_abouts;
+
     virtual void UpdateEditorTree(int _index){
         
         bool tree_node_opened = ImGui::TreeNodeEx(editor_name.c_str());
         
         if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)){
-            
-            ImGui::SetDragDropPayload("FileDragDrop", this, sizeof(Actor));
+            dragged_actor_where_abouts = DraggedActorWhereAbouts{this, _index};
+
+            ImGui::SetDragDropPayload("ActorDragDrop", &dragged_actor_where_abouts, sizeof(DraggedActorWhereAbouts));
             ImGui::Text(editor_name.c_str());
 
             ImGui::EndDragDropSource();
+        }
+
+        if(ImGui::BeginDragDropTarget()){
+            //if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+                const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
+                if(payload_data){
+                    DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
+
+                    Console::PrintLine(dragged_actor_where_abouts_->parent, dragged_actor_where_abouts_->index);
+                    
+                }
+            //}
+
+            ImGui::EndDragDropTarget();
         }
         
         if(tree_node_opened){
