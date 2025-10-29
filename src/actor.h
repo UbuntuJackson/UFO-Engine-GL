@@ -1,13 +1,20 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <string>
 #include "../ufo_maths/ufo_maths.h"
 #include "graphics.h"
 #include "../imgui/imgui.h"
-#include "../utils/console.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
+#include <gc_json.h>
 
 namespace ufo{
     class Engine;
+    class GarbageCollector;
+}
+
+namespace ufo::gc{
+    class JsonMap;
 }
 
 class Level;
@@ -35,11 +42,25 @@ public:
     std::vector<std::unique_ptr<Actor>> new_actor_queue;
 
     void AddNewActors(){
+
+        bool queue_was_empty = new_actor_queue.size() == 0;
+
         for(auto&& actor : new_actor_queue){
-            actor->AddNewActors();
             actors.push_back(std::move(actor));
         }
+
+        for(auto&& actor : actors){
+            actor->AddNewActors();
+        }
+
         new_actor_queue.clear();
+    
+        if(!queue_was_empty && !should_be_sorted){
+            
+            for(int i = 0; i < actors.size(); i++){
+                actors[i]->order_index = i;
+            }
+        }
     }
 
     template <typename tActor, typename ...tArgs>
@@ -122,9 +143,50 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
-    static inline int editor_id = 0;
+    static inline int editor_id_counter = 0;
+    int editor_id = 0;
+
+    struct InsertedActor{
+        int index;
+        std::unique_ptr<Actor> actor;
+    };
+
+    std::vector<InsertedActor> inserted_actor_queue;
+    
+    void InsertActors(){
+        for(auto&& inserted_actor : inserted_actor_queue){
+            actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
+        }
+
+        inserted_actor_queue.clear();
+
+        for(const auto& actor : actors){
+            actor->InsertActors();
+        }
+    }
+
+    int order_index = 0;
+    bool should_be_sorted = false;
+
+    void SetOrderIndex(int _index){
+        if(parent) parent->should_be_sorted = true;
+        order_index = _index;
+    }
+
+    void SortActors(){
+        std::sort(actors.begin(), actors.end(), [this](const auto& _a, const auto& _b){
+            return _a->order_index < _b->order_index;
+        });
+
+        for(int i = 0; i < actors.size(); i++){
+            actors[i]->order_index = i;
+        }
+
+        should_be_sorted = false;
+    }
 
     std::string editor_name = "Actor";
+    std::string class_name = "Actor";
 
     bool marked_for_drag = false;
     bool marked_for_drop = false;
@@ -140,113 +202,138 @@ public:
 
     DraggedActorWhereAbouts dragged_actor_where_abouts;
 
-    virtual void UpdateEditorTree(int _index){
-        
-        bool tree_node_opened = ImGui::TreeNodeEx(editor_name.c_str());
-        
-        if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)){
-            dragged_actor_where_abouts = DraggedActorWhereAbouts{parent, _index};
+    bool editing_name = false;
+    std::string old_editor_name = "";
 
-            ImGui::SetDragDropPayload("ActorDragDrop", &dragged_actor_where_abouts, sizeof(DraggedActorWhereAbouts));
-            ImGui::Text(editor_name.c_str());
-
-            ImGui::EndDragDropSource();
-        }
-
-        if(ImGui::BeginDragDropTarget()){
-            //if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
-                const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
-                if(payload_data){
-                    DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
-
-                    Console::PrintLine(dragged_actor_where_abouts_->parent, dragged_actor_where_abouts_->index);
-
-                    dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]->parent = this;
-
-                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]));
-
-                    dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
-
-                }
-            //}
-
-            ImGui::EndDragDropTarget();
-        }
-        
-        if(tree_node_opened){
-        
-            OnUpdateEditorTree(_index);
-
-            for(int i = 0; i < actors.size(); i++){
-                actors[i]->UpdateEditorTree(i);
-            }
-
-            for(int i = actors.size()-1; i != -1; i--){
-                //if(actors[i]->to_be_moved){
-
-                //}
-            }
-            
-            ImGui::TreePop();
-        }
+    void TurnOnEditMode(){
+        editing_name = true;
+        old_editor_name = editor_name;
     }
 
-    class EditorAttribute{
+    bool adding_new_actor = false;
+
+    virtual void UpdateEditorTree(int _index);
+
+    virtual void InitEditorProperties(){
+        editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("x","x",&(local_position.x)));
+        editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("y","y",&(local_position.y)));
+        editor_properties.push_back(std::make_unique<EditorPropertyIntSlider>("_IntSlider","IntSlider",5, 0, 10));
+    }
+
+    class EditorProperty{
     public:
         std::string variable_name;
         std::string alias;
+
+        EditorProperty(const std::string& _variable_name, const std::string& _alias) : variable_name{_variable_name}, alias{_alias}{}
+
+        virtual ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            return nullptr;
+        }
+
+        virtual void Update(const std::string& _editor_name, int _index){
+
+        }
     };
 
-    class EditorAttributeInt : public EditorAttribute{
+    class EditorPropertyFloatHandle : public EditorProperty{
     public:
-        int value;
+        float* value = nullptr;
 
-        EditorAttributeInt(int _value) : value{_value}{}
+        EditorPropertyFloatHandle(const std::string& _name,const std::string& _alias, float* _value) : EditorProperty(_name,_alias), value{_value}{}
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::InputFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(*value));
+            return m;
+        }
+    };
+
+    class EditorPropertyIntSlider : public EditorProperty{
+    public:
+        int value = 0;
+
+        int min;
+        int max;
+
+        EditorPropertyIntSlider(const std::string& _name,const std::string& _alias, int _value, int _min, int _max) : EditorProperty(_name,_alias),
+            value{_value},
+            max{_max},
+            min{_min}{
+
+            }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::SliderInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value, min, max);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            return m;
+        }
+    };
+
+    /*class EditorPropertyIntSlider : public EditorProperty{
 
     };
 
-    class EditorAttributeIntSlider : public EditorAttribute{
+    class EditorPropertyIntRange : public EditorProperty{
 
     };
 
-    class EditorAttributeIntRange : public EditorAttribute{
+    class EditorPropertyOptionStringDropDownMenu : public EditorProperty{
 
     };
 
-    class EditorAttributeOptionStringDropDownMenu : public EditorAttribute{
+    class EditorPropertyOptionStringRadioButton : public EditorProperty{
 
     };
 
-    class EditorAttributeOptionStringRadioButton : public EditorAttribute{
+    class EditorPropertyFloat : public EditorProperty{
 
     };
 
-    class EditorAttributeFloat : public EditorAttribute{
+    class EditorPropertyFloatSlider : public EditorProperty{
 
     };
 
-    class EditorAttributeFloatSlider : public EditorAttribute{
+    class EditorPropertyFloatRange : public EditorProperty{
 
     };
 
-    class EditorAttributeFloatRange : public EditorAttribute{
-
-    };
-
-    class EditorAttributeVector2f : public EditorAttribute{
+    class EditorPropertyVector2f : public EditorProperty{
     public:
         Vector2f v;
 
-        EditorAttributeVector2f(Vector2f _v) : v{_v}{}
+        EditorPropertyVector2f(Vector2f _v) : v{_v}{}
 
     };
 
-    std::vector<std::unique_ptr<EditorAttribute>> editor_attributes;
+    EditorPropertyVector2f* editor_attribute_local_position = nullptr;*/
 
-    EditorAttributeVector2f* editor_attribute_local_position = nullptr;
 
-    void UpdateDefaultAttributes(){
-        editor_attribute_local_position->v = local_position;
+    std::vector<std::unique_ptr<EditorProperty>> editor_properties;
+
+    bool properties_open = false;
+
+    virtual void OnViewProperties(int _index);
+
+    void ViewProperties(int _index){
+        if(properties_open) OnViewProperties(_index);
+        for(int i = 0; i < actors.size(); i++){
+            actors[i]->ViewProperties(i);
+        }
     }
+
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 
 };

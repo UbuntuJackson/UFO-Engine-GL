@@ -41,6 +41,8 @@ Engine::Init(Main* _main){
             asset_manager.LoadTexture(asset->AsDictionary().Get("path").AsString(), asset->AsDictionary().Get("alias").AsString(), true);
         }
     }
+
+    asset_manager.LoadTexture(engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
 }
 
 Engine::~Engine(){

@@ -78,6 +78,13 @@ set(
     imgui/backends/imgui_impl_opengl3.cpp
     imgui/backends/imgui_impl_sdl3.cpp
     imgui/misc/cpp/imgui_stdlib.cpp
+
+    #UFO Engine Studio
+    ufo_engine_studio/file_node.cpp
+    ufo_engine_studio/file.cpp
+    ufo_engine_studio/directory.cpp
+    ufo_engine_studio/tab.cpp
+    ufo_engine_studio/editor.cpp
 )
 
 # Create your game executable target as usual
@@ -87,6 +94,9 @@ target_include_directories(UFO PUBLIC src)
 target_include_directories(UFO PUBLIC ufo_maths)
 target_include_directories(UFO PUBLIC ufo_garbage_collector)
 target_include_directories(UFO PUBLIC utils)
+target_include_directories(UFO PUBLIC ufo_engine_studio)
+
+target_compile_definitions(UFO PRIVATE GLM_ENABLE_EXPERIMENTAL=1)
 
 if(NOT WIN32)
 
@@ -156,4 +166,5 @@ endif()
 # Link to the actual SDL3 library.
 target_link_libraries(UFO PUBLIC SDL3::SDL3)
 target_link_libraries(UFO PUBLIC freetype)
+target_link_libraries(UFO PUBLIC glm)
 target_include_directories(UFO PUBLIC glad/include)

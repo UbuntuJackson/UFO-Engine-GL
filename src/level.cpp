@@ -10,7 +10,9 @@
 #include "sprite_renderer.h"
 #include "../shapes/rectangle.h"
 
-Level::Level() : Actor(Vector2f(0.0f, 0.0f)){}
+Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
+    class_name = "Level";
+}
 
 ufo::Controls* Level::GetControls(){
     if(control_handout_counter == engine->control_settings.controls.size()-1) return nullptr;
@@ -21,7 +23,7 @@ ufo::Controls* Level::GetControls(){
 
 void
 Level::Load(){
-    for(int i = 0; i < 200; i++){
+    for(int i = 0; i < 5; i++){
         
         auto npc = AddActor<ColourCircle>(Vector2f(
             RandomNumberGenerator::Get().RandomFloat(0.0f, size.x),
@@ -49,11 +51,18 @@ void Level::Update(float _delta_time){}
 void Level::UpdatePhrase(float _delta_time){
     AddNewActors();
 
+    InsertActors();
+
     //Run local OnUpdate function on level too
     OnUpdate(_delta_time);
 
     for(const auto& actor : actors){
         actor->Update(_delta_time);
+    }
+
+    if(should_be_sorted){
+        SortActors();
+        Console::PrintLine("Sorting Actors in Level");
     }
 
     for(const auto& camera : active_camera_handles){

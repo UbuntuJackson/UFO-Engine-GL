@@ -18,6 +18,7 @@ void Camera::OnSpawn(){
     world = Bounds{0.0f,level->size.x, 0.0f ,level->size.y};
     clamp = true;
     level->active_camera_handles.push_back(this);
+    class_name = "Camera";
 
     Console::PrintLine("Camera Spawned");
 }
