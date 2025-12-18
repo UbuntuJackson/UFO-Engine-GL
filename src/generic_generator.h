@@ -24,6 +24,7 @@ public:
 
     virtual void Initialise();
     virtual std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json);
+    std::unique_ptr<Actor> FromJsonInGame(ufo::gc::JsonMap* _json);
 
     std::unique_ptr<Actor> JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
 

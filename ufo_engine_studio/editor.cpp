@@ -1,6 +1,7 @@
 #include <level.h>
 #include <string>
 #include <camera.h>
+#include <filesystem>
 #include "file_node.h"
 #include "../imgui/imgui.h"
 #include "../ufo_engine_studio/dock_utils.h"
@@ -111,6 +112,14 @@ void Editor::OnUpdate(float _delta_time){
         if(ImGui::BeginMenu("Project")){
             if(ImGui::MenuItem("Reload Project")){
                 refresh_entire_project = true;
+            }
+
+            if(ImGui::MenuItem("Run Project")){
+                const std::string build_directory = opened_directory_path+"/build";
+                if(!std::filesystem::exists(build_directory.c_str())){
+                    std::filesystem::create_directory(build_directory.c_str());
+                }
+                std::system(std::string("cd "+build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && gdb OUT").c_str());
             }
 
             ImGui::EndMenu();

@@ -71,6 +71,22 @@ void GenericGenerator::Initialise(){
         );
 }
 
+std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json){
+	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
+	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
+
+		instance->class_name = _json->map.at("class_name")->AsString();
+
+		auto custom_properties = _json->map.at("custom_editor_properties")->AsArray();
+
+	    return std::move(instance);
+	}
+	else{
+	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("base_class_name")->AsString());
+					return std::move(factory_map.at("Actor")(_json));
+	}
+}
+
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);

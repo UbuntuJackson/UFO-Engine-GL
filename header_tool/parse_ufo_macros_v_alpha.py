@@ -7,9 +7,9 @@ import sys
 def make_generated_file(_path, _classes):
     includes = "#include <functional>\n"
     includes += "#include <memory>\n\n"
-    includes += '#include "UFO-Engine-GL/ufo_garbage_collector/gc_json.h"\n'
-    includes += '#include "UFO-Engine-GL/src/generic_generator.h"\n'
-    includes += '#include "UFO-Engine-GL/src/actor.h"\n'
+    includes += '#include "UFO-Engine/ufo_garbage_collector/gc_json.h"\n'
+    includes += '#include "UFO-Engine/src/generic_generator.h"\n'
+    includes += '#include "UFO-Engine/src/actor.h"\n'
 
     header_files = []
 
@@ -25,11 +25,15 @@ def make_generated_file(_path, _classes):
     namespace_string = "namespace Generated{\n\n"
 
     class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
+    class_string += "    public:\n"
+
+    class_string += "std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(FromJsonInGame(_json));}"
 
     # Parent class has the generator_map now.
     # generator_map = "    std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;\n"
 
     function_ = "    void Initialise(){\n"
+    function_ += "        GenericGenerator::Initialise();\n"
 
     for cl in _classes:
         function_ += "        factory_map.emplace(\n"
@@ -55,7 +59,9 @@ def make_generated_file(_path, _classes):
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = (int)(_json->map.at("x")->AsFloat());\n'
+                    + ' = (int)(_json->map.at("'
+                    + member[1]["name"]
+                    + '")->AsFloat());\n'
                 )
             if member[1]["data_type"] == "float":
                 function_ += (
