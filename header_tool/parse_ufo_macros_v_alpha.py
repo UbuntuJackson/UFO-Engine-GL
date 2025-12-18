@@ -54,20 +54,24 @@ def make_generated_file(_path, _classes):
             + ">(Vector2f(_x, _y));\n"
         )
 
+        function_ += 'auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();'
+
         for member in cl["class"]["members"]:
             if member[1]["data_type"] == "int":
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = (int)(_json->map.at("'
+                    + ' = (int)(custom_properties->map.at("'
                     + member[1]["name"]
-                    + '")->AsFloat());\n'
+                    + '")->AsMap().at("value")->AsFloat());\n'
                 )
             if member[1]["data_type"] == "float":
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = _json->map.at("x")->AsFloat();\n'
+                    + ' = (custom_properties->map.at("'
+                    + member[1]["name"]
+                    + '")->AsMap().at("value")->AsFloat());\n'
                 )
             if member[1]["data_type"] == "Vector2f":
                 pass
@@ -75,7 +79,9 @@ def make_generated_file(_path, _classes):
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = _json->map.at("x")->AsString();\n'
+                    + ' = custom_properties->map.at("'
+                    + member[1]["name"]
+                    + '")->AsMap().at("value")->AsString();\n'
                 )
 
         function_ += "                return std::move(instance);\n"
