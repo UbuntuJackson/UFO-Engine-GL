@@ -61,7 +61,7 @@ def make_generated_file(_path, _classes):
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = (int)(custom_properties->map.at("'
+                    + ' = (int)(custom_properties.at("'
                     + member[1]["name"]
                     + '")->AsMap().at("value")->AsFloat());\n'
                 )
@@ -69,7 +69,7 @@ def make_generated_file(_path, _classes):
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = (custom_properties->map.at("'
+                    + ' = (custom_properties.at("'
                     + member[1]["name"]
                     + '")->AsMap().at("value")->AsFloat());\n'
                 )
@@ -79,7 +79,7 @@ def make_generated_file(_path, _classes):
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
-                    + ' = custom_properties->map.at("'
+                    + ' = custom_properties.at("'
                     + member[1]["name"]
                     + '")->AsMap().at("value")->AsString();\n'
                 )
@@ -104,7 +104,20 @@ def make_generated_file(_path, _classes):
 def main():
     arg_path = sys.argv[1]
     grand_class_list = []
-    search_folders_for_ufo_classes(grand_class_list, arg_path, "")
+
+    class Ref:
+        def __init__(self, _obj):
+            self.obj = _obj
+
+    grand_header_tool_log = Ref("")
+
+    search_folders_for_ufo_classes(
+        grand_class_list, arg_path, "", grand_header_tool_log
+    )
+
+    grand_header_tool_log_f = open(arg_path + "/ufo_header_tool_log.txt", "w")
+    grand_header_tool_log_f.write(grand_header_tool_log.obj)
+    grand_header_tool_log_f.close()
 
     classes_as_dictionary = {"contents": grand_class_list}
 
@@ -116,28 +129,35 @@ def main():
     f_structured_classes.close()
 
 
-def search_folders_for_ufo_classes(_grand_class_list, _working_directory, _local_path):
+def search_folders_for_ufo_classes(
+    _grand_class_list, _working_directory, _local_path, _grand_header_tool_log
+):
     for directory in os.listdir(_working_directory + _local_path):
         if directory in ["UFO-Engine", "build"]:
             continue
 
-        print(_working_directory + _local_path + "/" + directory)
         if os.path.isdir(_working_directory + "/" + _local_path + "/" + directory):
             search_folders_for_ufo_classes(
-                _grand_class_list, _working_directory, _local_path + "/" + directory
+                _grand_class_list,
+                _working_directory,
+                _local_path + "/" + directory,
+                _grand_header_tool_log,
             )
         if os.path.isfile(_working_directory + "/" + _local_path + "/" + directory):
             extension = directory[directory.find(".") : len(directory)]
-            # print(extension)
+
             if extension in [".ufo.hpp", ".ufo.h"]:
-                local_classes = search_file(
-                    _working_directory + "/" + _local_path + "/" + directory
+                file_to_parse = _working_directory + "/" + _local_path + "/" + directory
+                print("[UFO-Header Tool] Parsing file", file_to_parse)
+                local_classes, header_tool_log_for_file = search_file(file_to_parse)
+                _grand_header_tool_log.obj += (
+                    "Hierarchal scope structure of " + file_to_parse
                 )
+                _grand_header_tool_log.obj += header_tool_log_for_file + "\n"
                 _grand_class_list += local_classes
 
 
 def search_file(_path):
-    # f = open("UFO-Engine/header_tool/pingu.h")
     f = open(_path)
 
     file_contents = f.read()
@@ -176,36 +196,29 @@ def search_file(_path):
         segmented_file_contents_cleaned_up_floating_point_numbers
     )
 
-    includes = detect_includes(space_less_file_contents)
-
     f.close()
-
-    # for i in space_less_file_contents:
-    #    print("'" + i + "'")
-
-    # for i in includes:
-    #    print("'" + i + "'")
 
     scopes = detect_scopes(space_less_file_contents, 0)
 
-    pprint.pprint(scopes, indent=4)
+    header_tool_file_log = pprint.pformat(scopes, indent=4)
 
     global_scope = GlobalScope()
 
     analyse_scopes(scopes, global_scope)
 
-    global_scope.print_tree()
+    # global_scope.print_tree()
 
     dictionary = []
 
     global_scope.to_dictionary(dictionary)
 
-    pprint.pprint(dictionary)
+    header_tool_file_log += "Finished json:"
+    header_tool_file_log += pprint.pformat(dictionary, indent=4) + "\n"
 
     for i in dictionary:
         i["class"]["header_file"] = _path
 
-    return dictionary
+    return (dictionary, header_tool_file_log)
 
 
 def process_multi_line_comments(_file_contents_as_list):
@@ -452,8 +465,6 @@ def analyse_namespace(_object):
     else:
         return NamespaceObject(ufo_namespace_name)
 
-    print("Found namespace", ufo_namespace_name)
-
 
 class Macro:
     def __init__(self, _name, _args) -> None:
@@ -463,7 +474,7 @@ class Macro:
 
 def extract_macro_arguments(_list):
     name = _list[0]
-    print(name)
+
     args = []
     if len(_list) > 1:
         args.append("")
@@ -486,9 +497,17 @@ def extract_macro_arguments(_list):
 def analyse_class_or_variable(_object):
     def extract_string(_list):
         if len(_list) > 3:
-            print("Parsing error, string", _object, "contains more than 3 elements")
+            print(
+                "[UFO Header Tool Warning] Parsing error, string",
+                _object,
+                "contains more than 3 elements",
+            )
         elif len(_list) < 2:
-            print("Parsing error, string", _object, "less than 2 elements")
+            print(
+                "[UFO Header Tool Warning] Parsing error, string",
+                _object,
+                "less than 2 elements",
+            )
         else:
             if _list[0] == '"' and _list[-1] == '"':
                 if len(_list) == 2:
@@ -497,7 +516,7 @@ def analyse_class_or_variable(_object):
                     return _list[1]
 
             else:
-                print("Parsing error, odd tokens:", _object)
+                print("[UFO Header Tool Warning] Parsing error, odd tokens:", _object)
 
         return ""
 
@@ -506,43 +525,57 @@ def analyse_class_or_variable(_object):
             return "0"
         elif len(_list) == 1:
             if not _list[0].isnumeric():
-                print("Parsing error, parameter has to be numeric", _list)
+                print(
+                    "[UFO Header Tool Warning] Parsing error, parameter has to be numeric",
+                    _list,
+                )
             else:
                 return _list[0]
         elif len(_list) == 2:
             if _list[0] != "-":
-                print("Parsing error, weird prefix", _list)
+                print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
             else:
                 if not _list[1].isnumeric():
-                    print("Parsing error, second parameter has to be numeric", _list)
+                    print(
+                        "[UFO Header Tool Warning] Parsing error, second parameter has to be numeric",
+                        _list,
+                    )
                 else:
                     return _list[0] + _list[1]
         elif len(_list) > 2:
-            print("Parsing error, int can't be more than two elements", _list)
+            print(
+                "[UFO Header Tool Warning] Parsing error, int can't be more than two elements",
+                _list,
+            )
         return "0"
 
     def extract_float(_list):
-        print("extract_float", _list)
         if len(_list) == 0:
             return "0.0"
         elif len(_list) == 1:
             if not is_float_litteral(_list[0]):
-                print("Parsing error, parameter has to be float litteral", _list)
+                print(
+                    "[UFO Header Tool Warning] Parsing error, parameter has to be float litteral",
+                    _list,
+                )
             else:
                 return _list[0][:-1]
         elif len(_list) == 2:
             if _list[0] != "-":
-                print("Parsing error, weird prefix", _list)
+                print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
             else:
                 if not is_float_litteral(_list[1]):
                     print(
-                        "Parsing error, second parameter has to be float litteral",
+                        "[UFO Header Tool Warning] Parsing error, second parameter has to be float litteral",
                         _list,
                     )
                 else:
                     return _list[0] + _list[1][:-1]
         elif len(_list) > 2:
-            print("Parsing error, int can't be more than two elements", _list)
+            print(
+                "[UFO Header Tool Warning] Parsing error, int can't be more than two elements",
+                _list,
+            )
         return "0.0"
 
     def extract_colour(_list):
@@ -570,7 +603,6 @@ def analyse_class_or_variable(_object):
         arg = ""
 
         for i in _list:
-            print("extract_vector2f", i)
             if i == "Vector2f":
                 vector_syntax_confirmed = True
             if i == "(":
@@ -593,7 +625,10 @@ def analyse_class_or_variable(_object):
             print("[UFO Header Tool Warning] Vector syntax not confirmed")
 
         if len(vec) < 2:
-            print("Parsing error, only one default value provided", _list)
+            print(
+                "[UFO Header Tool Warning] Parsing error, only one default value provided",
+                _list,
+            )
             return ["0.0", "0.0"]
 
         return vec
@@ -619,7 +654,6 @@ def analyse_class_or_variable(_object):
                         if item != "public":
                             inherits_from_classes[-1] += item
 
-        print("ufo_class_name", ufo_class_name, "extends", inherits_from_classes)
         return ClassObject(ufo_class_name, inherits_from_classes)
     else:
         data_type = ""
@@ -659,7 +693,9 @@ def analyse_class_or_variable(_object):
         elif data_type == "ufo::Colour":
             value = extract_colour(value)
         else:
-            print("Error, unknown datatype: '" + data_type + "'")
+            print(
+                "[UFO Header Tool Warning] Error, unknown datatype: '" + data_type + "'"
+            )
 
         return VariableObject(data_type, name, value)
 
@@ -699,7 +735,7 @@ def analyse_compound_object(_compound_object):
             mode = AWAITING_UFO_MACRO
             macro_part.append([])  # New ufo macro
             macro_part[-1].append(item)
-            print("Found UFO Macro:")
+
             continue
 
         if mode == AWAITING_UFO_MACRO:
@@ -719,12 +755,9 @@ def analyse_compound_object(_compound_object):
 
     class_or_variable = analyse_class_or_variable(variable_or_class_as_list)
 
-    print("macros:")
     for i in macro_part:
         class_or_variable.macros.append(extract_macro_arguments(i))
-    print("variable_or_class_as_list:", variable_or_class_as_list)
 
-    print("END")
     return class_or_variable
 
 
@@ -741,14 +774,14 @@ def analyse_scopes(_file_contents_as_list, _scope):
             declared_scope = analyse_compound_object(compound_object)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
-            # print(compound_object)
+
             compound_object.clear()
 
         if isinstance(item, list):
             declared_scope = analyse_compound_object(compound_object)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
-                # print(compound_object)
+
                 analyse_scopes(item, declared_scope)
 
             compound_object.clear()
@@ -935,5 +968,5 @@ def separate_with_separators(_file_contents: str) -> list:
     return words
 
 
-print("parse_ufo_macros_v_alpha.py")
+print("[Running UFO-Engine Header Tool] (parse_ufo_macros_v_alpha.py)")
 main()

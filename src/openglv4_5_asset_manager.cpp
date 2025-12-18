@@ -27,7 +27,9 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
     unsigned char* data = stbi_load(_path.c_str(), &width, &height, &number_of_channels, _alpha ? 4 : 3);
 
     texture.Generate(width, height, data);
-    
+
+    Console::PrintLine("[UFO-Engine] Loading texture of size", width, height);
+
     stbi_image_free(data);
 
     return texture;
@@ -49,7 +51,7 @@ ufo::Shader OpenGLv4_5_AssetManager::GetShader(const std::string& _name){
 ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path){
     ufo::Shader shader;
 
-    Console::PrintLine(_vertex_shader_path, _fragment_shader_path);
+    Console::PrintLine("[UFO-Engine] Loading shaders",_vertex_shader_path, _fragment_shader_path);
 
     shader.Compile(_vertex_shader_path, _fragment_shader_path, _geometry_shader_path);
 
@@ -57,7 +59,7 @@ ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shad
     if(_vertex_shader_path != nullptr) shader.AttachVertexShader(std::string(_vertex_shader_path));
     if(_fragment_shader_path != nullptr) shader.AttachFragmentShader(std::string(_fragment_shader_path));
     if(_geometry_shader_path != nullptr) shader.AttachGeometryShader(std::string(_geometry_shader_path));*/
-    
+
     return shader;
 }
 

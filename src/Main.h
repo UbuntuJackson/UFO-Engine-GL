@@ -17,7 +17,7 @@ public:
     SDL_GLContext open_gl_context;
     std::unique_ptr<Engine> engine = nullptr;
 
-Main(unsigned int _width, unsigned int _height);
+Main(unsigned int _width, unsigned int _height, const std::string& _window_title);
 
 void Start(std::unique_ptr<Engine> _custom_engine);
 void StartWithImGui(std::unique_ptr<Engine> _custom_engine);
@@ -36,7 +36,7 @@ int main(){
     ufo::Engine engine(800,600);
     ufo::PixelGameEngine pge(&engine);
     engine.graphics = std::make_unique<ufo::PixelGameEngineGraphics>(&engine, &pge);
-    
+
     if(pge.Construct(800,600,1,1,false,true,true)){
         pge.Start();
     }

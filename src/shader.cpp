@@ -12,7 +12,7 @@
 namespace ufo{
 
 Shader::Shader(){
-    
+
 }
 
 void
@@ -23,7 +23,7 @@ Shader::Initialise(){
 }
 
 void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path){
-    
+
     unsigned int vertex_shader;
     unsigned int fragment_shader;
     unsigned int geometry_shader;
@@ -49,7 +49,7 @@ void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
     CheckCompileErrors(fragment_shader, "FRAGMENT");
 
     shader_program_id = glCreateProgram();
-    Console::PrintLine("Shader program id:",shader_program_id);
+
     glAttachShader(shader_program_id, vertex_shader);
     glAttachShader(shader_program_id, fragment_shader);
     glLinkProgram(shader_program_id);
@@ -97,7 +97,7 @@ void Shader::AttachFragmentShader(std::string _path){
     std::string fragment_shader_source = File(_path).GetAsString();
 
     const char* fragment_shader_source_as_c_str = fragment_shader_source.c_str();
-    
+
     unsigned int fragment_shader;
     fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragment_shader, 1, &fragment_shader_source_as_c_str, NULL);
@@ -123,7 +123,7 @@ void Shader::AttachGeometryShader(std::string _path){
     std::string geometry_shader_source = File(_path).GetAsString();
 
     const char* geometry_shader_source_as_c_str = geometry_shader_source.c_str();
-    
+
     unsigned int geometry_shader;
     geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);
     glShaderSource(geometry_shader, 1, &geometry_shader_source_as_c_str, NULL);
@@ -143,7 +143,7 @@ void Shader::Use(){
     if(shader_program_id == 0) Console::PrintLine("Error, shader is uninitialised");
     glUseProgram(shader_program_id);
     GetGLError(__UFO_PRETTY_FUNCTION__, -1);
-    
+
 }
 
 void Shader::SetFloat(const char *_name, float _value, bool _use_shader){

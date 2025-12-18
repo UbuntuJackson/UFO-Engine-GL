@@ -119,8 +119,6 @@ public:
             std::string inherits = "";
             if(class_.at("extends")->AsArray().size() > 0) inherits = class_.at("extends")->AsArray()[0]->AsString();
 
-            Console::PrintLine("Inherits",inherits);
-
             auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
                             return std::move(_editor->spawnable_actor_map.at(_this->base)->Spawn(_editor));
                         },
@@ -129,8 +127,6 @@ public:
 
             for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
                 std::string macro_name = macro->AsMap().at("name")->AsString();
-
-                Console::PrintLine("Macro Name:",macro_name);
             }
 
             for(const auto& member : class_.at("members")->AsArray()){
@@ -144,8 +140,6 @@ public:
                     std::string macro_name = macro->AsMap().at("name")->AsString();
 
                     auto args = macro->AsMap().at("args")->AsArray();
-
-                    Console::PrintLine("Member macro",macro_name);
 
                     if(macro_name == "ufo_alias") alias = args[0]->AsString();
 

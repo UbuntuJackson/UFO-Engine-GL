@@ -16,7 +16,7 @@ Texture2D::Texture2D() :
     filter_mode_min{GL_NEAREST},
     filter_mode_max{GL_NEAREST}
 {
-    Console::PrintLine("Texture2D()",id);
+
 }
 
 void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned char* _data){
@@ -30,10 +30,10 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
     //This creates the texture
     glBindTexture(GL_TEXTURE_2D, id);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
-    
+
     glTexImage2D(
         GL_TEXTURE_2D,
-        
+
         //This is referred to as 'level' but I do not know what it means
         0,
 
@@ -42,13 +42,13 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
 
         width,
         height,
-        
+
         //Border?
         0,
 
         //
         image_format,
-        
+
         //
         GL_UNSIGNED_BYTE,
 
@@ -65,7 +65,7 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_mode_min);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
-    
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_mode_max);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 

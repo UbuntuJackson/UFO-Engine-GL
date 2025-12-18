@@ -22,7 +22,7 @@
 
 namespace ufo{
 
-Main::Main(unsigned int _width, unsigned int _height){
+Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title ){
 
     bool vsync_on = false;
 
@@ -51,7 +51,7 @@ Main::Main(unsigned int _width, unsigned int _height){
 
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    window = SDL_CreateWindow("Hello GL", _width, _height, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow(_window_title.c_str(), _width, _height, SDL_WINDOW_OPENGL);
 
     if(window == nullptr){
         Console::PrintLine("Window is null");
@@ -97,8 +97,6 @@ Main::Main(unsigned int _width, unsigned int _height){
 void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     engine = std::move(_custom_engine);
     engine->window = window;
-
-    Console::PrintLine("level memory address",engine->level.get());
 
     engine->Init(this);
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());

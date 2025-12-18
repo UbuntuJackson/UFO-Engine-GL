@@ -29,9 +29,9 @@ public:
                 addresses.erase(addresses.begin()+i);
                 break;
             }
-            
+
         }
-        
+
         addresses.push_back(_address);
         return _address;
     }

@@ -17,23 +17,20 @@ namespace ufo{
 
 Engine::Engine()
 {
-    
+
 }
 
 void
 Engine::Init(Main* _main){
     SDL_GetWindowSize(_main->window, &width, &height);
 
-    Console::PrintLine("Init width, height =",width, height);
-
     text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
     level->actors.reserve(50);
     level->engine = this;
-    Console::PrintLine("Space for number of actors:", level->actors.size());
 
     if(!File::Exists("../loaded_assets.json")){
-        Console::PrintLine("No loaded_assets.json found");
+        Console::PrintLine("[UFO-Engine] No loaded_assets.json found");
     }
     else{
         JsonDictionary d = JsonDictionary::Read("../loaded_assets.json");
@@ -48,7 +45,7 @@ Engine::Init(Main* _main){
 }
 
 Engine::~Engine(){
-    Console::PrintLine("ufo::Application::~Application() ran");
+    Console::PrintLine("[UFO-Engine] ufo::Application::~Application()");
 }
 
 struct BrushRectangle{
@@ -60,14 +57,14 @@ struct BrushRectangle{
 };
 
 BrushRectangle CutOutRectangle(BrushRectangle _borders, BrushRectangle _brush){
-    
+
     //check if all  points in rectangle
-    
+
     int new_x = _brush.x;
     int new_y = _brush.y;
     int new_w = _brush.w;
     int new_h = _brush.h;
-    
+
     if(_brush.x < 0){
         new_w = _brush.w + _brush.x;
         new_x = 0;
@@ -86,9 +83,9 @@ BrushRectangle CutOutRectangle(BrushRectangle _borders, BrushRectangle _brush){
     if(new_w < 0 || new_h < 0){
         return BrushRectangle{new_x, new_y, new_w, new_h, false};
     }
-    
+
     return BrushRectangle{new_x, new_y, new_w, new_h};
-    
+
 }
 
 void Engine::EditorUpdate(){
@@ -132,12 +129,12 @@ void Engine::BrushTest(){
     if(mouse.is_left_button_held){
 
         auto& texture = asset_manager.textures.at("face");
-    
+
         int brush_width = 64;
         int brush_height = 64;
 
         BrushRectangle br = CutOutRectangle(BrushRectangle{0,0,int(texture.width), int(texture.height)}, BrushRectangle{int(mouse.GetPosition().x), int(mouse.GetPosition().y), brush_width, brush_height});
-        
+
         if(br.is_on_canvas){
 
             unsigned int new_data[br.h][br.w];
@@ -147,10 +144,10 @@ void Engine::BrushTest(){
                     new_data[y][x] = 0xFF0000FF;
                 }
             }
-            
+
             glTexSubImage2D(GL_TEXTURE_2D, 0, br.x, br.y, br.w, br.h, GL_RGBA, GL_UNSIGNED_BYTE, (void*)new_data);
         }
-        
+
     }
 
     unsigned int pixel_data[4*1] = {0,0,0,0};
