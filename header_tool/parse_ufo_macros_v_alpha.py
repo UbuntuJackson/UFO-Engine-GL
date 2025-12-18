@@ -27,7 +27,7 @@ def make_generated_file(_path, _classes):
     class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
     class_string += "    public:\n"
 
-    class_string += "std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(FromJsonInGame(_json));}"
+    class_string += "    std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(FromJsonInGame(_json));}\n"
 
     # Parent class has the generator_map now.
     # generator_map = "    std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;\n"

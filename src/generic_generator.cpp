@@ -72,7 +72,7 @@ void GenericGenerator::Initialise(){
 }
 
 std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json){
-	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
+	if(factory_map.count(_json->map.at("class_name")->AsString())){
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
 
 		instance->class_name = _json->map.at("class_name")->AsString();
