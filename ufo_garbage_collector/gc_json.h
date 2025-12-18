@@ -1,8 +1,10 @@
 #pragma once
 #include "engine_memory.h"
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <vector>
+#include <exception>
 #include "../external/cJSON.h"
 #include "../file/file.h"
 #include "../json/json.h"
@@ -14,10 +16,10 @@ namespace gc{
 class Json : public gc::Object{
 public:
 
-    virtual float AsFloat(){throw;}
-    virtual std::string AsString(){throw;}
-    virtual std::map<std::string,gc::Json*> AsMap(){throw;}
-    virtual std::vector<gc::Json*> AsArray(){throw;}
+    virtual float AsFloat(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not float");}
+    virtual std::string AsString(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not String");}
+    virtual std::map<std::string,gc::Json*> AsMap(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Map");}
+    virtual std::vector<gc::Json*> AsArray(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Array");}
     virtual bool IsNull(){return true;}
 
     ~Json(){
@@ -96,7 +98,7 @@ public:
         alive = true;
         for(const auto& [k,v] : map){
             v->Mark();
-            
+
         }
     }
 
@@ -115,11 +117,13 @@ public:
 
         char* json_as_string = cJSON_Print(json_obj);
 
+        std::string string_to_return = json_as_string;
+
         delete json_as_string;
 
         cJSON_Delete(json_obj);
-        
-        return std::string(json_as_string);
+
+        return std::string(string_to_return);
     }
 
     void Write(const std::string& _path){

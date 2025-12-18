@@ -61,18 +61,18 @@ inline void MainMenuBar(ProgramState* _program){
 
             if(ImGui::MenuItem("New Level/Actor File")){
                 _program->tabs.push_back(std::make_unique<LevelEditorTab>(_program, ""));
-                
-                
+
+
             }
 
             if(ImGui::MenuItem("Save File", "CTRL+S")){ //Shortcut does not work and I have no idea why
                 if(_program->active_tab) _program->active_tab->OnSave(_program);
-                
+
             }
 
             if(ImGui::MenuItem("Refresh")){ //Shortcut does not work and I have no idea why
                 _program->SearchWorkingDirectoryForExposedActorClasses();
-                
+
             }
 
             ImGui::EndMenu();
@@ -111,7 +111,7 @@ inline void MainMenuBar(ProgramState* _program){
                 std::thread t(UFOProjectManager::Build, _program);
 
                 t.detach();
-                
+
             }
             ImGui::EndMenu();
         }
@@ -122,7 +122,7 @@ inline void MainMenuBar(ProgramState* _program){
                 _program->tabs.push_back(std::make_unique<AssetBrowserTab>("Asset Browser"));
 
             }
-            
+
             ImGui::EndMenu();
         }
 
@@ -163,7 +163,7 @@ inline void MainMenuBar(ProgramState* _program){
         ImGui::EndMainMenuBar();
     }
     //ImGui::End();
-    
+
 }
 
 };

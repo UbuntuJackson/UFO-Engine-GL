@@ -4,6 +4,7 @@
 #include "../utils/console.h"
 #include "../glad/include/glad/glad.h"
 #include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_video.h>
 #include "../file/file.h"
 #include "../src/openglv4_5_asset_manager.h"
 #include "../src/engine.h"
@@ -57,6 +58,8 @@ Main::Main(unsigned int _width, unsigned int _height){
         exit(2);
     }
 
+    SDL_SetWindowResizable(window, true);
+
     open_gl_context = SDL_GL_CreateContext(window);
     if(open_gl_context == nullptr){
         Console::PrintLine("Failed to create context");
@@ -93,6 +96,7 @@ Main::Main(unsigned int _width, unsigned int _height){
 
 void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     engine = std::move(_custom_engine);
+    engine->window = window;
 
     Console::PrintLine("level memory address",engine->level.get());
 
@@ -100,7 +104,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
 
     engine->graphics->CreateFrameBuffer();
-    
+
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
     engine->level->Load();
@@ -154,7 +158,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     // - Read 'docs/FONTS.md' for more instructions and details. If you like the default font but want it to scale better, consider using the 'ProggyVector' from the same author!
     // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
     // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
-    
+
     //style.FontSizeBase = 20.0f;
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("/etc/alternatives/fonts-japanese-mincho.ttf");
@@ -196,7 +200,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
             engine->keyboard.CheckEvents(event);
 
             engine->mouse.CheckEvents(event);
-            
+
         }
 
         /*ForImGUI*/
@@ -267,7 +271,7 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
             engine->keyboard.CheckEvents(event);
 
             engine->mouse.CheckEvents(event);
-            
+
         }
 
         //Test start

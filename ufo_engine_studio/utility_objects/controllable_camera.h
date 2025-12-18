@@ -9,7 +9,9 @@ public:
 
     ufo::Controls* controls = nullptr;
 
-    ControllableCamera(Vector2f _local_position) : Camera(_local_position){}
+    ControllableCamera(Vector2f _local_position) : Camera(_local_position){
+        class_name = "ControllableCamera";
+    }
 
     void OnSpawn(){
         Camera::OnSpawn();

@@ -8,6 +8,8 @@
 #include "level.h"
 #include "control_settings.h"
 #include "text_rendering.h"
+#include "generic_generator.h"
+#include <SDL3/SDL.h>
 
 namespace ufo{
 
@@ -21,7 +23,9 @@ class Main;
 class Engine{
 public:
     bool quit = false;
-    
+
+    std::unique_ptr<GenericGenerator> actor_generator = std::make_unique<GenericGenerator>();
+
     //This is for when loading default assets.
     //The engine utilises the relative path to the executable location
     std::string engine_path = "../UFO-Engine";
@@ -46,11 +50,13 @@ public:
     ControlSettings control_settings;
     Mouse mouse;
 
+    SDL_Window* window = nullptr;
+
     Engine();
     void Init(Main* _main);
 
     virtual ~Engine();
-    
+
     void Update();
     void EditorUpdate();
     void UpdatePixelGameEngine(float _delta_time);

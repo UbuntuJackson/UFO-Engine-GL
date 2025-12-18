@@ -1,0 +1,927 @@
+import json
+import os
+import pprint
+import sys
+
+
+def make_generated_file(_path, _classes):
+    includes = "#include <functional>\n"
+    includes += "#include <memory>\n\n"
+    includes += '#include "UFO-Engine-GL/ufo_garbage_collector/gc_json.h"\n'
+    includes += '#include "UFO-Engine-GL/src/generic_generator.h"\n'
+    includes += '#include "UFO-Engine-GL/src/actor.h"\n'
+
+    header_files = []
+
+    for cl in _classes:
+        if not cl["class"]["header_file"] in header_files:
+            header_files.append(cl["class"]["header_file"])
+
+    for i in header_files:
+        includes += '#include "' + i + '"\n'
+
+    includes += "\n"
+
+    namespace_string = "namespace Generated{\n\n"
+
+    class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
+
+    # Parent class has the generator_map now.
+    # generator_map = "    std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;\n"
+
+    function_ = "    void Initialise(){\n"
+
+    for cl in _classes:
+        function_ += "        factory_map.emplace(\n"
+
+        function_ += (
+            '            "'
+            + cl["class"]["name"]
+            + '",\n'
+            + "            [](ufo::gc::JsonMap* _json){\n"
+        )
+
+        function_ += '                float _x = _json->map.at("x")->AsFloat();\n'
+        function_ += '                float _y = _json->map.at("y")->AsFloat();\n'
+
+        function_ += (
+            "                auto instance = std::make_unique<"
+            + cl["class"]["name"]
+            + ">(Vector2f(_x, _y));\n"
+        )
+
+        for member in cl["class"]["members"]:
+            if member[1]["data_type"] == "int":
+                function_ += (
+                    "                instance->"
+                    + member[1]["name"]
+                    + ' = (int)(_json->map.at("x")->AsFloat());\n'
+                )
+            if member[1]["data_type"] == "float":
+                function_ += (
+                    "                instance->"
+                    + member[1]["name"]
+                    + ' = _json->map.at("x")->AsFloat();\n'
+                )
+            if member[1]["data_type"] == "Vector2f":
+                pass
+            if member[1]["data_type"] == "string":
+                function_ += (
+                    "                instance->"
+                    + member[1]["name"]
+                    + ' = _json->map.at("x")->AsString();\n'
+                )
+
+        function_ += "                return std::move(instance);\n"
+
+        function_ += "            }\n        );\n"
+
+    function_ += "    }\n"
+
+    # This functionality is now done in parent class
+    # function_ += "    std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(factory_map.at(_json->map.at(\"name\")->AsString())(_json));}"
+
+    function_ += "};\n\n"
+    function_ += "}\n"
+
+    f = open(_path + "/generated.h", "w")
+    f.write(includes + namespace_string + class_string + function_)
+    f.close()
+
+
+def main():
+    arg_path = sys.argv[1]
+    grand_class_list = []
+    search_folders_for_ufo_classes(grand_class_list, arg_path, "")
+
+    classes_as_dictionary = {"contents": grand_class_list}
+
+    make_generated_file(arg_path, grand_class_list)
+
+    structured_classes = json.dumps(classes_as_dictionary, indent=4)
+    f_structured_classes = open(arg_path + "/structured_classes.json", "w")
+    f_structured_classes.write(structured_classes)
+    f_structured_classes.close()
+
+
+def search_folders_for_ufo_classes(_grand_class_list, _working_directory, _local_path):
+    for directory in os.listdir(_working_directory + _local_path):
+        if directory in ["UFO-Engine", "build"]:
+            continue
+
+        print(_working_directory + _local_path + "/" + directory)
+        if os.path.isdir(_working_directory + "/" + _local_path + "/" + directory):
+            search_folders_for_ufo_classes(
+                _grand_class_list, _working_directory, _local_path + "/" + directory
+            )
+        if os.path.isfile(_working_directory + "/" + _local_path + "/" + directory):
+            extension = directory[directory.find(".") : len(directory)]
+            # print(extension)
+            if extension in [".ufo.hpp", ".ufo.h"]:
+                local_classes = search_file(
+                    _working_directory + "/" + _local_path + "/" + directory
+                )
+                _grand_class_list += local_classes
+
+
+def search_file(_path):
+    # f = open("UFO-Engine/header_tool/pingu.h")
+    f = open(_path)
+
+    file_contents = f.read()
+
+    segmented_file_contents = separate_with_separators(file_contents)
+
+    semented_file_contents_cleaned = clean_up_colons(segmented_file_contents)
+
+    segmented_file_contents_cleaned_up_multi_line_comments = (
+        clean_up_multi_line_comments(semented_file_contents_cleaned)
+    )
+
+    segmented_file_contents_cleaned_up_single_line_comments = (
+        clean_up_single_line_comments(
+            segmented_file_contents_cleaned_up_multi_line_comments
+        )
+    )
+
+    segmented_file_contents_single_line_comments_processed = (
+        process_single_line_comments(
+            segmented_file_contents_cleaned_up_single_line_comments
+        )
+    )
+
+    segmented_file_contents_multi_line_comments_processed = process_multi_line_comments(
+        segmented_file_contents_single_line_comments_processed
+    )
+
+    segmented_file_contents_cleaned_up_floating_point_numbers = (
+        clean_up_floating_point_numbers(
+            segmented_file_contents_multi_line_comments_processed
+        )
+    )
+
+    space_less_file_contents = remove_spaces(
+        segmented_file_contents_cleaned_up_floating_point_numbers
+    )
+
+    includes = detect_includes(space_less_file_contents)
+
+    f.close()
+
+    # for i in space_less_file_contents:
+    #    print("'" + i + "'")
+
+    # for i in includes:
+    #    print("'" + i + "'")
+
+    scopes = detect_scopes(space_less_file_contents, 0)
+
+    pprint.pprint(scopes, indent=4)
+
+    global_scope = GlobalScope()
+
+    analyse_scopes(scopes, global_scope)
+
+    global_scope.print_tree()
+
+    dictionary = []
+
+    global_scope.to_dictionary(dictionary)
+
+    pprint.pprint(dictionary)
+
+    for i in dictionary:
+        i["class"]["header_file"] = _path
+
+    return dictionary
+
+
+def process_multi_line_comments(_file_contents_as_list):
+    contents_without_comments = []
+
+    inside_multi_line_comment = False
+
+    for item in _file_contents_as_list:
+        if not inside_multi_line_comment:
+            if item == "/*":
+                inside_multi_line_comment = True
+                continue
+
+        else:
+            if item == "*/":
+                inside_multi_line_comment = False
+            continue
+
+        contents_without_comments.append(item)
+
+    return contents_without_comments
+
+
+def process_single_line_comments(_file_contents_as_list):
+    contents_without_comments = []
+
+    inside_single_line_comment = False
+
+    for item in _file_contents_as_list:
+        if not inside_single_line_comment:
+            if item == "//":
+                inside_single_line_comment = True
+                continue
+
+        else:
+            if item == "\n":
+                inside_single_line_comment = False
+            continue
+
+        contents_without_comments.append(item)
+
+    return contents_without_comments
+
+
+def detect_includes(_file_contents_as_clean_list):
+    includes = []
+
+    for index in range(len(_file_contents_as_clean_list)):
+        item = _file_contents_as_clean_list[index]
+
+        if item == "#":
+            if not (index + 1 >= len(_file_contents_as_clean_list)):
+                if _file_contents_as_clean_list[index + 1] == "include":
+                    if not (index + 3 >= len(_file_contents_as_clean_list)):
+                        # Taking a shortcut here checking directly for middle item
+                        if _file_contents_as_clean_list[index + 3] != '"':
+                            includes.append(_file_contents_as_clean_list[index + 3])
+
+    return includes
+
+
+def detect_scopes(_file_contents_as_clean_list, _depth):
+    squiggly_bracket_count = 0
+
+    complete_scope = []
+    scope_contents_temp = []
+
+    for i in _file_contents_as_clean_list:
+        if i == "{":
+            should_continue = False
+            if squiggly_bracket_count == 0:
+                # print(_depth * "    " + "Scope start")
+                should_continue = True
+
+            squiggly_bracket_count += 1
+            if should_continue:
+                continue
+
+        if i == "}":
+            squiggly_bracket_count -= 1
+            if squiggly_bracket_count == 0:
+                # for j in scope_contents:
+                #    print(_depth * "    " + "'" + j + "'")
+                complete_scope.append(detect_scopes(scope_contents_temp, _depth + 1))
+
+                # print(_depth * "    " + "Scope end")
+                scope_contents_temp.clear()
+                continue
+
+        if squiggly_bracket_count != 0:
+            scope_contents_temp.append(i)
+        else:
+            complete_scope.append(i)
+            # print(_depth * "    " + "deep content '" + i + "'")
+
+    return complete_scope
+
+
+class Object:
+    pass
+
+
+class GlobalScope:
+    def __init__(self) -> None:
+        self.scopes = []
+
+    def print_tree(self):
+        print("In GlobalScope:")
+        for i in self.scopes:
+            i.print_tree(1)
+
+    def to_dictionary(self, _classes):
+        for i in self.scopes:
+            i.to_dictionary(_classes, "")
+
+
+class NamespaceObject:
+    def __init__(self, _name) -> None:
+        self.name = _name
+        self.scopes = []
+        self.macros = []
+
+    def print_tree(self, _depth):
+        print(_depth * "    " + "namespace", self.name)
+        for i in self.scopes:
+            i.print_tree(_depth + 1)
+
+    def to_dictionary(self, _classes, _parent_namespace):
+        for i in self.scopes:
+            if _parent_namespace == "":
+                i.to_dictionary(_classes, self.name)
+            else:
+                i.to_dictionary(_classes, _parent_namespace + "::" + self.name)
+
+
+class ClassObject:
+    def __init__(self, _name, _extends) -> None:
+        self.name = _name
+        self.extends = _extends
+        self.scopes = []
+        self.macros = []
+
+    def print_tree(self, _depth):
+        print(_depth * "    " + "class", self.name, self.extends)
+        for i in self.macros:
+            print(_depth * "    " + "  " + i.name, i.args)
+        for i in self.scopes:
+            i.print_tree(_depth + 1)
+
+    def to_dictionary(self, _classes, _parent_namespace):
+        class_ = {"macros": [], "class": {}}
+
+        class_["macros"] = []
+        for i in self.macros:
+            class_["macros"].append({"name": i.name, "args": i.args})
+
+        class_["class"]["name"] = _parent_namespace + "::" + self.name
+        class_["class"]["extends"] = self.extends
+        class_["class"]["members"] = []
+        for i in self.scopes:
+            class_["class"]["members"].append(i.to_dictionary())
+
+        _classes.append(class_)
+
+
+class VariableObject:
+    def __init__(self, _data_type, _name, _value) -> None:
+        self.data_type = _data_type
+        self.name = _name
+        self.value = _value
+        self.scopes = []  # Not used
+        self.macros = []
+
+    def print_tree(self, _depth):
+        if self.data_type in ["std::string", "int"]:
+            print(
+                _depth * "    " + "variable",
+                self.data_type,
+                self.name,
+                "'" + self.value + "'",
+            )
+        else:
+            print(_depth * "    " + "variable", self.data_type, self.name, self.value)
+        for i in self.macros:
+            print(_depth * "    " + "  " + i.name, i.args)
+
+    def to_dictionary(self):
+        variable_array = [[], {}]
+        for i in self.macros:
+            variable_array[0].append({"name": i.name, "args": i.args})
+        variable_array[1]["name"] = self.name
+        variable_array[1]["data_type"] = self.data_type
+        variable_array[1]["variable_value"] = self.value
+        return variable_array
+
+
+def is_float_litteral(_f):
+    digits_before_period = ""
+    digits_after_period = ""
+    number_of_periods = 0
+
+    if len(_f) < 3:
+        return False
+
+    if _f[-1] != "f":
+        return False
+
+    for index in range(len(_f) - 1):
+        item = _f[index]
+        if item == ".":
+            number_of_periods += 1
+            continue
+        if number_of_periods > 0:
+            digits_before_period += item
+        else:
+            digits_after_period += item
+
+        if not item.isnumeric():
+            return False
+
+    if number_of_periods > 1 or number_of_periods == 0:
+        return False
+
+    if digits_after_period == "" and digits_before_period == "":
+        return False
+
+    return True
+
+
+def analyse_namespace(_object):
+    ufo_namespace_name = ""
+    found_namespace = False
+
+    for index in range(0, len(_object)):
+        item = _object[index]
+        if item == "namespace":
+            found_namespace = True
+            continue
+        if found_namespace:
+            ufo_namespace_name += item
+
+    if not found_namespace:
+        return None
+    else:
+        return NamespaceObject(ufo_namespace_name)
+
+    print("Found namespace", ufo_namespace_name)
+
+
+class Macro:
+    def __init__(self, _name, _args) -> None:
+        self.name = _name
+        self.args = _args
+
+
+def extract_macro_arguments(_list):
+    name = _list[0]
+    print(name)
+    args = []
+    if len(_list) > 1:
+        args.append("")
+
+    for i in range(1, len(_list)):
+        item = _list[i]
+
+        if item == ",":
+            args.append("")
+            continue
+
+        if item == '"':
+            continue
+
+        args[-1] += item
+
+    return Macro(name, args)
+
+
+def analyse_class_or_variable(_object):
+    def extract_string(_list):
+        if len(_list) > 3:
+            print("Parsing error, string", _object, "contains more than 3 elements")
+        elif len(_list) < 2:
+            print("Parsing error, string", _object, "less than 2 elements")
+        else:
+            if _list[0] == '"' and _list[-1] == '"':
+                if len(_list) == 2:
+                    return ""
+                if len(_list) == 3:
+                    return _list[1]
+
+            else:
+                print("Parsing error, odd tokens:", _object)
+
+        return ""
+
+    def extract_int(_list):
+        if len(_list) == 0:
+            return "0"
+        elif len(_list) == 1:
+            if not _list[0].isnumeric():
+                print("Parsing error, parameter has to be numeric", _list)
+            else:
+                return _list[0]
+        elif len(_list) == 2:
+            if _list[0] != "-":
+                print("Parsing error, weird prefix", _list)
+            else:
+                if not _list[1].isnumeric():
+                    print("Parsing error, second parameter has to be numeric", _list)
+                else:
+                    return _list[0] + _list[1]
+        elif len(_list) > 2:
+            print("Parsing error, int can't be more than two elements", _list)
+        return "0"
+
+    def extract_float(_list):
+        print("extract_float", _list)
+        if len(_list) == 0:
+            return "0.0"
+        elif len(_list) == 1:
+            if not is_float_litteral(_list[0]):
+                print("Parsing error, parameter has to be float litteral", _list)
+            else:
+                return _list[0][:-1]
+        elif len(_list) == 2:
+            if _list[0] != "-":
+                print("Parsing error, weird prefix", _list)
+            else:
+                if not is_float_litteral(_list[1]):
+                    print(
+                        "Parsing error, second parameter has to be float litteral",
+                        _list,
+                    )
+                else:
+                    return _list[0] + _list[1][:-1]
+        elif len(_list) > 2:
+            print("Parsing error, int can't be more than two elements", _list)
+        return "0.0"
+
+    def extract_colour(_list):
+        colour = []
+
+        for i in _list:
+            if i.isnumeric():
+                colour.append(i)
+
+        if len(colour) < 3:
+            return [0, 0, 0, 0]
+        if len(colour) == 3:
+            return colour + [255]
+
+        return colour
+
+    def extract_vector2f(_list):
+        vec = []
+
+        vector_syntax_confirmed = False
+        open_parantheses = False
+        close_parantheses = False
+        parantheses_syntax_confirmed = False
+
+        arg = ""
+
+        for i in _list:
+            print("extract_vector2f", i)
+            if i == "Vector2f":
+                vector_syntax_confirmed = True
+            if i == "(":
+                open_parantheses = True
+            if i == ")":
+                close_parantheses = True
+                vec.append(extract_float(arg))
+            if i not in ["Vector2f", "(", ")", ","]:
+                arg += i
+
+            if i == ",":
+                vec.append(extract_float(arg))
+                arg = ""
+
+        parantheses_syntax_confirmed = open_parantheses and close_parantheses
+
+        if not parantheses_syntax_confirmed:
+            print("[UFO Header Tool Warning] Parantheses syntax not confirmed")
+        if not vector_syntax_confirmed:
+            print("[UFO Header Tool Warning] Vector syntax not confirmed")
+
+        if len(vec) < 2:
+            print("Parsing error, only one default value provided", _list)
+            return ["0.0", "0.0"]
+
+        return vec
+
+    if _object[0] == "class":
+        ufo_class_name = ""
+        inheritence = False
+        inherits_from_classes = []
+
+        for index in range(1, len(_object)):
+            item = _object[index]
+
+            if item == ":":
+                inheritence = True
+                inherits_from_classes.append("")
+            else:
+                if not inheritence:
+                    ufo_class_name += item
+                else:
+                    if item == ",":
+                        inherits_from_classes.append("")
+                    else:
+                        if item != "public":
+                            inherits_from_classes[-1] += item
+
+        print("ufo_class_name", ufo_class_name, "extends", inherits_from_classes)
+        return ClassObject(ufo_class_name, inherits_from_classes)
+    else:
+        data_type = ""
+        name = ""
+        value = []
+        for index in range(0, len(_object)):
+            item = _object[index]
+            if item == "=":
+                continue
+            next_item = None
+            # If there still is a next item
+            if index + 1 < len(_object):
+                next_item = _object[index + 1]
+            # If there is no default value
+            elif "=" not in _object:
+                name = item
+                break
+
+            if next_item == "=":
+                name = item
+                continue
+
+            if name == "":
+                data_type += item
+
+            if name != "" and data_type != "":
+                value.append(item)
+
+        if data_type == "std::string":
+            value = extract_string(value)
+        elif data_type == "int":
+            value = extract_int(value)
+        elif data_type == "float":
+            value = extract_float(value)
+        elif data_type == "Vector2f":
+            value = extract_vector2f(value)
+        elif data_type == "ufo::Colour":
+            value = extract_colour(value)
+        else:
+            print("Error, unknown datatype: '" + data_type + "'")
+
+        return VariableObject(data_type, name, value)
+
+    return None
+
+
+def analyse_compound_object(_compound_object):
+    AWAITING_NONE = -1
+    AWAITING_UFO_MACRO = 1
+    AWAITING_CLASS_NAMESPACE_OR_VARIABLE = 0
+
+    mode = AWAITING_NONE
+
+    macro_part = []
+    variable_or_class_as_list = []
+
+    # print("compound_object", _compound_object)
+
+    is_namespace = analyse_namespace(_compound_object)
+    if is_namespace is not None:
+        return is_namespace
+
+    for index in range(len(_compound_object)):
+        item = _compound_object[index]
+
+        if item in [
+            "ufo_alias",
+            "ufo_class",
+            "ufo_category",
+            "ufo_variable",
+            "ufo_int_range",
+            "ufo_enum",
+            "ufo_comment",
+            "ufo_int_slider",
+            "ufo_radio_button",
+        ]:
+            mode = AWAITING_UFO_MACRO
+            macro_part.append([])  # New ufo macro
+            macro_part[-1].append(item)
+            print("Found UFO Macro:")
+            continue
+
+        if mode == AWAITING_UFO_MACRO:
+            if item not in ["(", ")"]:
+                macro_part[-1].append(item)
+
+            if item in [")"]:
+                mode = AWAITING_CLASS_NAMESPACE_OR_VARIABLE
+
+            continue
+
+        if mode == AWAITING_CLASS_NAMESPACE_OR_VARIABLE:
+            variable_or_class_as_list.append(item)
+
+    if len(macro_part) == 0:
+        return None
+
+    class_or_variable = analyse_class_or_variable(variable_or_class_as_list)
+
+    print("macros:")
+    for i in macro_part:
+        class_or_variable.macros.append(extract_macro_arguments(i))
+    print("variable_or_class_as_list:", variable_or_class_as_list)
+
+    print("END")
+    return class_or_variable
+
+
+def analyse_scopes(_file_contents_as_list, _scope):
+    separators = [";"]
+    gibberish = ["\n", ";"]
+
+    compound_object = []
+
+    for index in range(len(_file_contents_as_list)):
+        item = _file_contents_as_list[index]
+
+        if item in separators:
+            declared_scope = analyse_compound_object(compound_object)
+            if declared_scope is not None:
+                _scope.scopes.append(declared_scope)
+            # print(compound_object)
+            compound_object.clear()
+
+        if isinstance(item, list):
+            declared_scope = analyse_compound_object(compound_object)
+            if declared_scope is not None:
+                _scope.scopes.append(declared_scope)
+                # print(compound_object)
+                analyse_scopes(item, declared_scope)
+
+            compound_object.clear()
+        else:
+            if item not in gibberish:
+                compound_object.append(item)
+
+
+def detect_namespaces():
+    pass
+
+
+def detect_classes():
+    pass
+
+
+def remove_spaces(_file_contents_as_clean_list):
+    space_less = []
+
+    for i in _file_contents_as_clean_list:
+        if i != " ":
+            space_less.append(i)
+
+    return space_less
+
+
+def is_numeric_decimal_part(_f):
+    if len(_f) > 0:
+        if _f[-1] == "f":
+            if _f[0:-1].isnumeric():
+                return True
+            else:
+                return False
+    else:
+        return False
+
+
+def clean_up_floating_point_numbers(_file_contents_as_list):
+    compound_item = ""
+
+    last_item = None
+
+    separators = "={}(); ,+-*/%:\n#<>"
+
+    for index in range(len(_file_contents_as_list)):
+        item = _file_contents_as_list[index]
+
+        if item == "." and (last_item is not None) and last_item.isnumeric():
+            compound_item += last_item + "."
+            _file_contents_as_list[index - 1] = ""
+            _file_contents_as_list[index] = ""
+
+        if (
+            (last_item is not None)
+            and last_item == "."
+            and ((item.isnumeric()) or is_numeric_decimal_part(item))
+        ):
+            compound_item += item
+            _file_contents_as_list[index - 1] = ""
+            _file_contents_as_list[index] = ""
+
+        if item is not None and item in separators and compound_item != "":
+            _file_contents_as_list[index - 1] = compound_item
+            compound_item = ""
+
+        last_item = item
+
+    clean_list = []
+    for i in _file_contents_as_list:
+        if i != "":
+            clean_list.append(i)
+
+    return clean_list
+
+
+def clean_up_multi_line_comments(_file_contents):
+    former_item = None
+    for index in range(len(_file_contents)):
+        item = _file_contents[index]
+
+        if former_item == "/" and item == "*":
+            _file_contents[index - 1] = "/*"
+            _file_contents[index] = ""
+        # late phase
+
+        if former_item == "*" and item == "/":
+            _file_contents[index - 1] = "*/"
+            _file_contents[index] = ""
+
+        former_item = item
+
+    clean_list = []
+    for i in _file_contents:
+        if i != "":
+            clean_list.append(i)
+
+    return clean_list
+
+
+def clean_up_single_line_comments(_file_contents):
+    former_item = None
+    for index in range(len(_file_contents)):
+        item = _file_contents[index]
+
+        if former_item == "/" and item == "/":
+            _file_contents[index - 1] = "//"
+            _file_contents[index] = ""
+        # late phase
+
+        former_item = item
+
+    clean_list = []
+    for i in _file_contents:
+        if i != "":
+            clean_list.append(i)
+
+    return clean_list
+
+
+def clean_up_colons(_file_contents):
+    former_item = None
+    for index in range(len(_file_contents)):
+        item = _file_contents[index]
+
+        if former_item == ":" and item == ":":
+            _file_contents[index - 1] = "::"
+            _file_contents[index] = ""
+        # late phase
+        former_item = item
+
+    clean_list = []
+    for i in _file_contents:
+        if i != "":
+            clean_list.append(i)
+
+    return clean_list
+
+
+# This separates a c++ file in segments utilising a few characters as a guide
+def separate_with_separators(_file_contents: str) -> list:
+    separators = "={}(); ,+-*/%:\n#<>."
+
+    words = []
+    word = ""
+
+    inside_string = False
+
+    for i in _file_contents:
+        # If stumble upon string-like object
+
+        if inside_string and i != '"':
+            word += i
+
+        if i == '"':
+            if not inside_string:
+                inside_string = True
+                word = ""
+                words += i
+                continue
+            else:
+                words.append(word)
+                words += i
+                word = ""
+                inside_string = False
+                continue
+
+        if inside_string:
+            continue
+
+        if i in separators:
+            if word != "":
+                words.append(word)
+
+            words.append(i)
+            word = ""
+            continue
+
+        word += i
+
+        if i in separators:
+            words.append(word)
+            word = ""
+
+    return words
+
+
+print("parse_ufo_macros_v_alpha.py")
+main()

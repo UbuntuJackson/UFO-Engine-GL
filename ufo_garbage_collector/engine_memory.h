@@ -9,43 +9,6 @@ namespace ufo{
 
 namespace gc{
 
-class Object;
-
-template<typename tType>
-class Ref{
-public:
-    Ref() = default;
-
-    Ref(tType* _ptr, Object* _home_object){
-        ptr = _ptr;
-        home_object = _home_object;
-    }
-
-    Object* home_object = nullptr;
-
-    Ref& operator=(const Ref& _other){
-        if(this != &_other){
-            _other.home_object->Decrement(ptr);
-            home_object = _other.home_object;
-            
-            ptr = _other.ptr;
-            
-        }
-        return *this;
-    }
-
-    tType* operator->(){
-        return ptr;
-    }
-
-    tType* get(){
-        return ptr;
-    }
-private:
-
-    tType* ptr = nullptr;
-};
-
 class Object{
 public:
 friend GarbageCollector;
@@ -77,12 +40,6 @@ protected:
         return _address;
     }
 
-    template<typename tType>
-    Ref<tType> MakeRef(tType* _address){
-        addresses.push_back(_address);
-        
-        return Ref<tType>(_address, this);
-    }
 public:
 
     void Decrement(Object* _variable){
@@ -92,12 +49,12 @@ public:
                 addresses.erase(addresses.begin()+i);
                 break;
             }
-            
+
         }
     }
 
     Object(){
-        
+
     }
 
     template<typename tTypeA, typename tTypeB>
@@ -107,9 +64,9 @@ public:
                 addresses.erase(addresses.begin()+i);
                 break;
             }
-            
+
         }
-        
+
         addresses.push_back(_address);
         return _address;
     }
@@ -158,8 +115,3 @@ public:
 }
 
 }
-
-#define INVOKE_GC()\
-    void OnInvokeGarbageCollector(){\
-        gc.Collect();\
-    }

@@ -43,6 +43,8 @@ Engine::Init(Main* _main){
     }
 
     asset_manager.LoadTexture(engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+
+    actor_generator->Initialise();
 }
 
 Engine::~Engine(){

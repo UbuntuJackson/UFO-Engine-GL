@@ -15,6 +15,8 @@ public:
 
     int id = 0;
 
+    Editor* editor = nullptr;
+
     static inline int id_counter = 0;
 
     std::string name;
@@ -22,7 +24,9 @@ public:
     bool opened = true;
     bool is_edited = false;
     std::string name_and_imgui_id;
-    Tab();
+    Tab(Editor* _editor);
+
+    virtual void Refresh();
 
     virtual void Update(Editor* _program_state, float _delta_time);
     virtual bool DetermineIfEdited();

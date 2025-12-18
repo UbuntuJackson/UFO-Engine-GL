@@ -1,6 +1,5 @@
 #include <level.h>
 #include <string>
-#include <memory>
 #include <camera.h>
 #include "file_node.h"
 #include "../imgui/imgui.h"
@@ -8,21 +7,21 @@
 #include "file_node.h"
 #include "tab.h"
 #include "editor.h"
-#include "level_editor_tab_gl.h"
-#include "controllable_camera.h"
+#include <cstdlib>
+#include "level_editor_tab.h"
 
 namespace UFOEngineStudio{
-
-void Editor::OpenFolder(std::string _path){
-    opened_directory = FileNode::ParseFolder(_path);
-    opened_directory->file_name = "";
-    
-    opened_directory_path = _path;
-}
 
 Editor::Editor(){
     OpenFolder("/home/uj/Documents/C++/blitbloot");
 
+}
+
+void Editor::OpenFolder(std::string _path){
+    opened_directory = FileNode::ParseFolder(_path);
+    opened_directory->file_name = "";
+
+    opened_directory_path = _path;
 }
 
 void
@@ -30,9 +29,15 @@ Editor::Load(){
 
     Level::Load();
 
+    std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+
+    PopulateSpawnableActorMapWithBaseObjects();
+
+    ReloadSpawnableActorMap();
+
     tabs.push_back(std::make_unique<LevelEditorTab>(engine, this));
     tabs.push_back(std::make_unique<LevelEditorTab>(engine, this));
-    tabs.push_back(std::make_unique<Tab>());
+    tabs.push_back(std::make_unique<Tab>(this));
 }
 
 void Editor::ImportHeaderFileToProject(std::string _path){
@@ -48,7 +53,7 @@ void Editor::OnUpdate(float _delta_time){
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoBringToFrontOnFocus |
             ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar;
-        
+
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
         ImGui::SetNextWindowSize(viewport->Size);
@@ -56,7 +61,7 @@ void Editor::OnUpdate(float _delta_time){
 
     ImGui::Begin("DemoDockspaceForGodsSake", nullptr, im_gui_window_flags);
 
-    ImGuiID dock_space_id = ImGui::GetID("DockSpaceOutsideTab");
+    ImGuiID dock_space_id = ImGui::GetID("DemoDockspaceForGodsSake");
 
     UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
@@ -99,12 +104,30 @@ void Editor::OnUpdate(float _delta_time){
                 active_tab->OnSave(this);
             }
 
-            
+
 
             ImGui::EndMenu();
         }
-        
+        if(ImGui::BeginMenu("Project")){
+            if(ImGui::MenuItem("Reload Project")){
+                refresh_entire_project = true;
+            }
+
+            ImGui::EndMenu();
+        }
+
         ImGui::EndMainMenuBar();
+    }
+
+    if(refresh_entire_project){
+        spawnable_actor_map.clear();
+        std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+        PopulateSpawnableActorMapWithBaseObjects();
+        ReloadSpawnableActorMap();
+        for(const auto& tab : tabs){
+            tab->Refresh();
+        }
+        refresh_entire_project = false;
     }
 
 }

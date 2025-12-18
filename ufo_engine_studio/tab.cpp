@@ -8,22 +8,27 @@
 #include "tab.h"
 #include "editor.h"
 #include "im_vec.h"
+#include "file_utilities.h"
 
 namespace UFOEngineStudio{
 
-Tab::Tab(){
+Tab::Tab(Editor* _editor) : editor{_editor}{
     id = id_counter++;
 
     name_and_imgui_id = std::string(path+"###Tab"+std::to_string(id));
 }
 
+void Tab::Refresh(){
+    name = GetFilenameFromPath(path);
+}
+
 void Tab::Update(Editor* _editor, float _delta_time){
     gc.Collect();
 
-    if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+"###"+path+std::to_string(id)).c_str(), &opened, ImGuiTabItemFlags_None)){
+    if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+"###Tab"+std::to_string(id)).c_str(), &opened, ImGuiTabItemFlags_None)){
         //ImGui::BeginChildFrame(1,ImVec2(800,600));
         //ImGui::Begin(("TabWindow##"+name).c_str());
-        ImGuiID local_dockspace_id = ImGui::GetID(name.c_str());
+        ImGuiID local_dockspace_id = ImGui::GetID(name_and_imgui_id.c_str());
 
         OnMakeDockSpace(local_dockspace_id, _editor);
 
@@ -37,9 +42,9 @@ void Tab::Update(Editor* _editor, float _delta_time){
 
         //ImGui::EndChildFrame();
         ImGui::EndTabItem();
-        
+
     }
-    
+
 }
 
 bool Tab::DetermineIfEdited(){
@@ -47,7 +52,7 @@ bool Tab::DetermineIfEdited(){
 }
 
 void Tab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state){
-    
+
 }
 
 void Tab::OnActive(ImGuiID _local_dockspace_id , Editor* _program_state, float _delta_time){}

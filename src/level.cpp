@@ -23,26 +23,7 @@ ufo::Controls* Level::GetControls(){
 
 void
 Level::Load(){
-    for(int i = 0; i < 5; i++){
-        
-        auto npc = AddActor<ColourCircle>(Vector2f(
-            RandomNumberGenerator::Get().RandomFloat(0.0f, size.x),
-            RandomNumberGenerator::Get().RandomFloat(0.0f, size.y)));
-        npc->colour = ufo::Colour(
-            RandomNumberGenerator::Get().RandomInt(0, 205),
-            RandomNumberGenerator::Get().RandomInt(0, 100),
-            RandomNumberGenerator::Get().RandomInt(0, 205)
-        );
 
-        npc->radius = RandomNumberGenerator::Get().RandomFloat(0.0f, 20.0f);
-    }
-    
-    /*auto actor2 = AddActor<Player>(Vector2f(
-            100.0f, 50.0f));
-    
-    //actor2->is_dead = true;
-    
-    actor2->colour = ufo::Colour(255, 255, 0, 255);*/
 
 }
 
@@ -102,7 +83,7 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
             for(const auto& actor : actors){
                 actor->Draw(_graphics,active_camera_handles[1]);
             }
-            
+
             return;
         }*/
 

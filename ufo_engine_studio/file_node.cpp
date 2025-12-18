@@ -51,7 +51,7 @@ void FileNode::Update(int _file_index, Directory* _parent,std::string path , Edi
     if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)){
         path_for_drag_drop_payload_use_only = _editor->opened_directory_path + path + "/" + file_name;
         ImGui::SetDragDropPayload("FileDragDrop", this, sizeof(FileNode));
-        ImGui::Text(file_name.c_str());
+        ImGui::Text("%s",file_name.c_str());
 
         ImGui::EndDragDropSource();
     }
@@ -83,7 +83,7 @@ void FileNode::DeleteFileNodesMarkedForDeletion(){
 
 void FileNode::Sort(){
     //return;
-    
+
     auto comp = [](const std::unique_ptr<FileNode>& _a, const std::unique_ptr<FileNode>& _b){
         return _a->file_name < _b->file_name;
     };
@@ -109,9 +109,9 @@ void FileNode::SearchForHeaderFiles(Editor* _editor, std::string _path){
 
     std::string full_path = _path+file_name;
 
-    if(file_name != ""){   
-    
-        full_path = _path+"/"+file_name; 
+    if(file_name != ""){
+
+        full_path = _path+"/"+file_name;
     }
 
     if(file_name.find(".") != file_name.npos){
@@ -126,7 +126,7 @@ void FileNode::SearchForHeaderFiles(Editor* _editor, std::string _path){
     for(const auto& file_node : file_nodes){
         file_node->SearchForHeaderFiles(_editor, full_path);
     }
-    
+
 
 }
 

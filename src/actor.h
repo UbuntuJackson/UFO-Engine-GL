@@ -3,18 +3,22 @@
 #include <vector>
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
-#include "graphics.h"
 #include "../imgui/imgui.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
-#include <gc_json.h>
+#include "../ufo_garbage_collector/gc_json.h"
 
-namespace ufo{
-    class Engine;
-    class GarbageCollector;
+namespace UFOEngineStudio{
+    class Editor;
+    class LevelEditorTab;
 }
 
-namespace ufo::gc{
-    class JsonMap;
+namespace ufo{
+    namespace gc{
+        class JsonMap;
+    }
+    class Engine;
+    class GarbageCollector;
+    class Graphics;
 }
 
 class Level;
@@ -36,32 +40,14 @@ public:
 
     Vector2f GetGlobalPosition();
 
+    Actor* GetActor(std::string _path);
+
     //Reserve a set number of actors?
     std::vector<std::unique_ptr<Actor>> actors;
 
     std::vector<std::unique_ptr<Actor>> new_actor_queue;
 
-    void AddNewActors(){
-
-        bool queue_was_empty = new_actor_queue.size() == 0;
-
-        for(auto&& actor : new_actor_queue){
-            actors.push_back(std::move(actor));
-        }
-
-        for(auto&& actor : actors){
-            actor->AddNewActors();
-        }
-
-        new_actor_queue.clear();
-    
-        if(!queue_was_empty && !should_be_sorted){
-            
-            for(int i = 0; i < actors.size(); i++){
-                actors[i]->order_index = i;
-            }
-        }
-    }
+    void AddNewActors();
 
     template <typename tActor, typename ...tArgs>
     tActor* AddActor(tArgs&& ..._args){
@@ -70,9 +56,20 @@ public:
         actor_ptr->parent = this;
         actor_ptr->level = level;
         OnAddActor(actor_ptr);
-        actor_ptr->engine = engine;
-        actor_ptr->OnSpawn();
+        //actor_ptr->engine = engine;
+        //actor_ptr->OnSpawn();
         new_actor_queue.push_back(std::move(u_actor));
+        return actor_ptr;
+    }
+
+    Actor* AddActorUniquePtr(std::unique_ptr<Actor> _u_actor){
+        auto actor_ptr = _u_actor.get();
+        actor_ptr->parent = this;
+        actor_ptr->level = level;
+        OnAddActor(actor_ptr);
+        //actor_ptr->engine = engine;
+        //actor_ptr->OnSpawn();
+        new_actor_queue.push_back(std::move(_u_actor));
         return actor_ptr;
     }
 
@@ -93,39 +90,18 @@ public:
 
     }
 
-    void WidgetDraw(ufo::Graphics* _graphics){
-        OnWidgetDraw(_graphics);
-        for(const auto& actor : actors){
-            actor->WidgetDraw(_graphics);
-        }
-    }
+    void WidgetDraw(ufo::Graphics* _graphics);
 
-    virtual void OnWidgetDraw(ufo::Graphics* _graphics){
-        
-    }
+    virtual void OnWidgetDraw(ufo::Graphics* _graphics);
 
-    void Draw(ufo::Graphics* _graphics, Camera* _camera){
-        OnDraw(_graphics, _camera);
-        for(const auto& actor : actors){
-            actor->Draw(_graphics, _camera);
-        }
-    }
+    void Draw(ufo::Graphics* _graphics, Camera* _camera);
 
-    virtual void OnDraw(ufo::Graphics* _graphics, Camera* _camera){
-
-    }
+    virtual void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
 
     //This is a virtual function used to invoke the BEAM Garbage Collector.
-    virtual void OnInvokeGarbageCollector(){
-        
-    }
-    
-    void InvokeGarbageCollector(){
-        OnInvokeGarbageCollector();
-        for(const auto& actor : actors){
-            actor->InvokeGarbageCollector();
-        }
-    }
+    virtual void OnInvokeGarbageCollector();
+
+    void InvokeGarbageCollector();
 
     template<typename tActor>
     tActor* DynamicCast(){
@@ -138,7 +114,7 @@ public:
     }
 
     virtual ~Actor(){
-        
+
     }
 
     //For UFO-Engine Studio Editor actor tree widget
@@ -152,48 +128,24 @@ public:
     };
 
     std::vector<InsertedActor> inserted_actor_queue;
-    
-    void InsertActors(){
-        for(auto&& inserted_actor : inserted_actor_queue){
-            actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
-        }
 
-        inserted_actor_queue.clear();
-
-        for(const auto& actor : actors){
-            actor->InsertActors();
-        }
-    }
+    void InsertActors();
 
     int order_index = 0;
     bool should_be_sorted = false;
 
-    void SetOrderIndex(int _index){
-        if(parent) parent->should_be_sorted = true;
-        order_index = _index;
-    }
+    void SetOrderIndex(int _index);
 
-    void SortActors(){
-        std::sort(actors.begin(), actors.end(), [this](const auto& _a, const auto& _b){
-            return _a->order_index < _b->order_index;
-        });
-
-        for(int i = 0; i < actors.size(); i++){
-            actors[i]->order_index = i;
-        }
-
-        should_be_sorted = false;
-    }
+    void SortActors();
 
     std::string editor_name = "Actor";
     std::string class_name = "Actor";
+    std::string base_class_name = "Actor";
 
     bool marked_for_drag = false;
     bool marked_for_drop = false;
 
-    virtual void OnUpdateEditorTree(int _index){
-
-    }
+    virtual void OnUpdateEditorTree(int _index);
 
     struct DraggedActorWhereAbouts{
         Actor* parent;
@@ -205,25 +157,19 @@ public:
     bool editing_name = false;
     std::string old_editor_name = "";
 
-    void TurnOnEditMode(){
-        editing_name = true;
-        old_editor_name = editor_name;
-    }
+    void TurnOnEditMode();
 
     bool adding_new_actor = false;
 
-    virtual void UpdateEditorTree(int _index);
+    virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, int _index);
 
-    virtual void InitEditorProperties(){
-        editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("x","x",&(local_position.x)));
-        editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("y","y",&(local_position.y)));
-        editor_properties.push_back(std::make_unique<EditorPropertyIntSlider>("_IntSlider","IntSlider",5, 0, 10));
-    }
+    virtual void InitEditorProperties();
 
     class EditorProperty{
     public:
         std::string variable_name;
         std::string alias;
+        bool to_be_removed = false;
 
         EditorProperty(const std::string& _variable_name, const std::string& _alias) : variable_name{_variable_name}, alias{_alias}{}
 
@@ -234,6 +180,8 @@ public:
         virtual void Update(const std::string& _editor_name, int _index){
 
         }
+
+        virtual std::unique_ptr<EditorProperty> Copy() = 0;
     };
 
     class EditorPropertyFloatHandle : public EditorProperty{
@@ -252,6 +200,64 @@ public:
             m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
             m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(*value));
             return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyFloatHandle>(variable_name,alias,value);
+        }
+    };
+
+    class EditorPropertyInt : public EditorProperty{
+    public:
+        int value = 0;
+
+        EditorPropertyInt(const std::string& _name,const std::string& _alias, int _value) : EditorProperty(_name,_alias),
+            value{_value}{
+
+            }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::InputInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyInt"));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyInt>(variable_name,alias,value);
+        }
+    };
+
+    class EditorPropertyFloat : public EditorProperty{
+    public:
+        float value = 0;
+
+        EditorPropertyFloat(const std::string& _name,const std::string& _alias, float _value) : EditorProperty(_name,_alias),
+            value{_value}{
+
+            }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::InputFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyFloat"));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyFloat>(variable_name,alias,value);
         }
     };
 
@@ -278,7 +284,12 @@ public:
             m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
             m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
             m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyIntSlider"));
             return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyIntSlider>(variable_name,alias,value,min,max);
         }
     };
 
@@ -323,16 +334,19 @@ public:
 
     std::vector<std::unique_ptr<EditorProperty>> editor_properties;
 
+    void RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _editor);
+
+    bool should_open_properties = false;
+
     bool properties_open = false;
+
+    std::string find_actor_search_field = "";
 
     virtual void OnViewProperties(int _index);
 
-    void ViewProperties(int _index){
-        if(properties_open) OnViewProperties(_index);
-        for(int i = 0; i < actors.size(); i++){
-            actors[i]->ViewProperties(i);
-        }
-    }
+    void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+
+    void OpenProperties();
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 

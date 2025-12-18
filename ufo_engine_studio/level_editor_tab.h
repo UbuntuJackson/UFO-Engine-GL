@@ -1,32 +1,38 @@
 #pragma once
-#include <memory>
-#include "tab.h"
-#include "actor_node.h"
+#include "../ufo_engine_studio/tab.h"
+#include "../imgui/imgui_internal.h"
+#include "../imgui/imgui.h"
+#include "../ufo_garbage_collector/garbage_collector.h"
+
+class Level;
+
+namespace ufo{
+    class Engine;
+    class Graphics;
+    class Editor;
+}
 
 namespace UFOEngineStudio{
 
-class Editor;
-
 class LevelEditorTab : public Tab{
 public:
-    std::unique_ptr<ActorNode> actor;
+    ufo::Engine* engine = nullptr;
+    Level* this_level = nullptr;
+    std::string currently_viewed_properties_actor_name;
 
-    bool actor_variant_config_open = false;
-    bool something_was_selected_this_frame = false;
+    LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
 
-    LevelEditorTab(Editor* _program_state, std::string _file);
+    void Refresh();
 
-    void ConvertActorTreeToCPP(Editor* _program_state);
-
-    void ConvertJsonToCPP(std::string& _handle_identifiers, std::string& _handle_struct, std::string& _header_file, std::vector<std::string>& _used_actor_classes, JsonDictionary* _json, Editor* _program_state);
-
-    void Update(Editor* _program_state);
-
-    void OnActive(ImGuiID _local_dockspace_id , Editor* _program_state);
+    void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);
 
-    void OnSave(Editor* _program_state);
+    void LevelUpdatePhase(float _delta_time);
+
+    void LevelDrawPhase(ufo::Graphics* _graphics);
+
+    void OnSave(Editor* _editor);
 };
 
 }

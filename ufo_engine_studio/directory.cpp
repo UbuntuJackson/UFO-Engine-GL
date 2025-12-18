@@ -16,7 +16,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
 
     if(editing_name){
         ImGui::SameLine();
-        
+
         ImGui::InputText(("###EditText"+std::to_string(id)).c_str(),&file_name);
 
         if((ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsItemHovered()) || ImGui::IsKeyPressed(ImGuiKey_Enter)){
@@ -24,7 +24,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
             if(!is_new_directory) std::filesystem::rename(_editor->opened_directory_path + path + "/" + old_file_name, _editor->opened_directory_path + path + "/" + file_name);
             else{
                 std::string full_path = _editor->opened_directory_path + path+"/"+file_name;
-                
+
                 std::filesystem::create_directory(full_path);
             }
             is_new_directory = false;
@@ -46,7 +46,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
                 const std::string this_path = _editor->opened_directory_path + path + "/" + file_name;
 
                 Console::PrintLine(file_node->path_for_drag_drop_payload_use_only);
-                
+
                 std::filesystem::rename(file_node->path_for_drag_drop_payload_use_only, this_path+"/"+file_node->file_name);
                 _editor->should_refresh_working_directory = true;
             }
@@ -64,15 +64,15 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
             int res = std::remove(full_path.c_str());
             if(res) Console::PrintLine("Directory::Update(): failed to remove directory from at path", full_path.c_str());
             _editor->should_refresh_working_directory = true;
-            
+
         }
         if(ImGui::MenuItem("New File")){
             file_nodes_to_be_added_at_end_of_frame.push_back(std::make_unique<TreeFile>(true));
             file_nodes_to_be_added_at_end_of_frame.back()->editing_name = true;
-            
+
         }
         if(ImGui::MenuItem("New Folder")){
-            
+
             file_nodes_to_be_added_at_end_of_frame.push_back(std::make_unique<Directory>(true));
             file_nodes_to_be_added_at_end_of_frame.back()->file_name = "NewFolder";
             file_nodes_to_be_added_at_end_of_frame.back()->TurnOnEditMode();
@@ -87,7 +87,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
         }
 
         ImGui::TreePop();
-        
+
     }
 
 }

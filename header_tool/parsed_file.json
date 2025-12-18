@@ -1,0 +1,264 @@
+{
+    "file_contents": {
+        "value": -1,
+        "name": null,
+        "members": [
+            {
+                "value": 2,
+                "name": "game",
+                "members": [
+                    {
+                        "value": 3,
+                        "name": "ufo_category",
+                        "members": [
+                            {
+                                "value": 0,
+                                "name": "Enemies",
+                                "members": []
+                            }
+                        ]
+                    },
+                    {
+                        "value": 1,
+                        "name": "Knight",
+                        "members": [
+                            {
+                                "value": 3,
+                                "name": "ufo_variable",
+                                "members": []
+                            },
+                            {
+                                "value": 7,
+                                "name": "speed",
+                                "members": []
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_variable",
+                                "members": []
+                            },
+                            {
+                                "value": 7,
+                                "name": "iq",
+                                "members": []
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_alias",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "slider_alias",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_int_slider",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "0",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 0,
+                                        "name": "23",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "slider",
+                                "members": []
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_alias",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "Type of Knight",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_radio_button",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "chase",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 0,
+                                        "name": "zombie",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 0,
+                                        "name": "screensaver",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "type_of_knight",
+                                "members": []
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_alias",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "Name",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "name",
+                                "members": []
+                            },
+                            {
+                                "value": 3,
+                                "name": "ufo_comment",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "This is just a test variable lol",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "a",
+                                "members": []
+                            },
+                            {
+                                "value": 5,
+                                "name": "Vector2f",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "0.0f",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 0,
+                                        "name": "0.0f",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "level",
+                                "members": []
+                            },
+                            {
+                                "value": 5,
+                                "name": "OnSpawn",
+                                "members": []
+                            },
+                            {
+                                "value": 6,
+                                "name": null,
+                                "members": [
+                                    {
+                                        "value": 5,
+                                        "name": "OnSpawn",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 7,
+                                        "name": "level",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 5,
+                                "name": "OnUpdate",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "float",
+                                        "members": []
+                                    },
+                                    {
+                                        "value": 0,
+                                        "name": "_delta_time",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 6,
+                                "name": null,
+                                "members": [
+                                    {
+                                        "value": 5,
+                                        "name": "Vector2f",
+                                        "members": [
+                                            {
+                                                "value": 0,
+                                                "name": "1.0f",
+                                                "members": []
+                                            },
+                                            {
+                                                "value": 0,
+                                                "name": "0.0f",
+                                                "members": []
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "value": 7,
+                                        "name": "*",
+                                        "members": []
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "value": 3,
+                        "name": "ufo_class",
+                        "members": []
+                    },
+                    {
+                        "value": 1,
+                        "name": "ColourRectangle",
+                        "members": [
+                            {
+                                "value": 3,
+                                "name": "ufo_alias",
+                                "members": [
+                                    {
+                                        "value": 0,
+                                        "name": "colour",
+                                        "members": []
+                                    }
+                                ]
+                            },
+                            {
+                                "value": 7,
+                                "name": "colour_hex",
+                                "members": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

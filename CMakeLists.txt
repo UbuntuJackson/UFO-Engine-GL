@@ -37,6 +37,7 @@ add_subdirectory(glm-1.0.1)
 set(
     SRC
     src/engine.cpp
+    src/generic_generator.cpp
     src/texture_2d.cpp
     #main.cpp
     src/level.cpp
@@ -44,6 +45,7 @@ set(
     src/camera.cpp
     src/shader.cpp
     src/sprite_renderer.cpp
+    src/sprite.cpp
     src/openglv4_5_asset_manager.cpp
     src/Main.cpp
     src/text_rendering.cpp
@@ -85,6 +87,9 @@ set(
     ufo_engine_studio/directory.cpp
     ufo_engine_studio/tab.cpp
     ufo_engine_studio/editor.cpp
+    ufo_engine_studio/level_editor_tab.cpp
+    ufo_engine_studio/file_utilities.cpp
+
 )
 
 # Create your game executable target as usual
@@ -135,7 +140,7 @@ target_compile_features(UFO PUBLIC cxx_std_17)
 # Platform-specific audio backends
 if(NOT WIN32)  # Only consider ALSA or PulseAudio on Linux
     if(USE_ALSA)
-        
+
         # ALSA
         find_package(ALSA REQUIRED)
         target_link_libraries(UFO PUBLIC ALSA::ALSA)
