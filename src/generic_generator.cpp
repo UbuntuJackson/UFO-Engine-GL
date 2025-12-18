@@ -93,11 +93,11 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		instance->class_name = _json->map.at("class_name")->AsString();
 
-		auto custom_properties = _json->map.at("custom_editor_properties")->AsArray();
+		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
 
 		Console::PrintLine("Was able to load custom properties at least once");
 
-		for(const auto& v : custom_properties){
+		for(const auto& [k,v] : custom_properties){
 		    //Iterate through custom properties
 			std::string hint = v->AsMap().at("hint")->AsString();
 			if(hint == ""){

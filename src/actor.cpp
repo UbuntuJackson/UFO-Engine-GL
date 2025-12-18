@@ -403,14 +403,14 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
     this_actor->map.emplace("base_class_name", _gc->New<ufo::gc::JsonString>(base_class_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
-    auto j_custom_editor_properties = _gc->New<ufo::gc::JsonArray>();
+    auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
 
     for(const auto& property : editor_properties){
         if(property->variable_name == "x" || property->variable_name == "y"){
             this_actor->map.emplace(property->variable_name, property->GetJson(_gc));
         }
-        else j_custom_editor_properties->array.push_back(property->GetJson(_gc));
+        else j_custom_editor_properties->map.emplace(property->variable_name,property->GetJson(_gc));
     }
 
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();

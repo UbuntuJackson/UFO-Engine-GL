@@ -45,8 +45,8 @@ def make_generated_file(_path, _classes):
             + "            [](ufo::gc::JsonMap* _json){\n"
         )
 
-        function_ += '                float _x = _json->map.at("x")->AsFloat();\n'
-        function_ += '                float _y = _json->map.at("y")->AsFloat();\n'
+        function_ += '                float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();\n'
+        function_ += '                float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();\n'
 
         function_ += (
             "                auto instance = std::make_unique<"
