@@ -36,18 +36,17 @@ Actor* Actor::GetActor(std::string _path){
     std::string search_in_actor = _path.substr(0,first_of_index);
     std::string remaining_path = _path.substr(first_of_index+1, _path.size());
 
-    if(first_of_index == _path.npos){
+    for(const auto& actor : actors){
+        if(first_of_index == _path.npos){
 
-        if(_path == editor_name){
-            return this;
+            if(_path == actor->editor_name){
+                return actor.get();
 
+            }
         }
+        else if(search_in_actor == actor->editor_name) return actor->GetActor(remaining_path);
     }
-    else{
-        for(const auto& actor : actors){
-            if(search_in_actor == editor_name) return actor->GetActor(remaining_path);
-        }
-    }
+
 
     return nullptr;
 }
