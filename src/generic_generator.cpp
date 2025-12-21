@@ -76,6 +76,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("class_name")->AsString())(_json);
 
 		instance->class_name = _json->map.at("class_name")->AsString();
+		instance->editor_name = _json->AsMap().at("name")->AsString();
 
 	    return std::move(instance);
 	}
