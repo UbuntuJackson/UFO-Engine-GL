@@ -32,7 +32,7 @@ public:
     bool is_dead = false;
 
     Actor(Vector2f _local_position);
-private:
+public:
     Actor* parent = nullptr;
 public:
     ufo::Engine* engine = nullptr;

@@ -27,9 +27,9 @@ public:
     std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
 
     std::string opened_directory_path = "";
-    bool should_refresh_working_directory = false;
+    bool should_refresh_working_directory = true;
 
-    bool refresh_entire_project = false;
+    bool refresh_entire_project = true;
 
     std::unique_ptr<FileNode> opened_directory = nullptr;
 
