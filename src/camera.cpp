@@ -21,7 +21,7 @@ void Camera::OnSpawn(){
     class_name = "Camera";
     base_class_name = "Camera";
 
-    Console::PrintLine("Camera Spawned", parent);
+    Console::PrintLine("Camera Spawned", editor_name);
 }
 
 void

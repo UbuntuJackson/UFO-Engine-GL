@@ -13,7 +13,7 @@ namespace ufo{
 
 class Level : public Actor{
 public:
-    Vector2f size = {2000.0f, 1000.0f};
+    Vector2f size = {20000.0f, 3000.0f};
 
     enum CleanUpModes{
         EACH_FRAME,

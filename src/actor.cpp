@@ -55,17 +55,26 @@ void Actor::AddNewActors(){
 
     bool queue_was_empty = new_actor_queue.size() == 0;
 
+    std::vector<Actor*> newly_added_actors;
+    newly_added_actors.reserve(new_actor_queue.size());
+
+    for(auto&& actor : new_actor_queue){
+        auto actor_ptr = actor.get();
+
+        actor->level = level; // Will be overwritten if *this* is of type Level.
+        OnAddActor(actor.get());
+        actor->engine = engine;
+        newly_added_actors.push_back(actor_ptr);
+        actors.push_back(std::move(actor));
+
+    }
+
     for(auto&& actor : actors){
         actor->AddNewActors();
     }
 
-    for(auto&& actor : new_actor_queue){
-        actor->level = level; // Will be overwritten if *this* is of type Level.
-        OnAddActor(actor.get());
-        actor->engine = engine;
-
+    for(const auto& actor : newly_added_actors){
         actor->OnSpawn();
-        actors.push_back(std::move(actor));
     }
 
     new_actor_queue.clear();
