@@ -54,7 +54,7 @@ public:
         auto u_actor = std::make_unique<tActor>(_args...);
         auto actor_ptr = u_actor.get();
         actor_ptr->parent = this;
-        actor_ptr->level = level;
+        //actor_ptr->level = level;
         OnAddActor(actor_ptr);
         //actor_ptr->engine = engine;
         //actor_ptr->OnSpawn();
@@ -65,7 +65,7 @@ public:
     Actor* AddActorUniquePtr(std::unique_ptr<Actor> _u_actor){
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
-        actor_ptr->level = level;
+        //actor_ptr->level = level;
         OnAddActor(actor_ptr);
         //actor_ptr->engine = engine;
         //actor_ptr->OnSpawn();
@@ -137,6 +137,9 @@ public:
     void SetOrderIndex(int _index);
 
     void SortActors();
+
+    bool to_replace = false;
+    void ReplaceActors(UFOEngineStudio::Editor* _editor);
 
     std::string editor_name = "Actor";
     std::string class_name = "Actor";

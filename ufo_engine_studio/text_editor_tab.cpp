@@ -1,17 +1,20 @@
 #include "../imgui/imgui.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "text_editor_tab.h"
-#include "../console/console.h"
+#include "../utils/console.h"
 #include "dock_utils.h"
-#include "program_state.h"
+#include "editor.h"
+#include "tab.h"
+#include "../file/file.h"
+#include "file_utilities.h"
 
 namespace UFOEngineStudio{
 
 int FilterTabs(ImGuiInputTextCallbackData* data)
 {
-    
+
     data->InsertChars(data->CursorPos,"    ");
-    
+
     return 0;
 }
 
@@ -19,28 +22,37 @@ bool TextEditorTab::DetermineIfEdited(){
     return text == last_saved_text;
 }
 
-void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , ProgramState* _program_state){
+void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
 
-    ImGui::Begin("Text- and Code Editing");
-    ImGui::InputTextMultiline((name+"###TextEditor"+path).c_str(), &text, ImVec2(ImGui::GetWindowSize()), ImGuiInputTextFlags_CallbackCompletion, FilterTabs);
-    
+    ImGui::Begin(std::string(std::string("Text- and Code Editing###")+std::to_string(id)).c_str());
+    ImGui::InputTextMultiline((name+"###TextEditor"+std::to_string(id)).c_str(), &text, ImVec2(ImGui::GetWindowSize()), ImGuiInputTextFlags_CallbackCompletion, FilterTabs);
+
     ImGui::End();
 }
 
-void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, ProgramState* _program_state){
-    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), "Text- and Code Editing");
+void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _editor){
+    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string(std::string("Text- and Code Editing###")+std::to_string(id)).c_str());
 }
 
-void TextEditorTab::OnSave(ProgramState* _program_state){
+void TextEditorTab::OnSave(Editor* _editor){
     //File will have no name if it isn't read or created with respect to file system
     if(name != ""){
         File f;
         f.Insert(text);
         f.Write(path);
 
-        last_saved_text = text;
-        _program_state->should_search_working_directory_for_exposed_actor_classes = true;
+        _editor->refresh_entire_project = true;
     }
+    else{
+        const char* global_file_location = _editor->opened_directory_path.c_str();
+
+        SDL_ShowSaveFileDialog(&OnNewTextFile , this, _editor->engine->window, nullptr, 0, global_file_location);
+    }
+
+    last_saved_text = text;
+
+    _editor->should_refresh_working_directory = true;
+    Refresh();
 }
 
 };

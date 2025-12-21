@@ -3,6 +3,7 @@
 #include "../imgui/imgui_internal.h"
 #include "../imgui/imgui.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
+#include "../src/actor.h"
 
 class Level;
 
@@ -19,6 +20,8 @@ public:
     ufo::Engine* engine = nullptr;
     Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;
+    std::unique_ptr<Actor> replace_with_actor;
+    std::string header_file;
 
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
 

@@ -89,6 +89,7 @@ set(
     ufo_engine_studio/editor.cpp
     ufo_engine_studio/level_editor_tab.cpp
     ufo_engine_studio/file_utilities.cpp
+    ufo_engine_studio/text_editor_tab.cpp
 
 )
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include "file_utilities.h"
 #include "level_editor_tab.h"
+#include "text_editor_tab.h"
 
 namespace UFOEngineStudio{
 
@@ -27,6 +28,9 @@ namespace UFOEngineStudio{
                     f.Write(_editor->opened_directory_path + path+"/"+file_name);
 
                     is_new_file = false;
+                }
+                else{
+                    std::filesystem::rename(_editor->opened_directory_path + path + "/" + old_file_name, _editor->opened_directory_path + path + "/" + file_name);
                 }
 
                 _editor->should_refresh_working_directory = true;
@@ -69,8 +73,21 @@ namespace UFOEngineStudio{
 
                 auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
                 level_editor_tab->this_level = level;
+                level_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
 
                 _editor->tabs.push_back(std::move(level_editor_tab));
+                _editor->refresh_entire_project = true;
+
+            }
+
+            if(IsExtension(path+"/"+file_name, "cpp") || IsExtension(path+"/"+file_name, "h") || IsExtension(path+"/"+file_name, "txt")){
+                auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor);
+
+                text_editor_tab->text = File().Read(_editor->opened_directory_path+path+"/"+file_name);
+                text_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
+
+                _editor->tabs.push_back(std::move(text_editor_tab));
+                _editor->refresh_entire_project = true;
             }
         }
 

@@ -375,7 +375,10 @@ class ClassObject:
         for i in self.macros:
             class_["macros"].append({"name": i.name, "args": i.args})
 
-        class_["class"]["name"] = _parent_namespace + "::" + self.name
+        if _parent_namespace != "":
+            class_["class"]["name"] = _parent_namespace + "::" + self.name
+        else:
+            class_["class"]["name"] = self.name
         class_["class"]["extends"] = self.extends
         class_["class"]["members"] = []
         for i in self.scopes:
@@ -722,6 +725,7 @@ def analyse_compound_object(_compound_object):
         item = _compound_object[index]
 
         if item in [
+            "ufo_actor_config",
             "ufo_alias",
             "ufo_class",
             "ufo_category",

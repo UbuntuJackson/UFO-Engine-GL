@@ -23,6 +23,7 @@ namespace UFOEngineStudio{
 
 class Editor : public Level, public ufo::gc::Root{
 public:
+
     std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
 
     std::string opened_directory_path = "";
@@ -57,6 +58,8 @@ public:
 
     class AdvancedActorSpawner{
     public:
+        std::string actor_config_path = "";
+
         std::string base;
         std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> spawner_function;
         std::vector<std::unique_ptr<Actor::EditorProperty>> properties;
@@ -71,6 +74,26 @@ public:
 
         std::unique_ptr<Actor> Spawn(Editor* _editor){
             auto act = spawner_function(_editor,this);
+            if(actor_config_path != ""){
+                ufo::gc::JsonMap* actor_config = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+"/"+actor_config_path);
+
+                for(const auto& j_actor : actor_config->map.at("actors")->AsArray()){
+                    if(j_actor->AsMap().at("name")->AsString() == "Main"){
+                        act->editor_name = "@" + act->class_name;
+                        auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
+                        std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
+                        if(base_class_of_actor_config != act->base_class_name){
+                            Console::PrintLine("[UFO-Engine Studio] AdvancedActorSpawner base of this", act->class_name, "does not match base of actor_config",
+                                actor_config, "Baseclass of actor config:", base_class_of_actor_config, "Baseclass of this", act->base_class_name
+                            );
+                        }
+                        else{
+                            act = std::move(actor_from_file);
+                        }
+                    }
+                }
+            }
+
 
             for(const auto& property : properties){
                 act->editor_properties.push_back(property->Copy());
@@ -126,7 +149,14 @@ public:
                     );
 
             for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
-                std::string macro_name = macro->AsMap().at("name")->AsString();
+                if(macro->AsMap().at("name")->AsString() == "ufo_actor_config"){
+
+                        auto arr = macro->AsMap().at("args")->AsArray();
+                        if(arr.size() == 1){
+                            if(std::filesystem::exists(opened_directory_path+"/"+arr[0]->AsString())) act_spawner->actor_config_path = arr[0]->AsString();
+                            else Console::PrintLine("[UFO-Engine Studio] Faulty actor_config path for class", class_.at("name")->AsString(), opened_directory_path+"/"+arr[0]->AsString());
+                        }
+                }
             }
 
             for(const auto& member : class_.at("members")->AsArray()){
@@ -188,5 +218,7 @@ public:
     std::map<std::string, std::unique_ptr<AdvancedActorSpawner>> spawnable_actor_map;
 
 };
+
+void BuildAndRunProgram(const std::string& _build_directory);
 
 }

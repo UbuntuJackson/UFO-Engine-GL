@@ -21,6 +21,7 @@ LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_edi
 }
 
 void LevelEditorTab::Refresh(){
+    Tab::Refresh();
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
 
@@ -51,6 +52,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     ImGui::Begin(std::string("ActorTree###ActorTree"+std::to_string(id)).c_str());
 
+    //I don't want a class to necessarily require a .ason, so for how you don't specity the header file in the .ason, but the .ason in the header file
+    //ImGui::Button("HeaderFile"); ImGui::SameLine(); ImGui::Text("%s", header_file.c_str());
+
     this_level->UpdateEditorTree(_editor, 0);
 
     ImGui::End();
@@ -59,7 +63,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     this_level->ViewProperties(this, 0);
     ImGui::End();
 
-    ImGui::Begin(name_and_imgui_id.c_str(), nullptr, window_flags);
+    ImGui::Begin(std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(), nullptr, window_flags);
 
     LevelUpdatePhase(_delta_time);
     LevelDrawPhase(engine->graphics.get());
@@ -78,7 +82,7 @@ void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _progr
     ImGuiDockSpaceSplit(
         _local_dockspace_id,
         ImGui::GetWindowSize(),
-        name_and_imgui_id.c_str(),
+        std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(),
         std::string("ContentBrowser###ContentBrowser"+std::to_string(id)).c_str(),
         SplitDirections::HORIZONTAL);
 }
@@ -111,6 +115,7 @@ void LevelEditorTab::OnSave(Editor* _editor){
     }
 
     _editor->should_refresh_working_directory = true;
+    Refresh();
 }
 
 }

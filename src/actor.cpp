@@ -18,7 +18,7 @@
 
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}{
     editor_id = editor_id_counter++;
-    editor_name = "Actor"+std::to_string(editor_id);
+    editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
     InitEditorProperties();
 }
@@ -56,14 +56,17 @@ void Actor::AddNewActors(){
 
     bool queue_was_empty = new_actor_queue.size() == 0;
 
-    for(auto&& actor : new_actor_queue){
-        actor->engine = engine;
-        actor->OnSpawn();
-        actors.push_back(std::move(actor));
-    }
-
     for(auto&& actor : actors){
         actor->AddNewActors();
+    }
+
+    for(auto&& actor : new_actor_queue){
+        actor->level = level; // Will be overwritten if *this* is of type Level.
+        OnAddActor(actor.get());
+        actor->engine = engine;
+
+        actor->OnSpawn();
+        actors.push_back(std::move(actor));
     }
 
     new_actor_queue.clear();
@@ -103,6 +106,16 @@ void Actor::OnSpawn(){
 }
 
 void Actor::OnAddActor(Actor* _actor){}
+
+void Actor::ReplaceActors(UFOEngineStudio::Editor* _editor){
+    /*for(int i = 0; i < actors.size(); i++){
+        actors[i]->ReplaceActors(_editor);
+
+        if(actors[i]->to_replace){
+            actors.at(i) = _editor->replace_with_actor;
+        }
+    }*/
+}
 
 void Actor::Update(float _delta_time){
 
@@ -241,8 +254,28 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             adding_new_actor = true;
 
         }
+        if(ImGui::MenuItem("Chance Actor Type")){
+
+        }
         ImGui::EndPopup();
     }
+
+    /*if(changing_actor_type){
+        ImGui::Begin("Changing Actor Type");
+        for(const auto& [k,v] : _editor->spawnable_actor_map){
+            if(ImGui::Button(std::string("Make "+k).c_str())){
+                auto inst = v->Spawn(_editor);
+                inst->class_name = k;
+                inst->base_class_name = v->base;
+                AddActorUniquePtr(std::move(inst));
+                adding_new_actor = false;
+            }
+        }
+        if(ImGui::Button("Cancel")){
+            changing_actor_type = false;
+        }
+        ImGui::End();
+    }*/
 
     if(adding_new_actor){
         //Read from json somehow to add the attributes, however tf that is gonna happen
@@ -252,7 +285,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             if(ImGui::Button(std::string("Add "+k).c_str())){
                 auto inst = v->Spawn(_editor);
                 inst->class_name = k;
-                inst->base_class_name = v->base;
                 AddActorUniquePtr(std::move(inst));
                 adding_new_actor = false;
             }

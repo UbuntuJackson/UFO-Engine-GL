@@ -15,10 +15,13 @@ namespace UFOEngineStudio{
 Tab::Tab(Editor* _editor) : editor{_editor}{
     id = id_counter++;
 
+    _editor->refresh_entire_project = true;
+
     name_and_imgui_id = std::string(path+"###Tab"+std::to_string(id));
 }
 
 void Tab::Refresh(){
+    Console::PrintLine("Refresh Tab");
     name = GetFilenameFromPath(path);
 }
 
@@ -26,8 +29,7 @@ void Tab::Update(Editor* _editor, float _delta_time){
     gc.Collect();
 
     if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+"###Tab"+std::to_string(id)).c_str(), &opened, ImGuiTabItemFlags_None)){
-        //ImGui::BeginChildFrame(1,ImVec2(800,600));
-        //ImGui::Begin(("TabWindow##"+name).c_str());
+
         ImGuiID local_dockspace_id = ImGui::GetID(name_and_imgui_id.c_str());
 
         OnMakeDockSpace(local_dockspace_id, _editor);

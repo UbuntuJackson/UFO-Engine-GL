@@ -35,6 +35,8 @@
 
 #define ufo_method()
 
+#define ufo_actor_config(_path)
+
 //This is not used
 #define ufo_garbage_collected()
 

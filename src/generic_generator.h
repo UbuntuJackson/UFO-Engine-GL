@@ -44,6 +44,7 @@ public:
     std::unique_ptr<Level> JsonToLevelTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
 
         std::unique_ptr<Level> actor = std::make_unique<Level>();
+        actor->editor_name = _json->AsMap().at("name")->AsString();
 
         for(ufo::gc::Json* j : _json->AsMap().at("actors")->AsArray()){
             auto j_map = dynamic_cast<ufo::gc::JsonMap*>(j);

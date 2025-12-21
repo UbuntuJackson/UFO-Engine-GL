@@ -10,7 +10,7 @@ Actor(_position),
 scale{1.0f},
 original_local_position{_position}
 {
-    
+
 }
 
 void Camera::OnSpawn(){
@@ -19,6 +19,7 @@ void Camera::OnSpawn(){
     clamp = true;
     level->active_camera_handles.push_back(this);
     class_name = "Camera";
+    base_class_name = "Camera";
 
     Console::PrintLine("Camera Spawned");
 }
@@ -43,20 +44,20 @@ Camera::HandleUpdate(){ //Updates as a handle.
 
         if(GetGlobalPosition().x < world.x0 + scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x0 + scaled_width_half));
-            
+
         }
         else if(GetGlobalPosition().x > world.x1 - scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x1 - scaled_width_half));
-            
+
         }
 
         if(GetGlobalPosition().y < world.y0 + scaled_height_half){
             local_position.y -= (GetGlobalPosition().y - (world.y0 + scaled_height_half));
-            
+
         }
         else if(GetGlobalPosition().y > world.y1 - scaled_height_half){
             local_position.y -= (GetGlobalPosition().y - (world.y1 - scaled_height_half));
-            
+
         }
 
         local_position_set_elsewhere = true;
@@ -71,20 +72,20 @@ Camera::HandleUpdate(){ //Updates as a handle.
 
         if(GetGlobalPosition().x < world.x0 + scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x0 + scaled_width_half));
-            
+
         }
         else if(GetGlobalPosition().x > world.x1 - scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x1 - scaled_width_half));
-            
+
         }
 
         if(GetGlobalPosition().y < world.y0 + scaled_height_half){
             local_position.y -= (GetGlobalPosition().y - (world.y0 + scaled_height_half));
-            
+
         }
         else if(GetGlobalPosition().y > world.y1 - scaled_height_half){
             local_position.y -= (GetGlobalPosition().y - (world.y1 - scaled_height_half));
-            
+
         }
 
         local_position_set_elsewhere = true;
@@ -102,7 +103,7 @@ Camera::Transform(const olc::vf2d& _position){ //position is supposed to be in t
 
 olc::vf2d
 Camera::TransformScreenToWorld(const olc::vf2d& _screen_position){ //position is supposed to be in the middle, everything else is drawn in the middle
-    
+
     /*if(clamp){ //for clamping x in this case, the same applies for y
         int scaled_width_half = (1.0f/scale)*world.GetWidthHalf(); //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
 

@@ -9,7 +9,9 @@
 #include "tab.h"
 #include "editor.h"
 #include <cstdlib>
+#include "../src/engine.h"
 #include "level_editor_tab.h"
+#include "text_editor_tab.h"
 
 namespace UFOEngineStudio{
 
@@ -36,9 +38,6 @@ Editor::Load(){
 
     ReloadSpawnableActorMap();
 
-    tabs.push_back(std::make_unique<LevelEditorTab>(engine, this));
-    tabs.push_back(std::make_unique<LevelEditorTab>(engine, this));
-    tabs.push_back(std::make_unique<Tab>(this));
 }
 
 void Editor::ImportHeaderFileToProject(std::string _path){
@@ -105,6 +104,17 @@ void Editor::OnUpdate(float _delta_time){
                 active_tab->OnSave(this);
             }
 
+            if (ImGui::BeginMenu("New File"))
+            {
+                if(ImGui::MenuItem("Level (.ason)")){
+                    tabs.push_back(std::make_unique<LevelEditorTab>(engine,this));
+                }
+                if(ImGui::MenuItem("Textfile (.txt)")){
+                    tabs.push_back(std::make_unique<TextEditorTab>("","",this));
+                }
+
+                ImGui::EndMenu();
+            }
 
 
             ImGui::EndMenu();
@@ -116,10 +126,8 @@ void Editor::OnUpdate(float _delta_time){
 
             if(ImGui::MenuItem("Run Project")){
                 const std::string build_directory = opened_directory_path+"/build";
-                if(!std::filesystem::exists(build_directory.c_str())){
-                    std::filesystem::create_directory(build_directory.c_str());
-                }
-                std::system(std::string("cd "+build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && gdb OUT").c_str());
+                std::thread t(&BuildAndRunProgram, build_directory);
+                t.detach();
             }
 
             ImGui::EndMenu();
@@ -139,6 +147,14 @@ void Editor::OnUpdate(float _delta_time){
         refresh_entire_project = false;
     }
 
+}
+
+void BuildAndRunProgram(const std::string& _build_directory){
+    if(!std::filesystem::exists(_build_directory.c_str())){
+        std::filesystem::create_directory(_build_directory.c_str());
+    }
+    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && gdb OUT").c_str());
+    Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 }
 
 }
