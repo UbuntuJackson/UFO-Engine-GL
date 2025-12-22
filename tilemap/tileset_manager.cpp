@@ -19,7 +19,7 @@ TilesetManager::TilesetManager(){
     tileset_data.push_back(TilesetData{
         "tileset",
         6,
-        0,
+        1,
         96,
         80,
         16,
@@ -111,15 +111,29 @@ void TilesetManager::EditorTilesetWidget(){
                     ImVec2(0,0),
                     ImVec2(1,1)
                 );
-                for(int i = 0; i < tileset.tile_count; i++){
-                    int x = i%number_of_columns;
-                    int y = i/number_of_columns;
 
+                ImVec2 mouse_pos = ImGui::GetMousePos();
+                ImVec2 item_rect_pos = ImGui::GetItemRectMin();
+
+                if(ImGui::IsMouseClicked(0)){
+
+
+                    int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/tileset.tile_width;
+                    int clicked_pos_y = (mouse_pos.y-item_rect_pos.y)/tileset.tile_height;
+
+                    currently_selected_tile = clicked_pos_y*tileset.columns + clicked_pos_x + tileset.tileset_start_id;
+
+                    Console::PrintLine(currently_selected_tile);
                 }
 
-                Console::PrintLine("Mouse Pos",ImGui::GetWindowPos().x-ImGui::GetMousePos().x,ImGui::GetWindowPos().y-ImGui::GetMousePos().y);
+                int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
+                int x = tile_on_tile_selector%tileset.columns;
+                int y = tile_on_tile_selector/tileset.columns;
 
-
+                ImGui::GetWindowDrawList()->AddRect(
+                    ImVec2(item_rect_pos.x + x*tileset.tile_width , item_rect_pos.y + y*tileset.tile_height),
+                    ImVec2(item_rect_pos.x + x*tileset.tile_width+tileset.tile_width , item_rect_pos.y + y*tileset.tile_height+tileset.tile_height),
+                    0xFFFF00FF, 0.0f, 0, 1.0f);
 
                 ImGui::EndTabItem();
             }

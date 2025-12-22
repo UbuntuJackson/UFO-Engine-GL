@@ -74,6 +74,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         ImVec2(0,0),
         ImVec2(1,-1)
     );
+    this_level->UpdateEditorViewport(editor);
 
     ImGui::End();
 }

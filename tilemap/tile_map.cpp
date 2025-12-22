@@ -94,11 +94,11 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                         tileset.name,
                         _camera->Transform(tile_position),
                         {0.0f, 0.0f},
+                        {scale, scale},
                         sample_rectangle.position,
                         sample_rectangle.size,
-                        {scale, scale},
                         0.0f,
-                        0.0f
+                        ufo::Colour(255,255,255,255)
                     );
                 }
 
@@ -112,4 +112,17 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 void TileMap::OnViewProperties(int _index){
     Actor::OnViewProperties(_index);
     level->tileset_manager.EditorTilesetWidget();
+}
+
+void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
+    if(ImGui::IsMouseClicked(1)){
+        ImVec2 mouse_pos = ImGui::GetMousePos();
+        ImVec2 item_rect_pos = ImGui::GetItemRectMin();
+
+        int clicked_tile_x = int(mouse_pos.x-item_rect_pos.x)/tile_width;
+        int clicked_tile_y = int(mouse_pos.y-item_rect_pos.y)/tile_height;
+
+        int tile_to_be_set = clicked_tile_y*number_of_columns + clicked_tile_x;
+        tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
+    }
 }

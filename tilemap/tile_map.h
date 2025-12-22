@@ -21,6 +21,8 @@ public:
     std::vector<int> tilemap_data;
     int number_of_columns = 50;
     int number_of_rows = 10;
+    int tile_width = 16;
+    int tile_height = 16;
 
     void InitEditorProperties();
 
@@ -39,4 +41,6 @@ public:
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
     void OnViewProperties(int _index);
+
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
 };

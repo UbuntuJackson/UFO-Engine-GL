@@ -438,6 +438,18 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
     }
 }
 
+void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
+
+}
+
+void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor){
+    for(const auto& actor : actors){
+        actor->UpdateEditorViewport(_editor);
+    }
+
+    OnUpdateEditorViewport(_editor);
+}
+
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));

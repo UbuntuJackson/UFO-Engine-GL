@@ -218,10 +218,6 @@ public:
 
     }
 
-    void OnInvokeGarbageCollector(){
-        gc.Collect();
-    }
-
     std::map<std::string, std::unique_ptr<AdvancedActorSpawner>> spawnable_actor_map;
 
 };

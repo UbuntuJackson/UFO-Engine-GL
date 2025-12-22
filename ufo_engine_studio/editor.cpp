@@ -147,6 +147,7 @@ void Editor::OnUpdate(float _delta_time){
         refresh_entire_project = false;
     }
 
+    gc.Collect();
 }
 
 void BuildAndRunProgram(const std::string& _build_directory){
