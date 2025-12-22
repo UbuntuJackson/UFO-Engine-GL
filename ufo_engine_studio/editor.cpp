@@ -101,7 +101,7 @@ void Editor::OnUpdate(float _delta_time){
         if (ImGui::BeginMenu("File"))
         {
             if(ImGui::MenuItem("Save")){
-                active_tab->OnSave(this);
+                if(active_tab) active_tab->OnSave(this);
             }
 
             if (ImGui::BeginMenu("New File"))

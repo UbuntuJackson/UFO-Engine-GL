@@ -46,6 +46,7 @@ set(
     src/shader.cpp
     src/sprite_renderer.cpp
     src/sprite.cpp
+    src/animation.cpp
     src/openglv4_5_asset_manager.cpp
     src/Main.cpp
     src/text_rendering.cpp

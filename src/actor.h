@@ -377,6 +377,6 @@ public:
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor);
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 
 };

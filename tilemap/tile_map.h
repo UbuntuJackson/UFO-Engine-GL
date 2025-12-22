@@ -43,4 +43,6 @@ public:
     void OnViewProperties(int _index);
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
+
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

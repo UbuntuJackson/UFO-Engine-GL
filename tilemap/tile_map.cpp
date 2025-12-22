@@ -6,6 +6,7 @@
 #include "../src/actor.h"
 #include "../src/level.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "../ufo_garbage_collector/garbage_collector.h"
 #include "../src/engine.h"
 #include "../src/graphics.h"
 #include "../src/engine.h"
@@ -125,4 +126,15 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
         int tile_to_be_set = clicked_tile_y*number_of_columns + clicked_tile_x;
         tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
     }
+}
+
+ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
+    Console::PrintLine("Does this even run?");
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+    ufo::gc::JsonArray* tiles = _gc->New<ufo::gc::JsonArray>();
+
+    for(const auto& i : tilemap_data) tiles->array.push_back(_gc->New<ufo::gc::JsonNumber>(i));
+    parent_class_as_json->map.emplace("tiles",tiles);
+    return parent_class_as_json;
 }
