@@ -18,6 +18,7 @@
 #include "../src/sprite.h"
 #include "../src/camera.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "../tilemap/tile_map.h"
 
 namespace UFOEngineStudio{
 
@@ -107,6 +108,12 @@ public:
         spawnable_actor_map.emplace("Actor",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Actor>(Vector2f(0.0f, 0.0f));
+            }))
+        );
+
+        spawnable_actor_map.emplace("TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<TileMap>(Vector2f(0.0f, 0.0f));
             }))
         );
 

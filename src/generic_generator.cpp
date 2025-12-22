@@ -6,6 +6,7 @@
 #include "camera.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"
+#include "../tilemap/tile_map.h"
 
 namespace ufo{
 
@@ -21,6 +22,18 @@ void GenericGenerator::Initialise(){
             return std::move(instance);
         }
     );
+
+    factory_map.emplace(
+           "TileMap",
+           [](ufo::gc::JsonMap* _json){
+               std::string name = _json->map.at("name")->AsString();
+               float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+               float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+               auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
+               instance->editor_name = name;
+               return std::move(instance);
+           }
+       );
 
     factory_map.emplace(
         "Camera",

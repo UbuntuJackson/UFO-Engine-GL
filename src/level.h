@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "actor.h"
+#include "../tilemap/tileset_manager.h"
 
 class Camera;
 
@@ -13,6 +14,8 @@ namespace ufo{
 
 class Level : public Actor{
 public:
+    TilesetManager tileset_manager;
+
     Vector2f size = {20000.0f, 3000.0f};
 
     enum CleanUpModes{
@@ -28,6 +31,7 @@ public:
     int clean_up_mode = CleanUpModes::EACH_FRAME;
 
     Level();
+    void OnSpawn();
 
     int control_handout_counter = -1;
     ufo::Controls* GetControls();

@@ -210,6 +210,29 @@ public:
         }
     };
 
+    class EditorPropertyIntHandle : public EditorProperty{
+    public:
+        int* value = nullptr;
+
+        EditorPropertyIntHandle(const std::string& _name,const std::string& _alias, int* _value) : EditorProperty(_name,_alias), value{_value}{}
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::InputInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(*value));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyIntHandle>(variable_name,alias,value);
+        }
+    };
+
     class EditorPropertyInt : public EditorProperty{
     public:
         int value = 0;

@@ -57,6 +57,9 @@ set(
     json/json.cpp
     external/cJSON.c
 
+    tilemap/tile_map.cpp
+    tilemap/tileset_manager.cpp
+
     ufo_maths/ufo_maths.cpp
     shapes/circle.cpp
     shapes/pill.cpp

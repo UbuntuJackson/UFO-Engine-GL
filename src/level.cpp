@@ -9,9 +9,14 @@
 #include "camera.h"
 #include "sprite_renderer.h"
 #include "../shapes/rectangle.h"
+#include "../tilemap/tileset_manager.h"
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
+}
+
+void Level::OnSpawn(){
+    tileset_manager.engine = engine;
 }
 
 ufo::Controls* Level::GetControls(){
@@ -23,7 +28,6 @@ ufo::Controls* Level::GetControls(){
 
 void
 Level::Load(){
-
 
 }
 
