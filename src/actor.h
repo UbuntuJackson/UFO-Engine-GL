@@ -185,6 +185,8 @@ public:
         }
 
         virtual std::unique_ptr<EditorProperty> Copy() = 0;
+
+        virtual ~EditorProperty() = default;
     };
 
     class EditorPropertyFloatHandle : public EditorProperty{

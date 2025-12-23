@@ -35,7 +35,7 @@ OpenGLv4_5_Graphics::OpenGLv4_5_Graphics(Engine* _engine) : engine{_engine}{
         std::string(_engine->engine_path+"/shaders/circle_vertex_shader.cs").c_str(),
         std::string(_engine->engine_path+"/shaders/circle_fragment_shader.cs").c_str(),
         nullptr, "circle_shader");
-    
+
     glm::mat4 projection = glm::ortho(
         0.0f, static_cast<float>(_engine->width),
         static_cast<float>(engine->height), 0.0f,
@@ -43,12 +43,12 @@ OpenGLv4_5_Graphics::OpenGLv4_5_Graphics(Engine* _engine) : engine{_engine}{
     );
 
     Console::PrintLine("Shader program id:",shader.shader_program_id);
-    
+
     _engine->asset_manager.LoadTexture(_engine->engine_path+"/res/face.png", "face", true);
 
     circle_shader.Use();
     circle_shader.SetMatrix4("projection", projection);
-    
+
 
     rectangle_shader.Use();
     rectangle_shader.SetInt("image", 0);
@@ -75,7 +75,7 @@ void OpenGLv4_5_Graphics::SetProjection(float _left, float _right, float _bottom
 
     circle_shader.Use();
     circle_shader.SetMatrix4("projection", projection);
-    
+
 
     rectangle_shader.Use();
     rectangle_shader.SetInt("image", 0);
@@ -98,7 +98,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(){
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f,
-        
+
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f
@@ -109,7 +109,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(){
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f,
-        
+
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f
@@ -135,7 +135,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(){
 
     glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER,0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
@@ -156,7 +156,7 @@ void OpenGLv4_5_Graphics::DrawSprite(
 
     model = glm::scale(model, glm::vec3(_v_scale, 1.0f));
     model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
-    
+
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
@@ -212,7 +212,7 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
 
     model = glm::scale(model, glm::vec3(_v_scale, 1.0f));
     model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
-    
+
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
@@ -247,7 +247,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f,
-        
+
         0.0f, 1.0f, 0.0f, 1.0f,
         1.0f, 1.0f, 1.0f, 1.0f,
         1.0f, 0.0f, 1.0f, 0.0f
@@ -255,9 +255,9 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
 
     unsigned int texture_width = engine->asset_manager.textures.at(_texture_key).width;
     unsigned int texture_height = engine->asset_manager.textures.at(_texture_key).height;
-    
+
     glm::vec2 size = glm::vec2((float)texture_width, (float)texture_height);
-    
+
     glm::vec2 sample_size_normalised = _sample_size/size;
 
     glm::vec2 sample_position_normalised = _sample_position/size;
@@ -267,14 +267,11 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
         0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
         sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f,
         0.0f, 0.0f, 0.0f, 0.0f,
-        
+
         0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
         sample_size_normalised.x, sample_size_normalised.y, sample_size_normalised.x, sample_size_normalised.y,
         sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f
     };
-
-    glGenVertexArrays(1, &quadVAO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glGenBuffers(1, &VBO);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
@@ -293,7 +290,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
 
     glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
-    
+
     glBindBuffer(GL_ARRAY_BUFFER,0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
@@ -311,7 +308,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
 
     model = glm::scale(model, glm::vec3(_v_scale, 1.0f));
     model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
-    
+
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
@@ -334,7 +331,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
     glBindVertexArray(0);
     //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
-    InitialiseRenderData();
+    glDeleteBuffers(1, &VBO);
 
 }
 
@@ -352,7 +349,7 @@ void OpenGLv4_5_Graphics::CreateFrameBuffer(){
     glBindTexture(GL_TEXTURE_2D, texture_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (uint32_t)engine->width, (uint32_t)engine->height,
         0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-    
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -362,13 +359,13 @@ void OpenGLv4_5_Graphics::CreateFrameBuffer(){
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
         (uint32_t)engine->width, (uint32_t)engine->height);
-    
+
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
         Console::PrintLine("Error, framebuffer no good");
     }
-    
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
