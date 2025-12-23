@@ -99,7 +99,7 @@ void Engine::EditorUpdate(){
     float fElapsedTime = elapsedTime.count();
     fLastElapsed = fElapsedTime;
 
-    level->EditorUpdatePhase(fLastElapsed);
+    level_handle->EditorUpdatePhase(fLastElapsed);
 }
 
 void Engine::Update(){
@@ -114,14 +114,14 @@ void Engine::Update(){
     float fElapsedTime = elapsedTime.count();
     fLastElapsed = fElapsedTime;
 
-    level->UpdatePhrase(fLastElapsed);
+    level_handle->UpdatePhrase(fLastElapsed);
 
     //Console::PrintLine(1.0f/fLastElapsed);
 }
 
 void Engine::UpdatePixelGameEngine(float _delta_time){
 
-    level->UpdatePhrase(_delta_time);
+    level_handle->UpdatePhrase(_delta_time);
 
 }
 
@@ -161,12 +161,12 @@ void Engine::BrushTest(){
 
 void Engine::Render(){
 
-    level->DrawPhase(graphics.get());
+    level_handle->DrawPhase(graphics.get());
 
 }
 
 void Engine::EditorRender(){
-    level->EditorDrawPhase();
+    level_handle->EditorDrawPhase();
 }
 
 void Engine::GarbageCollect(){

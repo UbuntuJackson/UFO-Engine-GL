@@ -106,7 +106,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
 
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
-    engine->level->Load();
+    engine->level_handle->Load();
 
     /*ForImGUI*/
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -254,7 +254,7 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
-    engine->level->Load();
+    engine->level_handle->Load();
 
     while(!engine->quit){
         SDL_Event event;

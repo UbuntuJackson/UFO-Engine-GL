@@ -39,7 +39,8 @@ public:
     float fLastElapsed = 0.0f;
     std::chrono::time_point<std::chrono::system_clock> m_tp1, m_tp2;
 
-    std::unique_ptr<Level> level = nullptr;
+    Level* level_handle = nullptr;
+    std::unique_ptr<Actor> level = nullptr;
 
     ufo::TextRenderer text_renderer;
 

@@ -31,7 +31,7 @@ ufo::Controls* Level::GetControls(){
 
 void
 Level::Load(){
-    if(!parent) Level::OnSpawn();
+
 }
 
 void Level::Update(float _delta_time){}
