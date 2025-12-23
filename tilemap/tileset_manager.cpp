@@ -21,17 +21,6 @@
 #include "../ufo_engine_studio/editor.h"
 
 TilesetManager::TilesetManager(){
-    tileset_data.push_back(TilesetData{
-        "tileset",
-        6,
-        1,
-        96,
-        80,
-        16,
-        16,
-        6*5,
-        false
-    });
 }
 
 void TilesetManager::InitialiseTextures(){
