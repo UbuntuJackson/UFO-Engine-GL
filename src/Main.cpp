@@ -255,6 +255,7 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
     engine->level_handle->Load();
+    engine->level->OnSpawn();
 
     while(!engine->quit){
         SDL_Event event;
