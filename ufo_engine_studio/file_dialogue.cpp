@@ -1,10 +1,11 @@
 #include <SDL3/SDL.h>
 #include "editor.h"
 #include <string>
-#include "file_utilities.h"
+#include "file_dialogue.h"
 #include "level_editor_tab.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "text_editor_tab.h"
+#include "../tilemap/tileset_manager.h"
 
 namespace UFOEngineStudio{
 
@@ -29,6 +30,15 @@ void OnNewActorFile(void *_tab, const char * const *_filelist, int _filter){
     level_json->Write(tab->path);
 
     tab->Refresh();
+
+}
+
+void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
+    if(*_filelist == nullptr) return; //Should file not have been selected
+
+    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
+
+    level_editor_tab->this_level->tileset_manager.AddTileset(*_filelist, level_editor_tab);
 
 }
 

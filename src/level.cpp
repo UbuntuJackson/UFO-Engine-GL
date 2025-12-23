@@ -13,10 +13,13 @@
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
+    base_class_name = class_name;
 }
 
 void Level::OnSpawn(){
     tileset_manager.engine = engine;
+
+    tileset_manager.InitialiseTextures();
 }
 
 ufo::Controls* Level::GetControls(){

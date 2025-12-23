@@ -18,6 +18,11 @@ namespace ufo{
     }
 }
 
+namespace UFOEngineStudio{
+    class LevelEditorTab;
+    class Editor;
+}
+
 class Camera;
 
 struct TileCollisionData{
@@ -28,6 +33,8 @@ struct TileCollisionData{
 class TilesetManager{
 public:
     ufo::Engine* engine = nullptr;
+
+    bool in_editor = false;
 
     const int EMPTY = 0;
     const int FULL = 1;
@@ -56,11 +63,17 @@ public:
     //  firstgid, key
     std::vector<TilesetData> tileset_data;
 
+    void InitialiseTextures();
+
+    void InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor);
+
     TilesetData GetTilesetData(std::string _name);
 
     void Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json);
 
-    void EditorTilesetWidget();
+    void AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    void EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     TilesetManager();
 

@@ -10,6 +10,7 @@ struct TilesetData{
     float tile_width;
     float tile_height;
     int tile_count;
+    bool is_loaded_from_path = true;
 };
 
 #endif

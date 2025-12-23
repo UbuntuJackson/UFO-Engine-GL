@@ -69,4 +69,27 @@ public:
 
     }
 
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc){
+
+        ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+        ufo::gc::JsonArray* tilesets = _gc->New<ufo::gc::JsonArray>();
+
+        for(const auto& tileset : tileset_manager.tileset_data){
+            if(!tileset.is_loaded_from_path) continue;
+            ufo::gc::JsonMap* j_tileset = _gc->New<ufo::gc::JsonMap>();
+            j_tileset->map.emplace("name",_gc->New<ufo::gc::JsonString>(tileset.name));
+            j_tileset->map.emplace("columns",_gc->New<ufo::gc::JsonNumber>(tileset.columns));
+            j_tileset->map.emplace("tileset_start_id",_gc->New<ufo::gc::JsonNumber>(tileset.tileset_start_id));
+            j_tileset->map.emplace("image_width",_gc->New<ufo::gc::JsonNumber>(tileset.image_width));
+            j_tileset->map.emplace("image_height",_gc->New<ufo::gc::JsonNumber>(tileset.image_height));
+            j_tileset->map.emplace("tile_width",_gc->New<ufo::gc::JsonNumber>(tileset.tile_width));
+            j_tileset->map.emplace("tile_height",_gc->New<ufo::gc::JsonNumber>(tileset.tile_height));
+            j_tileset->map.emplace("tile_count",_gc->New<ufo::gc::JsonNumber>(tileset.tile_count) );
+            tilesets->array.push_back(j_tileset);
+        }
+
+        parent_class_as_json->map.emplace("tilesets",tilesets);
+        return parent_class_as_json;
+    }
+
 };

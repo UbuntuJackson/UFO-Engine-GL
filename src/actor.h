@@ -368,7 +368,7 @@ public:
 
     std::string find_actor_search_field = "";
 
-    virtual void OnViewProperties(int _index);
+    virtual void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 

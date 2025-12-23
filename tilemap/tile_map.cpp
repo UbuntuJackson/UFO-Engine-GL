@@ -23,6 +23,7 @@ void TileMap::OnSpawn(){
 }
 
 TileMap::TileMap(Vector2f _) : Actor(_){
+    base_class_name = "TileMap";
     InitEditorProperties();
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
 }
@@ -110,13 +111,13 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
 }
 
-void TileMap::OnViewProperties(int _index){
-    Actor::OnViewProperties(_index);
-    level->tileset_manager.EditorTilesetWidget();
+void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    Actor::OnViewProperties(_level_editor_tab, _index);
+    level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
 }
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
-    if(ImGui::IsMouseClicked(1)){
+    if(ImGui::IsItemClicked(0)){
         ImVec2 mouse_pos = ImGui::GetMousePos();
         ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 

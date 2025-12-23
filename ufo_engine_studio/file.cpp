@@ -3,11 +3,12 @@
 #include "file_node.h"
 #include "file.h"
 #include "directory.h"
-#include "../file/file.h"
 #include "editor.h"
+#include <exception>
 #include <filesystem>
 #include <memory>
-#include "file_utilities.h"
+#include "file_dialogue.h"
+#include "../file/file_utils.h"
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
 
@@ -23,16 +24,26 @@ namespace UFOEngineStudio{
                 editing_name = false;
 
                 if(is_new_file){
-                    File f = File::New();
-                    f.Insert("");
-                    f.Write(_editor->opened_directory_path + path+"/"+file_name);
+                    try{
+                        std::string save_path = _editor->opened_directory_path + path+"/"+file_name;
+
+                        ufo::FileSystem::Write(save_path, "");
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("[UFO Engine Studio]", _error.what());
+                    }
 
                     is_new_file = false;
                 }
                 else{
-                    std::filesystem::rename(_editor->opened_directory_path + path + "/" + old_file_name, _editor->opened_directory_path + path + "/" + file_name);
-                }
+                    try{
+                        ufo::FileSystem::Rename(_editor->opened_directory_path + path + "/" + old_file_name, _editor->opened_directory_path + path + "/" + file_name);
 
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("[UFO Engine Studio]", _error.what());
+                    }
+                }
                 _editor->should_refresh_working_directory = true;
             }
         }
@@ -68,8 +79,16 @@ namespace UFOEngineStudio{
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
                 auto level = _editor->AddActorUniquePtr(
-                        std::move(_editor->engine->actor_generator->JsonToLevelTree(&(_editor->gc), level_json))
+                        std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json))
                     )->DynamicCast<Level>();
+
+                if(!level){
+                    level = _editor->AddActorUniquePtr(
+                            std::move(_editor->engine->actor_generator->JsonToLevelTree(&(_editor->gc), level_json))
+                        )->DynamicCast<Level>();
+                    Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
+                }
+
 
                 auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
                 level_editor_tab->this_level = level;
@@ -78,16 +97,21 @@ namespace UFOEngineStudio{
                 _editor->tabs.push_back(std::move(level_editor_tab));
                 _editor->refresh_entire_project = true;
 
+
             }
 
             if(IsExtension(path+"/"+file_name, "cpp") || IsExtension(path+"/"+file_name, "h") || IsExtension(path+"/"+file_name, "txt")){
-                auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor);
+                try{
+                    auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor);
 
-                text_editor_tab->text = File().Read(_editor->opened_directory_path+path+"/"+file_name);
-                text_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
+                    text_editor_tab->text = ufo::FileSystem::Read(_editor->opened_directory_path+path+"/"+file_name);
+                    text_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
 
-                _editor->tabs.push_back(std::move(text_editor_tab));
-                _editor->refresh_entire_project = true;
+                    _editor->tabs.push_back(std::move(text_editor_tab));
+                    _editor->refresh_entire_project = true;
+                } catch(const std::exception& _error){
+                    Console::PrintLine("[UFO-Engine Studio]", _error.what());
+                }
             }
         }
 

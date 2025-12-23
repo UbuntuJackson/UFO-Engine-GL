@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <vector>
 #include <unordered_map>
 #include <string>
@@ -12,8 +13,12 @@
 #include "../utils/console.h"
 #include "../json/json.h"
 #include "../shapes/rectangle.h"
+#include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
+#include "../file/file_utils.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/editor.h"
 
 TilesetManager::TilesetManager(){
     tileset_data.push_back(TilesetData{
@@ -24,8 +29,35 @@ TilesetManager::TilesetManager(){
         80,
         16,
         16,
-        6*5
+        6*5,
+        false
     });
+}
+
+void TilesetManager::InitialiseTextures(){
+    if(!engine->in_editor){
+        for(const auto& tileset : tileset_data){
+            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(tileset.name,tileset.name,true);
+        }
+    }
+    else{
+        //This might break at some point.
+        UFOEngineStudio::Editor* editor = engine->level->DynamicCast<UFOEngineStudio::Editor>();
+        for(const auto& tileset : tileset_data){
+            std::string path = editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
+            Console::PrintLine("Full Tileset Path",path);
+            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+        }
+    }
+
+}
+
+void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
+    for(const auto& tileset : tileset_data){
+        std::string path = _editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
+        Console::PrintLine("Full Tileset Path",path);
+        if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+    }
 }
 
 void TilesetManager::Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json){
@@ -96,9 +128,35 @@ TilesetData TilesetManager::GetTilesetData(std::string _name){
     };
 }
 
-void TilesetManager::EditorTilesetWidget(){
+void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    Console::PrintLine(_path, _level_editor_tab->editor->opened_directory_path);
+    Console::PrintLine(ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path));
+
+    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+
+    engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
+    int width = engine->asset_manager.textures.at(".."+relative_path).width;
+    int height = engine->asset_manager.textures.at(".."+relative_path).height;
+
+    int columns = (int)width/16;
+
+    int rows = (int)height/16;
+
+    tileset_data.push_back(
+        TilesetData{
+            ".."+relative_path,
+            columns,
+            tileset_data.back().tileset_start_id+tileset_data.back().tile_count,
+            (float)width, (float)height,
+            16.0f, 16.0f,
+            columns*rows
+        }
+    );
+}
+
+void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::Button("Add Tileset")){
-        //Open file dialogue here
+        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
@@ -115,7 +173,7 @@ void TilesetManager::EditorTilesetWidget(){
                 ImVec2 mouse_pos = ImGui::GetMousePos();
                 ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 
-                if(ImGui::IsMouseClicked(0)){
+                if(ImGui::IsItemClicked(0)){
 
 
                     int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/tileset.tile_width;

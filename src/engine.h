@@ -22,6 +22,7 @@ class Main;
 
 class Engine{
 public:
+    bool in_editor = false;
     bool quit = false;
 
     std::unique_ptr<GenericGenerator> actor_generator = std::make_unique<GenericGenerator>();

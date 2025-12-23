@@ -40,7 +40,7 @@ public:
 
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
-    void OnViewProperties(int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
 

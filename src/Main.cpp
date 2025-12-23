@@ -99,6 +99,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     engine->window = window;
 
     engine->Init(this);
+    engine->in_editor = true;
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
 
     engine->graphics->CreateFrameBuffer();

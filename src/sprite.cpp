@@ -18,6 +18,11 @@ current_frame_index{_frame_index}
     class_name = "Sprite";
 }
 
+void Sprite::OnSpawn(){
+    //if(frame_size.x > engine->asset_manager.at(key).w) frame_size.x = engine->asset_manager.at(key).w;
+    //if(frame_size.y > engine->asset_manager.at(key).h) frame_size.y = engine->asset_manager.at(key).h;
+}
+
 ufo::Rectangle
 Sprite::GetRectangle(int _x, int _y, Vector2f _frame_size){
     ufo::Rectangle rect = ufo::Rectangle({(float)(_x * _frame_size.x), (float)(_y * _frame_size.y)}, _frame_size);

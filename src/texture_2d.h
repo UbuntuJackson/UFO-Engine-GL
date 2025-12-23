@@ -5,7 +5,7 @@
 #include "../utils/opengl_utils.h"
 
 namespace ufo{
-    
+
 class Texture2D{
 public:
     //Holds the ID of the texture object used for texture operations.
@@ -19,7 +19,7 @@ public:
     unsigned int filter_mode_min; //Filtering mode if texture pixles < screen pixels?
     unsigned int filter_mode_max; //Filtering mode if texture pixles > screen pixels?
     Texture2D();
-    
+
     void Generate(unsigned int _width, unsigned int _height, unsigned char* _data);
 
     void Bind();

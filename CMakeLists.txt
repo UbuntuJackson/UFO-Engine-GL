@@ -53,7 +53,8 @@ set(
     src/control_settings.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
-    file/file.cpp
+    file/file.cpp #To be deprecated.
+    file/file_utils.cpp
     json/json_variant.cpp
     json/json.cpp
     external/cJSON.c
@@ -92,7 +93,7 @@ set(
     ufo_engine_studio/tab.cpp
     ufo_engine_studio/editor.cpp
     ufo_engine_studio/level_editor_tab.cpp
-    ufo_engine_studio/file_utilities.cpp
+    ufo_engine_studio/file_dialogue.cpp
     ufo_engine_studio/text_editor_tab.cpp
 
 )

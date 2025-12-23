@@ -6,7 +6,7 @@
 #include "editor.h"
 #include "tab.h"
 #include "../file/file.h"
-#include "file_utilities.h"
+#include "file_dialogue.h"
 
 namespace UFOEngineStudio{
 

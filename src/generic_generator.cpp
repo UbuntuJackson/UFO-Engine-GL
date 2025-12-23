@@ -30,6 +30,15 @@ void GenericGenerator::Initialise(){
                float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
                float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
                auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
+
+               auto tiles = _json->map.at("tiles")->AsArray();
+               instance->tilemap_data.clear();
+               instance->tilemap_data.reserve(tiles.size());
+
+               for(const auto& tile : tiles){
+                   instance->tilemap_data.push_back((int)tile->AsFloat());
+               }
+
                instance->editor_name = name;
                return std::move(instance);
            }
@@ -43,6 +52,36 @@ void GenericGenerator::Initialise(){
             float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
             auto instance = std::make_unique<Camera>(Vector2f(_x, _y));
             instance->editor_name = name;
+            return std::move(instance);
+        }
+    );
+
+    factory_map.emplace(
+        "Level",
+        [](ufo::gc::JsonMap* _json){
+            std::string name = _json->map.at("name")->AsString();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            auto instance = std::make_unique<Level>();
+            instance->editor_name = name;
+
+            ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
+            for(const auto& j_tileset : j_tilesets->AsArray()){
+
+                instance->tileset_manager.tileset_data.push_back(
+                    TilesetData{
+                        j_tileset->AsMap().at("name")->AsString(),
+                        (int)j_tileset->AsMap().at("columns")->AsFloat(),
+                        (int)j_tileset->AsMap().at("tileset_start_id")->AsFloat(),
+                        j_tileset->AsMap().at("image_width")->AsFloat(),
+                        j_tileset->AsMap().at("image_height")->AsFloat(),
+                        j_tileset->AsMap().at("tile_width")->AsFloat(),
+                        j_tileset->AsMap().at("tile_height")->AsFloat(),
+                        (int)j_tileset->AsMap().at("tile_count")->AsFloat()
+                    }
+                );
+            }
+
             return std::move(instance);
         }
     );
@@ -111,6 +150,9 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		for(const auto& [k,v] : custom_properties){
 		    //Iterate through custom properties
+
+			if(!v->AsMap().count("hint")) continue;
+
 			std::string hint = v->AsMap().at("hint")->AsString();
 			if(hint == ""){
 
@@ -127,7 +169,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 			else{
 
 			}
-			}
+		}
 
 	    return std::move(instance);
 	}

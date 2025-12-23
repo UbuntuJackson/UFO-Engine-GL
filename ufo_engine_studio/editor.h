@@ -117,6 +117,12 @@ public:
             }))
         );
 
+        spawnable_actor_map.emplace("Level",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<Level>();
+            }))
+        );
+
         spawnable_actor_map.emplace(
             "Sprite",
             std::move(std::make_unique<AdvancedActorSpawner>(

@@ -405,7 +405,7 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
     }
 }
 
-void Actor::OnViewProperties(int _index){
+void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
     bool search_field_active = true;
 
@@ -430,7 +430,7 @@ void Actor::OnViewProperties(int _index){
 
 void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     if(properties_open){
-        OnViewProperties(_index);
+        OnViewProperties(_level_editor_tab,_index);
         _level_editor_tab->currently_viewed_properties_actor_name = editor_name;
     }
     for(int i = 0; i < actors.size(); i++){
