@@ -24,6 +24,7 @@ void TileMap::OnSpawn(){
 
 TileMap::TileMap(Vector2f _) : Actor(_){
     base_class_name = "TileMap";
+    class_name = base_class_name;
     InitEditorProperties();
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
 }
