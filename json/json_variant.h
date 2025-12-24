@@ -16,6 +16,8 @@ public:
     std::string path;
     bool is_null = false;
 
+    virtual ~JsonVariant() = default;
+
     static JsonDictionary Read(std::string _path);
 
     std::string GetJsonAsString(){
@@ -78,7 +80,7 @@ public:
     bool IsNull(){
         return false;
     }
-    
+
     cJSON* GetObject(){
         cJSON* self = cJSON_CreateNumber(i);
         return self;
@@ -300,10 +302,10 @@ public:
 
             if(cJSON_IsBool(iterator)){
 
-                
+
                 j.Set(iterator->string ,float(iterator->valueint));
                 //Console::Out("Json::GetAsTree found double");
-                
+
 
             }
 
@@ -311,16 +313,16 @@ public:
                 j.Set(iterator->string,iterator->valuestring);
                 //Console::Out("Json::GetAsTree found number", iterator->string);
             }
-            
+
             if(cJSON_IsObject(iterator)){
                 j.Set(iterator->string,GetAsTree(iterator));
-                
+
                 //Console::Out("Json::GetAsTree found object", iterator->string);
             }
 
             if(cJSON_IsArray(iterator)){
                 j.Set(iterator->string,JsonArray::cJSON_ToArray(iterator));
-                
+
                 //Console::Out("Json::GetAsTree found object", iterator->string);
             }
         }
@@ -348,13 +350,13 @@ public:
 
             if(cJSON_IsBool(iterator)){
 
-                
+
                 j.Set(iterator->string ,float(iterator->valueint));
                 //Console::Out("Json::GetAsTree found double");
-                
+
 
             }
-            
+
             if(cJSON_IsString(iterator)){
                 j.Set(iterator->string,iterator->valuestring);
                 //Console::Out("Json::GetAsTree found String", iterator->string);
@@ -367,7 +369,7 @@ public:
 
             if(cJSON_IsArray(iterator)){
                 j.Set(iterator->string,JsonArray::cJSON_ToArray(iterator));
-                
+
                 //Console::Out("Json::GetAsTree found object", iterator->string);
             }
         }
