@@ -291,6 +291,28 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         //Read from json somehow to add the attributes, however tf that is gonna happen
 
         ImGui::Begin("Adding Actor");
+
+        std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
+
+        for(const auto& [k,v] : _editor->spawnable_actor_map){
+            if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
+            categories.at(v->category).push_back(v.get());
+        }
+
+        for(const auto& [k,v] : categories){
+            ImGui::Text("%s",k.c_str());
+            for(const auto& s : v){
+                if(ImGui::Button(std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str())){
+                    auto inst = s->Spawn(_editor);
+                    inst->class_name = k;
+                    AddActorUniquePtr(std::move(inst));
+                    adding_new_actor = false;
+                }
+            }
+        }
+
+        ImGui::Separator();
+
         for(const auto& [k,v] : _editor->spawnable_actor_map){
             if(ImGui::Button(std::string("Add "+k).c_str())){
                 auto inst = v->Spawn(_editor);
@@ -413,12 +435,16 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
     if(search_field_active){
         ImGui::InputText("FindActor...", &find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
-        Actor* actor = GetActor(find_actor_search_field);
-        if(actor != nullptr){
+        Actor* actor = nullptr;
+        try{
+             actor = GetActor(find_actor_search_field);
+        }
+        catch(const std::exception& _error){
 
-            if(ImGui::Button(std::string("Found actor: "+find_actor_search_field).c_str())){
+        }
 
-            }
+        if(ImGui::Button(std::string("Found actor: "+find_actor_search_field).c_str())){
+
         }
     }
 

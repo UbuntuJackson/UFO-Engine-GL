@@ -23,7 +23,7 @@ public:
     virtual bool IsNull(){return true;}
 
     ~Json(){
-        Console::PrintLine("Json Object destroyed", this);
+
     }
 
     virtual cJSON* GetObject(){

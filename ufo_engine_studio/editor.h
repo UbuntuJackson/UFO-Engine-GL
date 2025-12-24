@@ -60,17 +60,21 @@ public:
     class AdvancedActorSpawner{
     public:
         std::string actor_config_path = "";
+        std::string category = "";
 
         std::string base;
+        std::string class_name = "";
         std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> spawner_function;
         std::vector<std::unique_ptr<Actor::EditorProperty>> properties;
 
         AdvancedActorSpawner(
             std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
-            std::string _base = ""
+            std::string _base = "",
+            std::string _class_name = ""
         ) :
         spawner_function{_spawner_function},
-        base{_base}
+        base{_base},
+        class_name{_class_name}
         {}
 
         std::unique_ptr<Actor> Spawn(Editor* _editor){
@@ -108,19 +112,19 @@ public:
         spawnable_actor_map.emplace("Actor",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Actor>(Vector2f(0.0f, 0.0f));
-            }))
+            }, "Actor", "Actor"))
         );
 
         spawnable_actor_map.emplace("TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<TileMap>(Vector2f(0.0f, 0.0f));
-            }))
+            }, "TileMap", "TileMap"))
         );
 
         spawnable_actor_map.emplace("Level",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Level>();
-            }))
+            }, "Level", "Level"))
         );
 
         spawnable_actor_map.emplace(
@@ -135,14 +139,17 @@ public:
                         0.0f,
                         0
                     );
-                }
+                },
+                "Sprite",
+                "Sprite"
             ))
         );
 
         spawnable_actor_map.emplace("Camera",
             std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Camera>(Vector2f(0.0f, 0.0f));
-            }))
+            },
+            "Camera", "Camera"))
         );
     }
 
@@ -158,7 +165,8 @@ public:
             auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
                             return std::move(_editor->spawnable_actor_map.at(_this->base)->Spawn(_editor));
                         },
-                        inherits
+                        inherits,
+                        class_.at("name")->AsString()
                     );
 
             for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
@@ -168,6 +176,14 @@ public:
                         if(arr.size() == 1){
                             if(std::filesystem::exists(opened_directory_path+"/"+arr[0]->AsString())) act_spawner->actor_config_path = arr[0]->AsString();
                             else Console::PrintLine("[UFO-Engine Studio] Faulty actor_config path for class", class_.at("name")->AsString(), opened_directory_path+"/"+arr[0]->AsString());
+                        }
+                }
+                if(macro->AsMap().at("name")->AsString() == "ufo_category"){
+
+                        auto arr = macro->AsMap().at("args")->AsArray();
+                        if(arr.size() == 1){
+                            act_spawner->category = arr[0]->AsString();
+
                         }
                 }
             }

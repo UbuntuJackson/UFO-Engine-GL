@@ -151,6 +151,8 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
     for(const auto& actor : actors){
         actor->WidgetDraw(_graphics);
     }
+
+    engine->text_renderer.Test();
 }
 
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics){

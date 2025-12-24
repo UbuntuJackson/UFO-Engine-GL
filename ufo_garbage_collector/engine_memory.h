@@ -91,7 +91,7 @@ public:
     }*/
 
     virtual ~Object(){
-        Console::PrintLine("gc::Object::~Object",this);
+
     }
 
 };

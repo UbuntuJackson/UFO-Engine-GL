@@ -8,17 +8,29 @@
 #define __UFO_PRETTY_FUNCTION__ __FUNCSIG__
 #endif
 
+//These macros exposes your actor as spawnable in UFO-Engine Studio.
 #define ufo_class()
+
+//Add actor to a category.
 #define ufo_category(_category)
 
+//Specify a component tree representing the actor. Ex: ufo_actor_config(src/player.ason)
+#define ufo_actor_config(_path)
+// ?
+#define permanent_class_identifier(_identifier)
+
+//These macros are for member variables of an actor exposed to UFO-Engine Studio.
+//ufo_variable just exposes the variable with no modifications.
 #define ufo_variable()
 
+//For interval based values like sliders. Assign variable with equal operator to set a default value, ex. ufo_int_range(0,20) int number = 15;
 #define ufo_int_range(_min, _max)
 #define ufo_int_slider(_min,_max)
 
 #define ufo_float_range(_min, _max)
 #define ufo_float_slider(_min,_max, _step)
 
+//Sets the display name in the editor.
 #define ufo_alias(_alias)
 
 #define ufo_colour()
@@ -31,11 +43,11 @@
 
 #define ufo_ignore_file()
 
+//Adds a description to an exposed variable. Unimplemented.
 #define ufo_comment(_s)
 
+//Unimplemented, not sure what a ufo_method would mean.
 #define ufo_method()
-
-#define ufo_actor_config(_path)
 
 //This is not used
 #define ufo_garbage_collected()
