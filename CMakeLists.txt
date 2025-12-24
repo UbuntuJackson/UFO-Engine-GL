@@ -41,6 +41,7 @@ set(
     src/texture_2d.cpp
     #main.cpp
     src/level.cpp
+    src/input.cpp
     src/actor.cpp
     src/camera.cpp
     src/shader.cpp

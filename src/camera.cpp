@@ -1,5 +1,4 @@
-#include <string>
-#include "../external/olcPixelGameEngine.h"
+#include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "camera.h"
 #include "level.h"
@@ -17,7 +16,7 @@ void Camera::OnSpawn(){
     view = Bounds{0.0f,(float)engine->width, 0.0f, (float)engine->height};
     world = Bounds{0.0f,level->size.x, 0.0f ,level->size.y};
     clamp = true;
-    level->active_camera_handles.push_back(this);
+    if(!engine->in_editor) level->active_camera_handles.push_back(this);
     class_name = "Camera";
     base_class_name = "Camera";
 

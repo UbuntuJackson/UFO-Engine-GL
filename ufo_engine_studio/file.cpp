@@ -93,6 +93,7 @@ namespace UFOEngineStudio{
                 auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
                 level_editor_tab->this_level = level;
                 level_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
+                level_editor_tab->Initialise();
 
                 _editor->tabs.push_back(std::move(level_editor_tab));
                 _editor->refresh_entire_project = true;

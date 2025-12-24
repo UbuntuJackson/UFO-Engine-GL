@@ -1,0 +1,4 @@
+#2
+
+"As you see, unlike ordinary .h files, .ufo.h files are parsed by the UFO-Engine Header Tool."
+"Since .h files can contain more than one class, you need to mark your class with the ufo_class(), or ufo_category() macro."

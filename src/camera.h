@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string>
-#include "../external/olcPixelGameEngine.h"
+#include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 
 struct Bounds{

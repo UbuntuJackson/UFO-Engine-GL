@@ -25,6 +25,8 @@ public:
 
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
 
+    void Initialise();
+
     void Refresh();
 
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);

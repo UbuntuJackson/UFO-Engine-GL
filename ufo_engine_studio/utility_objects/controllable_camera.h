@@ -11,10 +11,14 @@ public:
 
     ControllableCamera(Vector2f _local_position) : Camera(_local_position){
         class_name = "ControllableCamera";
+        editor_name = "@InstanceControlableCamera";
+        is_savable = false;
     }
 
     void OnSpawn(){
         Camera::OnSpawn();
+
+        level->active_camera_handles.push_back(this);
 
         controls = level->GetControls();
     }
@@ -26,6 +30,10 @@ public:
         if(engine->keyboard.GetKey(controls->GetControl("left")).is_held) local_position.x -= _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("up")).is_held) local_position.y -= _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;
+    }
+
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+
     }
 
 };

@@ -66,6 +66,10 @@ TileMap::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _
         _frame_size); //1 can only give y = 1
 }
 
+void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+
+}
+
 void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     float scale = _camera->scale;
     Bounds world_bounds = _camera->world;

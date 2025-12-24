@@ -1,5 +1,6 @@
 #include <map>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include "level.h"
 #include "actor.h"
@@ -47,6 +48,7 @@ Actor* Actor::GetActor(std::string _path){
         else if(search_in_actor == actor->editor_name) return actor->GetActor(remaining_path);
     }
 
+    throw std::runtime_error("[UFO-Engine] Actor::GetActor: Did not find component at "+ _path);
 
     return nullptr;
 }
@@ -450,6 +452,50 @@ void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor){
     OnUpdateEditorViewport(_editor);
 }
 
+void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+    for(const auto& actor : actors){
+        actor->DrawGizmos(_graphics, _camera);
+    }
+    OnDrawGizmos(_graphics, _camera);
+}
+
+void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+    Vector2f pos_min = _camera->Transform(GetGlobalPosition()+editor_hitbox.position);
+    Vector2f pos_max = _camera->Transform(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
+
+    //Console::PrintLine(engine->mouse.GetPosition());
+
+    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
+
+    Vector2f cursor_pos = Vector2f(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+
+    ImVec2 content_pos = ImGui::GetWindowPos();
+    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+
+    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
+
+    Vector2f mouse_position_over_screenspace = engine->mouse.GetPosition()-editor_viewport_pos;
+
+    //Console::PrintLine(mouse_position_over_screenspace);
+
+    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size), _camera->TransformScreenToWorld(mouse_position_over_screenspace))){
+
+        if(engine->mouse.is_left_button_held){
+            Vector2f dp = engine->mouse.GetDeltaPosition();
+            Console::PrintLine("Overlapping", dp);
+            local_position += dp;
+            should_open_properties = true;
+        }
+    }
+
+
+    ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos_min.x+viewport_pos.x, pos_min.y+viewport_pos.y), ImVec2(pos_max.x+viewport_pos.x, pos_max.y+viewport_pos.y), 0xFF995555, 3.0f,ImDrawFlags_RoundCornersAll);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(pos_min.x+viewport_pos.x+8.0f, pos_min.y+viewport_pos.y+5.0f), ImVec2(pos_min.x+viewport_pos.x+8.0f, pos_min.y+viewport_pos.y+12.0f), 0xFFFFFFFF, 1.0f);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(pos_min.x+viewport_pos.x+5.0f, pos_min.y+viewport_pos.y+8.0f), ImVec2(pos_min.x+viewport_pos.x+12.0f, pos_min.y+viewport_pos.y+8.0f), 0xFFFFFFFF, 1.0f);
+}
+
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
@@ -468,7 +514,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 
     for(const auto& actor : actors){
-        children->array.push_back(actor->GetAsJson(_gc));
+        if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
     }
 
     this_actor->map.emplace("actors", children);

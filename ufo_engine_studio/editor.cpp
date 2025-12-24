@@ -59,6 +59,8 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
 
+    //UFOEngineStudio::Tutorial()
+
     ImGui::Begin("DemoDockspaceForGodsSake", nullptr, im_gui_window_flags);
 
     ImGuiID dock_space_id = ImGui::GetID("DemoDockspaceForGodsSake");
@@ -107,7 +109,9 @@ void Editor::OnUpdate(float _delta_time){
             if (ImGui::BeginMenu("New File"))
             {
                 if(ImGui::MenuItem("Level (.ason)")){
-                    tabs.push_back(std::make_unique<LevelEditorTab>(engine,this));
+                    auto tab = std::make_unique<LevelEditorTab>(engine,this);
+                    tab->Initialise();
+                    tabs.push_back(std::move(tab));
                 }
                 if(ImGui::MenuItem("Textfile (.txt)")){
                     tabs.push_back(std::make_unique<TextEditorTab>("","",this));

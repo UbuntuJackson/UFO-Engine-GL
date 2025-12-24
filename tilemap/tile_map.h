@@ -36,6 +36,8 @@ public:
 
     ufo::Rectangle GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
 
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);

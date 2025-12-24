@@ -119,6 +119,8 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
+    bool is_savable = true;
+
     static inline int editor_id_counter = 0;
     int editor_id = 0;
 
@@ -360,6 +362,8 @@ public:
     EditorPropertyVector2f* editor_attribute_local_position = nullptr;*/
 
 
+    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(16.0f, 16.0f));
+
     std::vector<std::unique_ptr<EditorProperty>> editor_properties;
 
     void RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _editor);
@@ -378,6 +382,10 @@ public:
 
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor);
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
+
+    virtual void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+
+    void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 

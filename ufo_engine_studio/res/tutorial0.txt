@@ -1,0 +1,12 @@
+#1
+
+"Thank you for checking out UFO-Engine Studio. This is an in-house engine and does not necessarily use standard C++ practices. "
+"The UFO-Engine is aiming to be a game-engine for 2D platformers and RPGs, and is currently under construction.\n"
+
+"All game-objects in UFO-Engine are referred to as Actor. This term was chosen partly to distinguish it from other concepts like 'entities'"
+"Everything that inherits from the baseclass 'Actor' is an actor. Like players, sprites, even tilemaps."
+
+"To place out actors in the UFO-Engine you create a new level file (.ason), vi file -> new -> level."
+"You then go to the level tree -> right-click -> new actor. Choose your preferred actor and there you go."
+
+"To create your own custom actors, you use the C++ programming language."

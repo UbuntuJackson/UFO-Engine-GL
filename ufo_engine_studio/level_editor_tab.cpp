@@ -16,8 +16,11 @@ namespace UFOEngineStudio{
 
 LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
     this_level = _editor->AddActor<Level>();
-    this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->Load();
+}
+
+void  LevelEditorTab::Initialise(){
+    this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
 }
 
 void LevelEditorTab::Refresh(){
@@ -74,6 +77,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         ImVec2(0,0),
         ImVec2(1,-1)
     );
+
+    this_level->DrawGizmosPhase(editor->engine->graphics.get());
+
     this_level->UpdateEditorViewport(editor);
 
     ImGui::End();

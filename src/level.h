@@ -59,6 +59,8 @@ public:
 
     void UpdatePhrase(float _delta_time);
 
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+
     void DrawPhase(ufo::Graphics* _graphics);
 
     virtual void EditorUpdatePhase(float _delta_time){
@@ -91,5 +93,7 @@ public:
         parent_class_as_json->map.emplace("tilesets",tilesets);
         return parent_class_as_json;
     }
+
+    void DrawGizmosPhase(ufo::Graphics* _graphics);
 
 };
