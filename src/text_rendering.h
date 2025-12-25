@@ -31,7 +31,7 @@ public:
 
     void Test(){
         //Console::PrintLine("TextRendering::Test");
-        RenderText("The quick brown fox.", 20.0f, 0.0f, 5.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
+        RenderText("きつね The quick brown fox.", 20.0f, 0.0f, 5.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 };
 

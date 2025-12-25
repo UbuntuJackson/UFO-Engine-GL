@@ -34,7 +34,7 @@ void TextRenderer::Init(Engine* _engine){
         throw;
     }
 
-    std::string font_name = "../UFO-Engine/res/AbyssinicaSIL-Regular.ttf";
+    std::string font_name = "../UFO-Engine/res/UbuntuSansMono-Italic[wght].ttf";
 
     if(font_name.empty()){
         Console::PrintLine("Error, failed to load font name");
@@ -52,7 +52,7 @@ void TextRenderer::Init(Engine* _engine){
 
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-        for(unsigned char c = 0; c < 128; c++){
+        for(int c = 0; c < 128; c++){
             if(FT_Load_Char(face, c, FT_LOAD_RENDER)){
                 Console::PrintLine("Error, Failed to load Glyph");
                 continue;
