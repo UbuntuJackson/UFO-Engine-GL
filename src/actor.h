@@ -380,8 +380,8 @@ public:
 
     void OpenProperties();
 
-    void UpdateEditorViewport(UFOEngineStudio::Editor* _editor);
-    virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
+    void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 

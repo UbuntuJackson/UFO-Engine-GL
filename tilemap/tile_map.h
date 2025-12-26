@@ -44,7 +44,7 @@ public:
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor);
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

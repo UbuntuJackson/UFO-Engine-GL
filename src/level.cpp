@@ -156,16 +156,8 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
 
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics){
 
-    if(active_camera_handles.size() == 1){
-        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width,(float)engine->height));
-        _graphics->SetProjection(0.0f, engine->width, engine->height, 0.0f);
+    for(const auto& actor : actors){
+        actor->DrawGizmos(_graphics,active_camera_handles.back());
     }
 
-    for(const auto& camera : active_camera_handles){
-        glViewport(camera->viewport.position.x, camera->viewport.position.y, camera->viewport.size.x,camera->viewport.size.y);
-        _graphics->SetProjection(0.0f, camera->viewport.size.x, camera->viewport.size.y, 0.0f);
-        for(const auto& actor : actors){
-            actor->DrawGizmos(_graphics,camera);
-        }
-    }
 }

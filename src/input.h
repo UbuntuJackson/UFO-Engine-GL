@@ -6,6 +6,9 @@
 
 class Mouse{
 public:
+    Vector2f position;
+    Vector2f former_position;
+    Vector2f delta_position;
 
     bool is_left_button_held = false;
     bool is_left_button_pressed = false;

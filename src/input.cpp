@@ -2,8 +2,10 @@
 #include "../ufo_maths/ufo_maths.h"
 #include <unordered_map>
 #include "input.h"
+#include "../utils/console.h"
 
 void Mouse::ResetTemporaryStates(){
+    former_position = position;
     //Reset pressed and released variables as those don't carry over to the next frame
     is_left_button_pressed = false;
     is_left_button_released = false;
@@ -12,6 +14,7 @@ void Mouse::ResetTemporaryStates(){
 }
 
 void Mouse::CheckEvents(SDL_Event& event){
+
     if(event.type == SDL_EVENT_MOUSE_BUTTON_DOWN){
         if(event.button.button == SDL_BUTTON_LEFT){
             is_left_button_held = true;
@@ -34,6 +37,15 @@ void Mouse::CheckEvents(SDL_Event& event){
         }
 
     }
+    if(event.type = SDL_EVENT_MOUSE_MOTION){
+
+        position = Vector2f(event.motion.x, event.motion.y);
+        //Console::PrintLine(position);
+    }
+
+    //position = GetPosition();
+
+    //delta_position = GetDeltaPosition();
 }
 
 Vector2f Mouse::GetDeltaPosition(){

@@ -78,9 +78,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         ImVec2(1,-1)
     );
 
-    this_level->DrawGizmosPhase(editor->engine->graphics.get());
+    this_level->UpdateEditorViewport(editor, this);
 
-    this_level->UpdateEditorViewport(editor);
+    this_level->DrawGizmosPhase(editor->engine->graphics.get());
 
     ImGui::End();
 }

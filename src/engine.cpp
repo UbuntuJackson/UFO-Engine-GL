@@ -133,7 +133,7 @@ void Engine::BrushTest(){
         int brush_width = 64;
         int brush_height = 64;
 
-        BrushRectangle br = CutOutRectangle(BrushRectangle{0,0,int(texture.width), int(texture.height)}, BrushRectangle{int(mouse.GetPosition().x), int(mouse.GetPosition().y), brush_width, brush_height});
+        BrushRectangle br = CutOutRectangle(BrushRectangle{0,0,int(texture.width), int(texture.height)}, BrushRectangle{int(mouse.position.x), int(mouse.position.y), brush_width, brush_height});
 
         if(br.is_on_canvas){
 

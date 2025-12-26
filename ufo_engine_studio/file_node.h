@@ -14,6 +14,8 @@ class Directory;
 class FileNode{
 public:
 
+    virtual ~FileNode() = default;
+
     static inline int file_id_counter = 0;
     int id = 0;
 
@@ -22,7 +24,7 @@ public:
         editing_name = true;
         old_file_name = file_name;
     }
-    
+
     bool to_be_deleted = false;
     std::vector<std::unique_ptr<FileNode>> file_nodes_to_be_added_at_end_of_frame;
 

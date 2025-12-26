@@ -26,6 +26,7 @@ public:
     std::string name_and_imgui_id;
     Tab(Editor* _editor);
 
+    virtual ~Tab() = default;
     virtual void Refresh();
 
     virtual void Update(Editor* _program_state, float _delta_time);

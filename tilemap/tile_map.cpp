@@ -121,7 +121,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
 }
 
-void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
+void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::IsItemClicked(0)){
         ImVec2 mouse_pos = ImGui::GetMousePos();
         ImVec2 item_rect_pos = ImGui::GetItemRectMin();
@@ -130,7 +130,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor){
         int clicked_tile_y = int(mouse_pos.y-item_rect_pos.y)/tile_height;
 
         int tile_to_be_set = clicked_tile_y*number_of_columns + clicked_tile_x;
-        tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
+        if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
     }
 }
 
