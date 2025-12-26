@@ -29,6 +29,7 @@ void Editor::OpenFolder(std::string _path){
 
 void
 Editor::Load(){
+    engine->asset_manager.LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
 
     Level::Load();
 

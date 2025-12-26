@@ -362,7 +362,7 @@ public:
     EditorPropertyVector2f* editor_attribute_local_position = nullptr;*/
 
 
-    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(16.0f, 16.0f));
+    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(32.0f, 32.0f));
 
     std::vector<std::unique_ptr<EditorProperty>> editor_properties;
 
