@@ -59,6 +59,8 @@ public:
 
     void UpdatePhrase(float _delta_time);
 
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     void DrawPhase(ufo::Graphics* _graphics);

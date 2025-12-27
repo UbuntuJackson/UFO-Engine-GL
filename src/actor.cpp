@@ -233,7 +233,6 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor){
 
         }*/
 
-        Console::PrintLine("Clearing actor", actors[a]->editor_name);
         for(int i = actors[a]->actors.size()-1; i != -1; i--){
             if(actors[a]->actors[i]->is_imported){
                 old_actors.emplace(actors[a]->actors[i]->editor_name, std::move(actors[a]->actors[i]));
@@ -594,11 +593,21 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 
     Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
 
+    ImU32 colour = 0xFFFFFFFF;
+    if(parent->base_class_name != "Level") colour = 0xFF664422;
+
+    ImU32 line_clour =  0x66664422;
+
+    for(const auto& child : actors){
+        Vector2f this_screen_pos = viewport_pos + global_position;
+
+        Vector2f child_screen_pos = viewport_pos + _camera->Transform(child->GetGlobalPosition());
+
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y), ImVec2(this_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, child_screen_pos.y), ImVec2(child_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
+    }
 
     //ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos_min.x+viewport_pos.x, pos_min.y+viewport_pos.y), ImVec2(pos_max.x+viewport_pos.x, pos_max.y+viewport_pos.y), 0xFF995555, 3.0f,ImDrawFlags_RoundCornersAll);
-
-    ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "Level") colour = 0xFF666060;
 
     ImGui::GetWindowDrawList()->AddImage((ImTextureID)(intptr_t)(engine->asset_manager.textures.at("actor_icon").id), ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y), ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y),
         ImVec2(0,0),ImVec2(1,1), colour);

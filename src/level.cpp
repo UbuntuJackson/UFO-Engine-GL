@@ -66,6 +66,10 @@ void Level::UpdatePhrase(float _delta_time){
     CleanUpDeadActors();
 }
 
+void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+}
+
 void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 
 }

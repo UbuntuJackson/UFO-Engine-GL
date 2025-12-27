@@ -48,7 +48,7 @@ TileMap::Load(ufo::gc::JsonMap* _layer){
 }
 
 int TileMap::GetTileID_AtLevelPosition(Vector2f _position){
-    int tile_id = tilemap_data[int(_position.y/16.0f) * number_of_columns + (_position.x/16.0f)];
+    int tile_id = tilemap_data[int(_position.y/tile_height) * number_of_columns + (_position.x/tile_width)];
     return tile_id;
 }
 
