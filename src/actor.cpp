@@ -16,6 +16,7 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include <sstream>
+#include <unordered_map>
 
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}{
     editor_id = editor_id_counter++;
@@ -203,6 +204,70 @@ void Actor::SortActors(){
     should_be_sorted = false;
 }
 
+void Actor::DeclareImportedRecursive(){
+    is_imported = true;
+    for(auto& actor : new_actor_queue){
+        actor->DeclareImportedRecursive();
+    }
+}
+
+void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor){
+    if(new_actor_queue.size() != 0) return;
+    Console::PrintLine("Saw",editor_name, actors.size(), new_actor_queue.size());
+
+    for(int a = 0; a < actors.size(); a++){
+
+        //This part is good, usavable objects aren't supposed to be modified
+        if(!actors[a]->is_savable) continue;
+
+        actors[a]->UpdateActorStructure(_editor);
+
+        auto act = _editor->spawnable_actor_map.at(actors[a]->class_name)->Spawn(_editor);
+        act->class_name = actors[a]->class_name;
+
+        std::unordered_map<std::string, std::unique_ptr<Actor>> old_actors;
+
+        /*for(int b = actors[a]->actors.size()-1; b != -1; b++){
+
+            old_actors.emplace(actors[a]->actors[b]->editor_name, std::move(actors[a]->actors[b]));
+
+        }*/
+
+        Console::PrintLine("Clearing actor", actors[a]->editor_name);
+        for(int i = actors[a]->actors.size()-1; i != -1; i--){
+            if(actors[a]->actors[i]->is_imported){
+                old_actors.emplace(actors[a]->actors[i]->editor_name, std::move(actors[a]->actors[i]));
+                actors[a]->actors.erase(actors[a]->actors.begin()+i);
+            }
+            else{
+
+            }
+        }
+
+        for(int b = 0; b < act->new_actor_queue.size(); b++){
+            if(old_actors.count(act->new_actor_queue[b]->editor_name)){
+
+                act->new_actor_queue[b] = std::move(old_actors.at(act->new_actor_queue[b]->editor_name));
+
+                /*act->new_actor_queue[b]->engine = old_actors.at(act->new_actor_queue[b]->editor_name)->engine;
+                act->new_actor_queue[b]->parent = old_actors.at(act->new_actor_queue[b]->editor_name)->parent;
+                act->new_actor_queue[b]->level = old_actors.at(act->new_actor_queue[b]->editor_name)->level;
+                OnAddActor(act->new_actor_queue[b].get());*/
+
+                old_actors.erase(act->new_actor_queue[b]->editor_name);
+
+            }
+
+        }
+
+        for(auto&& actor : act->new_actor_queue){
+            actors[a]->AddActorUniquePtr(std::move(actor));
+        }
+
+    }
+
+}
+
 void Actor::TurnOnEditMode(){
     editing_name = true;
     old_editor_name = editor_name;
@@ -234,7 +299,9 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         ImGui::EndDragDropTarget();
     }
 
-    bool tree_node_opened = ImGui::TreeNodeEx(editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+"###Actor"+std::to_string(editor_id)).c_str());
+    std::string imported_or_not_str = is_imported ? "(imported)" : "";
+
+    bool tree_node_opened = ImGui::TreeNodeEx(editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str());
 
     if(editing_name){
         ImGui::SameLine();
@@ -304,7 +371,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             for(const auto& s : v){
                 if(ImGui::Button(std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str())){
                     auto inst = s->Spawn(_editor);
-                    inst->class_name = k;
                     AddActorUniquePtr(std::move(inst));
                     adding_new_actor = false;
                 }

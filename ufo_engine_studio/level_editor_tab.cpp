@@ -25,6 +25,7 @@ void  LevelEditorTab::Initialise(){
 
 void LevelEditorTab::Refresh(){
     Tab::Refresh();
+    this_level->UpdateActorStructure(editor);
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
 

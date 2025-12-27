@@ -73,6 +73,18 @@ public:
         return actor_ptr;
     }
 
+    Actor* ReplaceActorUniquePtr(int _index,std::unique_ptr<Actor> _u_actor){
+        auto actor_ptr = _u_actor.get();
+        actor_ptr->parent = this;
+        //actor_ptr->level = level;
+        OnAddActor(actor_ptr);
+        //actor_ptr->engine = engine;
+        //actor_ptr->OnSpawn();
+        actors.at(_index) = std::move(_u_actor);
+        //new_actor_queue.push_back(std::move(_u_actor));
+        return actor_ptr;
+    }
+
     //Actor(const Actor&) = delete;
     //Actor(Actor&&) = delete;
 
@@ -163,6 +175,8 @@ public:
     std::string old_editor_name = "";
 
     void TurnOnEditMode();
+
+    bool is_imported = false; void DeclareImportedRecursive(); void UpdateActorStructure(UFOEngineStudio::Editor* _editor);
 
     bool adding_new_actor = false;
 

@@ -85,20 +85,6 @@ void Editor::OnUpdate(float _delta_time){
 
     ImGui::End();
 
-    ImGui::Begin("TabBarWindow");
-
-    ImGui::BeginTabBar("TabBar");
-
-    for(const auto& tab : tabs){
-        tab->Update(this, _delta_time);
-    }
-
-    ImGui::EndTabBar();
-
-    ImGui::End();
-
-    //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
-
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -141,6 +127,20 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::EndMainMenuBar();
     }
 
+    ImGui::Begin("TabBarWindow");
+
+    ImGui::BeginTabBar("TabBar");
+
+    for(const auto& tab : tabs){
+        tab->Update(this, _delta_time);
+    }
+
+    ImGui::EndTabBar();
+
+    ImGui::End();
+
+    //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
+
     if(refresh_entire_project){
         spawnable_actor_map.clear();
         std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
@@ -149,6 +149,7 @@ void Editor::OnUpdate(float _delta_time){
         for(const auto& tab : tabs){
             tab->Refresh();
         }
+        Console::PrintLine("Refreshed entire project");
         refresh_entire_project = false;
     }
 

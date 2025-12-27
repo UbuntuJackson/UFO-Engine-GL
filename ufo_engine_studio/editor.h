@@ -86,6 +86,10 @@ public:
                     if(j_actor->AsMap().at("name")->AsString() == "Main"){
                         act->editor_name = "@" + act->class_name;
                         auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
+
+                        //Need to somehow know if these actors are imported
+                        for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
+
                         std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
                         if(base_class_of_actor_config != act->base_class_name){
                             Console::PrintLine("[UFO-Engine Studio] AdvancedActorSpawner base of this", act->class_name, "does not match base of actor_config",
@@ -174,7 +178,9 @@ public:
 
                         auto arr = macro->AsMap().at("args")->AsArray();
                         if(arr.size() == 1){
-                            if(std::filesystem::exists(opened_directory_path+"/"+arr[0]->AsString())) act_spawner->actor_config_path = arr[0]->AsString();
+                            if(std::filesystem::exists(opened_directory_path+"/"+arr[0]->AsString())){
+                                act_spawner->actor_config_path = arr[0]->AsString();
+                            }
                             else Console::PrintLine("[UFO-Engine Studio] Faulty actor_config path for class", class_.at("name")->AsString(), opened_directory_path+"/"+arr[0]->AsString());
                         }
                 }
