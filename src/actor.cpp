@@ -555,8 +555,6 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         //Console::PrintLine("Overlapping");
         if(engine->mouse.is_left_button_held){
             Vector2f dp = world_mouse - former_world_mouse;
-            Console::PrintLine("Former pos",engine->mouse.former_position);
-            Console::PrintLine("Delta_position",engine->mouse.position - engine->mouse.former_position);
 
             local_position += dp;
 
@@ -617,6 +615,7 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
+    this_actor->map.emplace("is_imported", _gc->New<ufo::gc::JsonNumber>(int(is_imported)));
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
     this_actor->map.emplace("base_class_name", _gc->New<ufo::gc::JsonString>(base_class_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));

@@ -24,6 +24,15 @@ public:
     int tile_width = 16;
     int tile_height = 16;
 
+    bool resize_right = false;
+    bool resize_left = false;
+    bool resize_bottom = false;
+    bool resize_top = false;
+    int number_of_tiles_to_insert = 0;
+
+    int currently_hovered_tile_x = 0;
+    int currently_hovered_tile_y = 0;
+
     void InitEditorProperties();
 
     TileMap(Vector2f _);
@@ -35,6 +44,39 @@ public:
     int GetTileID_AtLevelPosition(Vector2f _position);
 
     ufo::Rectangle GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
+
+    void ResizeRight();
+    void ResizeLeft();
+    void ResizeTop();
+    void ResizeBottom();
+    void CancelAllResizeDialogues();
+
+    struct TileData{
+        int x;
+        int y;
+        bool within_bounds;
+        int tile_number;
+        int tile_identifier;
+    };
+
+    TileData GetTileID_AtLevelPosition_Advanced(int _x, int _y){
+        bool within_bounds = false;
+        bool tile_identifier = false;
+
+        int clicked_tile_x = _x/tile_width;
+        int clicked_tile_y = _y/tile_height;
+
+        int tile_number = clicked_tile_y*number_of_columns + clicked_tile_x;
+        if(clicked_tile_x < number_of_columns && clicked_tile_x >= 0 && clicked_tile_y < number_of_rows && clicked_tile_y >= 0){
+            tile_identifier = tilemap_data[tile_number];
+            within_bounds = true;
+        }
+
+        return TileData{
+            clicked_tile_x, clicked_tile_y, within_bounds, tile_number, tile_identifier
+        };
+
+    }
 
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 

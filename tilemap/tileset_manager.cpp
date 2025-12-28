@@ -41,6 +41,25 @@ void TilesetManager::InitialiseTextures(){
 
 }
 
+void TilesetManager::UpdateSelectedTilesetTile(const TilesetData& _tileset){
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    ImVec2 item_rect_pos = ImGui::GetItemRectMin();
+
+    int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/_tileset.tile_width;
+    int clicked_pos_y = (mouse_pos.y-item_rect_pos.y)/_tileset.tile_height;
+
+    if(clicked_pos_x < 0) clicked_pos_x = 0;
+    if(clicked_pos_x > _tileset.columns-1) clicked_pos_x = _tileset.columns-1;
+    if(clicked_pos_y < 0) clicked_pos_y = 0;
+
+    int tileset_rows = _tileset.tile_count/_tileset.columns;
+
+    if(clicked_pos_y > tileset_rows-1) clicked_pos_y = tileset_rows-1;
+
+    currently_selected_tile = clicked_pos_y*_tileset.columns + clicked_pos_x + _tileset.tileset_start_id;
+
+}
+
 void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
     for(const auto& tileset : tileset_data){
         std::string path = _editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
@@ -151,6 +170,12 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     if(ImGui::BeginTabBar("TilesetManager")){
         for(const auto& tileset : tileset_data){
             if(ImGui::BeginTabItem(tileset.name.c_str())){
+                if(current_tileset != tileset.name){
+                    UpdateSelectedTilesetTile(tileset);
+                    currently_selected_tile = tileset.tileset_start_id;
+                }
+                current_tileset = tileset.name;
+
                 ImGui::Text("Contents");
                 ImGui::Image(
                     (void*)(intptr_t)(engine->asset_manager.textures.at(tileset.name).id),
@@ -165,12 +190,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                 if(ImGui::IsItemClicked(0)){
 
 
-                    int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/tileset.tile_width;
-                    int clicked_pos_y = (mouse_pos.y-item_rect_pos.y)/tileset.tile_height;
-
-                    currently_selected_tile = clicked_pos_y*tileset.columns + clicked_pos_x + tileset.tileset_start_id;
-
-                    Console::PrintLine(currently_selected_tile);
+                    UpdateSelectedTilesetTile(tileset);
                 }
 
                 int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;

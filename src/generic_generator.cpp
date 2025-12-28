@@ -1,5 +1,7 @@
+#include <exception>
 #include <memory>
 #include <map>
+#include <stdexcept>
 #include <string>
 #include "actor.h"
 #include "sprite.h"
@@ -24,25 +26,32 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-           "TileMap",
-           [](ufo::gc::JsonMap* _json){
-               std::string name = _json->map.at("name")->AsString();
-               float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-               float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
-               auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
+        "TileMap",
+        [](ufo::gc::JsonMap* _json){
+            std::string name = _json->map.at("name")->AsString();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
 
-               auto tiles = _json->map.at("tiles")->AsArray();
-               instance->tilemap_data.clear();
-               instance->tilemap_data.reserve(tiles.size());
+            try{
+                auto tiles = _json->map.at("tiles")->AsArray();
+                instance->tilemap_data.clear();
+                instance->tilemap_data.reserve(tiles.size());
 
-               for(const auto& tile : tiles){
-                   instance->tilemap_data.push_back((int)tile->AsFloat());
-               }
+                for(const auto& tile : tiles){
+                    instance->tilemap_data.push_back((int)tile->AsFloat());
+                }
 
-               instance->editor_name = name;
-               return std::move(instance);
-           }
-       );
+                instance->number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
+                instance->number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
+
+                instance->editor_name = name;
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+            }
+            return std::move(instance);
+        }
+    );
 
     factory_map.emplace(
         "Camera",
@@ -143,6 +152,11 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
 
 		instance->class_name = _json->map.at("class_name")->AsString();
+		try{
+		    instance->is_imported = (bool)_json->map.at("is_imported")->AsFloat();
+		}catch(const std::exception& _error){
+		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
+		}
 
 		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
 

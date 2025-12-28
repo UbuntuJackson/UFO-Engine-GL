@@ -1,7 +1,7 @@
 #include "garbage_collector.h"
 #include "object.h"
 
-namespace gc{
+namespace beam::gc{
 
 //And finally, the Collect method.
 // this can run every frame optionally, and at the end of the program it is run one last time to free everything,
@@ -9,7 +9,7 @@ namespace gc{
 
 void GarbageCollector::Collect(){
     //Reset all the object's alive status before the new gc cycle
-    for(gc::Object* addr : memory){
+    for(beam::gc::Object* addr : memory){
         addr->alive = false;
     }
 

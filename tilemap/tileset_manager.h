@@ -65,6 +65,9 @@ public:
 
     void InitialiseTextures();
 
+    std::string current_tileset;
+    void UpdateSelectedTilesetTile(const TilesetData& _tileset);
+
     void InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor);
 
     TilesetData GetTilesetData(std::string _name);

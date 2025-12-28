@@ -5,12 +5,12 @@
 #include "../utils/console.h"
 #include "garbage_collector.h"
 
-namespace gc{
+namespace beam::gc{
 
 class MemberVariableHandleBase{
 
 public:
-    friend gc::Object;
+    friend beam::gc::Object;
 
     virtual bool IsAlive() = 0;
     virtual void Mark() = 0;
@@ -20,7 +20,7 @@ public:
 
 template<typename tType>
 class MemberVariableHandle : public MemberVariableHandleBase{
-    friend gc::Object;
+    friend beam::gc::Object;
     tType** handle;
 public:
     MemberVariableHandle(tType** _handle)
@@ -114,7 +114,7 @@ public:
 class Root : public Object{
 public:
     //Friending Object :)
-    friend gc::Object;
+    friend beam::gc::Object;
 
     //The GarbageCollectoro lives here.
     GarbageCollector gc;

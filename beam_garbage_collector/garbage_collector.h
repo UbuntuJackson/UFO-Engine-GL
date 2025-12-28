@@ -4,7 +4,7 @@
 #pragma once
 #include <vector>
 
-namespace gc{
+namespace beam::gc{
 class Object;
 
 class GarbageCollector{
@@ -12,7 +12,10 @@ public:
     //This is basically all of the program's garbage-collected memory.
     std::vector<Object*> memory;
     //This is a handle to the root of the program.
-    gc::Object* root;
+    beam::gc::Object* root;
+
+    //Small idea: Only run Object::Mark hierarchy when New is called
+    //
 
     //This is basically used like the new keyword in Java.
     template <typename tType, typename ...tArgs>

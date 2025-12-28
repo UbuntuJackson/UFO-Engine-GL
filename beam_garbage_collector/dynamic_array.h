@@ -4,7 +4,7 @@
 #include <string>
 #include "object.h"
 
-namespace gc{
+namespace beam::gc{
 
 template<typename tType>
 class DynamicArray : public Object{
@@ -138,6 +138,6 @@ public:
 
 };
 
-typedef DynamicArray<gc::Object*> DynamicObjectArray;
+typedef DynamicArray<beam::gc::Object*> DynamicObjectArray;
 
 }
