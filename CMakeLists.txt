@@ -108,6 +108,7 @@ target_include_directories(UFO PUBLIC ufo_maths)
 target_include_directories(UFO PUBLIC ufo_garbage_collector)
 target_include_directories(UFO PUBLIC utils)
 target_include_directories(UFO PUBLIC ufo_engine_studio)
+target_include_directories(UFO PUBLIC tilemap)
 
 target_compile_definitions(UFO PRIVATE GLM_ENABLE_EXPERIMENTAL=1)
 

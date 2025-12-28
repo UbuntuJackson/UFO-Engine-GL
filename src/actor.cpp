@@ -370,6 +370,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             for(const auto& s : v){
                 if(ImGui::Button(std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str())){
                     auto inst = s->Spawn(_editor);
+                    inst->class_name = s->class_name;
                     AddActorUniquePtr(std::move(inst));
                     adding_new_actor = false;
                 }

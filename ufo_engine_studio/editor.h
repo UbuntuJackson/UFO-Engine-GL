@@ -79,6 +79,9 @@ public:
 
         std::unique_ptr<Actor> Spawn(Editor* _editor){
             auto act = spawner_function(_editor,this);
+
+            act->class_name = class_name;
+
             if(actor_config_path != ""){
                 ufo::gc::JsonMap* actor_config = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+"/"+actor_config_path);
 
