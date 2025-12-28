@@ -15,6 +15,7 @@ public:
     std::vector<std::string> words_blacklisted_as_custom_properties = {
         "x",
         "y",
+        "key",
         "name",
         "type"
 

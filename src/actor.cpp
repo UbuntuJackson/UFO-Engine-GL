@@ -623,7 +623,18 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
 
     for(const auto& property : editor_properties){
-        if(property->variable_name == "x" || property->variable_name == "y"){
+        if(property->variable_name == "x"
+            ||property->variable_name == "y"
+            ||property->variable_name == "offset_x"
+            ||property->variable_name == "offset_y"
+            ||property->variable_name == "frame_size_x"
+            ||property->variable_name == "frame_size_y"
+            ||property->variable_name == "scale_x"
+            ||property->variable_name == "scale_y"
+            ||property->variable_name == "rotation"
+            ||property->variable_name == "frame_index"
+
+        ){
             this_actor->map.emplace(property->variable_name, property->GetJson(_gc));
         }
         else j_custom_editor_properties->map.emplace(property->variable_name,property->GetJson(_gc));

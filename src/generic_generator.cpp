@@ -109,17 +109,30 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Sprite",
         [](ufo::gc::JsonMap* _json){
-        	std::string _key = _json->map.at("key")->AsString();
-            float _x = _json->map.at("x")->AsFloat();
-            float _y = _json->map.at("y")->AsFloat();
-            float _offset_x = _json->map.at("offset_x")->AsFloat();
-            float _offset_y = _json->map.at("offset_y")->AsFloat();
-            float _frame_size_x = _json->map.at("frame_size_x")->AsFloat();
-            float _frame_size_y = _json->map.at("frame_size_y")->AsFloat();
-            float _scale_x = _json->map.at("scale_x")->AsFloat();
-            float _scale_y = _json->map.at("scale_y")->AsFloat();
-            float _rotation = _json->map.at("rotation")->AsFloat();
-            int _frame_index = (int)_json->map.at("frame_index")->AsFloat();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            std::string _key = "placeholder_icon";
+            float _offset_x = 0.0f;
+            float _offset_y = 0.0f;
+            float _frame_size_x = 32.0f;
+            float _frame_size_y = 32.0f;
+            float _scale_x = 0.0f;
+            float _scale_y = 0.0f;
+            float _rotation = 0.0f;
+            int _frame_index = 0;
+            try{
+                _key = _json->map.at("key")->AsString();
+                _offset_x = _json->map.at("offset_x")->AsFloat();
+                _offset_y = _json->map.at("offset_y")->AsFloat();
+                _frame_size_x = _json->map.at("frame_size_x")->AsFloat();
+                _frame_size_y = _json->map.at("frame_size_y")->AsFloat();
+                _scale_x = _json->map.at("scale_x")->AsFloat();
+                _scale_y = _json->map.at("scale_y")->AsFloat();
+                _rotation = _json->map.at("rotation")->AsFloat();
+                _frame_index = (int)_json->map.at("frame_index")->AsFloat();
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
+            }
 
             auto instance = std::make_unique<Sprite>(
             	_key,

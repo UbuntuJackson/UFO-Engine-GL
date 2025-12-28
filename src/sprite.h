@@ -33,4 +33,10 @@ public:
     GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
+
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

@@ -11,6 +11,7 @@ struct TilesetData{
     float tile_height;
     int tile_count;
     bool is_loaded_from_path = true;
+    bool to_not_be_removed = true;
 };
 
 #endif

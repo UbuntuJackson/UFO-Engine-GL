@@ -168,8 +168,8 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
-        for(const auto& tileset : tileset_data){
-            if(ImGui::BeginTabItem(tileset.name.c_str())){
+        for(auto& tileset : tileset_data){
+            if(ImGui::BeginTabItem(tileset.name.c_str(), &tileset.to_not_be_removed, ImGuiTabItemFlags_None)){
                 if(current_tileset != tileset.name){
                     UpdateSelectedTilesetTile(tileset);
                     currently_selected_tile = tileset.tileset_start_id;
@@ -207,6 +207,10 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         }
 
         ImGui::EndTabBar();
+    }
+
+    for(int ts = tileset_data.size()-1; ts != -1; ts--){
+        if(!tileset_data[ts].to_not_be_removed) tileset_data.erase(tileset_data.begin()+ts);
     }
 
 }
