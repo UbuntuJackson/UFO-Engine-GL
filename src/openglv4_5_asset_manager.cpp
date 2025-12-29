@@ -20,9 +20,10 @@ OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     }
     else{
         save_path = _engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path+"/loaded_assets.json";
+
         Console::PrintLine(save_path);
         AssetJson j;
-        j.Read(save_path,_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path, this);
+        j.ReadEditor(save_path,_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path, this);
     }
 }
 

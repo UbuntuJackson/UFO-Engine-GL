@@ -7,9 +7,19 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
     auto j = ufo::gc::JsonRead(&gc, _path);
     auto arr = j->map.at("assets")->AsArray();
     for(const auto& a : arr){
-        std::string path = _opened_directory_path + "/" + a->AsString().substr(2,a->AsString().size());
-        Console::PrintLine("AssetJson::Read:",path);
-        _asset_manager->LoadTexture(path,a->AsString(),true);
+        Console::PrintLine("AssetJson::Read:",_opened_directory_path+a->AsString());
+        _asset_manager->LoadTexture(_opened_directory_path+a->AsString(),a->AsString(),true);
+        _asset_manager->textures.at(a->AsString()).permanent = true;
+    }
+}
+
+void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_directory_path, OpenGLv4_5_AssetManager* _asset_manager){
+    auto j = ufo::gc::JsonRead(&gc, _path);
+    auto arr = j->map.at("assets")->AsArray();
+    for(const auto& a : arr){
+        Console::PrintLine("AssetJson::Read:",_opened_directory_path+a->AsString());
+
+        _asset_manager->LoadTexture(_opened_directory_path+a->AsString().substr(2,a->AsString().size()),a->AsString(),true);
         _asset_manager->textures.at(a->AsString()).permanent = true;
     }
 }
