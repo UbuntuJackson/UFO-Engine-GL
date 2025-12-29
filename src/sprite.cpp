@@ -1,11 +1,15 @@
 #include <stdexcept>
 #include <string>
+#include <SDL3/SDL.h>
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "engine.h"
 #include "camera.h"
 #include "../../shapes/rectangle.h"
 #include "sprite.h"
+#include "../ufo_engine_studio/file_dialogue.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/editor.h"
 
 Sprite::Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
 key{_key},
@@ -79,6 +83,20 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
     ImGui::InputFloat("rotation (degrees)",&rotation);
     ImGui::InputFloat("current_frame_index",&current_frame_index);
 
+    ImGui::Separator();
+
+    if(ImGui::Button("Add Texture")){
+        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+    }
+
+    for(const auto& [name, texture] : engine->asset_manager.textures){
+        ImGui::Image(
+            (void*)(intptr_t)texture.id,
+            ImVec2(16, 16),
+            ImVec2(0,0),
+            ImVec2(1,-1)
+        );
+    }
 
 }
 

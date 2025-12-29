@@ -4,6 +4,25 @@
 #include "../external/stb_image.h"
 #include "shader.h"
 #include "openglv4_5_asset_manager.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "asset_json.h"
+#include "../src/engine.h"
+#include "../ufo_engine_studio/editor.h"
+#include <filesystem>
+
+void
+OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
+    if(_engine->in_editor){
+        Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
+    }
+    else{
+        Console::PrintLine(_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path);
+    }
+}
+
+OpenGLv4_5_AssetManager::~OpenGLv4_5_AssetManager(){
+
+}
 
 void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::string& _name, bool _alpha){
     textures[_name] = LoadTextureFromFile(_path, _alpha);
@@ -35,6 +54,14 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
     return texture;
 }
 
+void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+    _level_editor_tab->engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
+
+    _level_editor_tab->engine->asset_manager.textures.at(".."+relative_path).permanent = true;
+
+}
+
 /*ufo::Shader OpenGLv4_5_AssetManager::LoadShader(const std::string& _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
     return LoadShader(_vertex_shader_path.c_str(), _fragment_shader_path, _geometry_shader_path, _name);
 }*/
@@ -63,7 +90,13 @@ ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shad
     return shader;
 }
 
+void OpenGLv4_5_AssetManager::SaveAssets(const std::string& _relative_opened_directory_path){
+    AssetJson j;
+    j.Write(_relative_opened_directory_path, this);
+}
+
 void OpenGLv4_5_AssetManager::Clear(){
+
     for(auto iterator : textures){
         glDeleteTextures(1, &iterator.second.id);
     }

@@ -18,6 +18,7 @@ public:
     unsigned int wrapping_mode_t_axis;
     unsigned int filter_mode_min; //Filtering mode if texture pixles < screen pixels?
     unsigned int filter_mode_max; //Filtering mode if texture pixles > screen pixels?
+    bool permanent = false; //If the asset is supposed to be preloaded and saved
     Texture2D();
 
     void Generate(unsigned int _width, unsigned int _height, unsigned char* _data);

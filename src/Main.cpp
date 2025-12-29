@@ -106,6 +106,8 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
 
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
+    engine->asset_manager.Initialise(engine.get());
+
     engine->level_handle->Load();
 
     /*ForImGUI*/
@@ -254,8 +256,11 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
     engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
+    engine->asset_manager.Initialise(engine.get());
+
     engine->level_handle->Load();
     engine->level->OnSpawn();
+
 
     while(!engine->quit){
         SDL_Event event;

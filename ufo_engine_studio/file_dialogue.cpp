@@ -6,6 +6,7 @@
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "text_editor_tab.h"
 #include "../tilemap/tileset_manager.h"
+#include "../src/openglv4_5_asset_manager.h"
 
 namespace UFOEngineStudio{
 
@@ -39,6 +40,15 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 
     level_editor_tab->this_level->tileset_manager.AddTileset(*_filelist, level_editor_tab);
+
+}
+
+void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
+    if(*_filelist == nullptr) return; //Should file not have been selected
+
+    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
+
+    level_editor_tab->engine->asset_manager.OnAddTexture(*_filelist, level_editor_tab);
 
 }
 
