@@ -97,6 +97,10 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
             ImVec2(0,0),
             ImVec2(1,1)
         );
+        ImGui::SameLine();
+        if(ImGui::Button(std::string("Assign Texture to Sprite###Assign Texture to Sprite"+name).c_str())){
+            key = name;
+        }
     }
 
 }

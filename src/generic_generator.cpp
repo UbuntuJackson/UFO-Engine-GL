@@ -134,12 +134,17 @@ void GenericGenerator::Initialise(){
                 Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
             }
 
+            std::string name = _json->map.at("name")->AsString();
+
             auto instance = std::make_unique<Sprite>(
             	_key,
             	Vector2f(_x, _y),
             	Vector2f(_offset_x, _offset_y),
             	Vector2f(_frame_size_x, _frame_size_y),
             	Vector2f(_scale_x, _scale_y), _rotation, _frame_index);
+
+            instance->editor_name = name;
+
             return std::move(instance);
         }
         );

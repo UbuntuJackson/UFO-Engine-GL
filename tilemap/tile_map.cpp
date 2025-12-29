@@ -298,6 +298,8 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 }
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(!properties_open) return;
+
     ImVec2 mouse_pos = ImGui::GetMousePos();
     ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 
