@@ -86,15 +86,16 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
     ImGui::Separator();
 
     if(ImGui::Button("Add Texture")){
-        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
     }
 
     for(const auto& [name, texture] : engine->asset_manager.textures){
+        ImGui::Text("%s",name.c_str());
         ImGui::Image(
             (void*)(intptr_t)texture.id,
             ImVec2(16, 16),
             ImVec2(0,0),
-            ImVec2(1,-1)
+            ImVec2(1,1)
         );
     }
 

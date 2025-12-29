@@ -17,6 +17,7 @@ namespace ufo{
 
 class OpenGLv4_5_AssetManager{
 public:
+    std::string save_path;
 
     OpenGLv4_5_AssetManager() = default;
     void Initialise(ufo::Engine* _engine);
@@ -43,7 +44,7 @@ public:
     ufo::Shader LoadShaderFromFile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path);
 
     //Editor only
-    void SaveAssets(const std::string& _relative_opened_directory_path);
+    void SaveAssets();
 
     void Clear();
 };

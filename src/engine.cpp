@@ -29,7 +29,7 @@ Engine::Init(Main* _main){
     level->actors.reserve(50);
     level->engine = this;
 
-    if(!File::Exists("../loaded_assets.json")){
+    /*if(!File::Exists("../loaded_assets.json")){
         Console::PrintLine("[UFO-Engine] No loaded_assets.json found");
     }
     else{
@@ -37,7 +37,7 @@ Engine::Init(Main* _main){
         for(const auto& asset : d.Get("assets").AsArray().Iterable()){
             asset_manager.LoadTexture(asset->AsDictionary().Get("path").AsString(), asset->AsDictionary().Get("alias").AsString(), true);
         }
-    }
+        }*/
 
     asset_manager.LoadTexture(engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
 

@@ -1,11 +1,29 @@
 #include <string>
 #include "openglv4_5_asset_manager.h"
 #include "asset_json.h"
+#include "../ufo_garbage_collector/gc_json.h"
 
-void AssetJson::Read(const std::string& _path, OpenGLv4_5_AssetManager* _asset_manager){
-
+void AssetJson::Read(const std::string& _path, const std::string& _opened_directory_path, OpenGLv4_5_AssetManager* _asset_manager){
+    auto j = ufo::gc::JsonRead(&gc, _path);
+    auto arr = j->map.at("assets")->AsArray();
+    for(const auto& a : arr){
+        std::string path = _opened_directory_path + "/" + a->AsString().substr(2,a->AsString().size());
+        Console::PrintLine("AssetJson::Read:",path);
+        _asset_manager->LoadTexture(path,a->AsString(),true);
+        _asset_manager->textures.at(a->AsString()).permanent = true;
+    }
 }
 
 void AssetJson::Write(const std::string& _path, OpenGLv4_5_AssetManager* _asset_manager){
+    auto j = gc.New<ufo::gc::JsonMap>();
 
+    auto asset_arr = gc.New<ufo::gc::JsonArray>();
+
+    for(const auto& [k,v] : _asset_manager->textures){
+        if(v.permanent) asset_arr->array.push_back(gc.New<ufo::gc::JsonString>(k));
+    }
+
+    j->map.emplace("assets", asset_arr);
+
+    j->Write(_asset_manager->save_path);
 }

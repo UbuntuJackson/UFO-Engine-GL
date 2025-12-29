@@ -240,6 +240,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
 
     }
 
+    engine->asset_manager.SaveAssets();
     engine->asset_manager.Clear();
 
     SDL_GL_DestroyContext(open_gl_context);

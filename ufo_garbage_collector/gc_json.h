@@ -8,6 +8,7 @@
 #include "../external/cJSON.h"
 #include "../file/file.h"
 #include "../json/json.h"
+#include "../file/file_utils.h"
 
 namespace ufo{
 
@@ -127,9 +128,13 @@ public:
     }
 
     void Write(const std::string& _path){
-        auto file = File::New(_path);
-        file.Insert(GetJsonAsString());
-        file.Save();
+        std::string json_as_string = GetJsonAsString();
+        try{
+            FileSystem::Write(_path, json_as_string);
+        }
+        catch(const std::exception& _error){
+            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
+        }
     }
 
 };

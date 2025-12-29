@@ -14,9 +14,15 @@ void
 OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     if(!_engine->in_editor){
         Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
+        AssetJson j;
+        save_path = "../loaded_assets.json";
+        j.Read(save_path, "", this);
     }
     else{
-        Console::PrintLine(_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path);
+        save_path = _engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path+"/loaded_assets.json";
+        Console::PrintLine(save_path);
+        AssetJson j;
+        j.Read(save_path,_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path, this);
     }
 }
 
@@ -56,6 +62,9 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
 
 void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+
+    Console::PrintLine("OnAddTexture",relative_path);
+
     _level_editor_tab->engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
 
     _level_editor_tab->engine->asset_manager.textures.at(".."+relative_path).permanent = true;
@@ -90,9 +99,9 @@ ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shad
     return shader;
 }
 
-void OpenGLv4_5_AssetManager::SaveAssets(const std::string& _relative_opened_directory_path){
+void OpenGLv4_5_AssetManager::SaveAssets(){
     AssetJson j;
-    j.Write(_relative_opened_directory_path, this);
+    j.Write(save_path, this);
 }
 
 void OpenGLv4_5_AssetManager::Clear(){
