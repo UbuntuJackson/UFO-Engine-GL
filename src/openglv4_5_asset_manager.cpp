@@ -12,7 +12,7 @@
 
 void
 OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
-    if(_engine->in_editor){
+    if(!_engine->in_editor){
         Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
     }
     else{
