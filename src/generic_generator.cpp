@@ -195,8 +195,8 @@ void GenericGenerator::Initialise(){
                         costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
                         costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
                         costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
-                        costume.frame_index = (int)j_costume->AsMap().at("frame_index")->AsFloat();
-                        costume.animation_speed = (int)j_costume->AsMap().at("animation_speed")->AsFloat();
+                        costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
+                        costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
 
                         instance->costumes.emplace(costume.key, costume);
                     }
