@@ -1,0 +1,31 @@
+Actor trees:
+
+Make actor trees so that imported actors have their child actors hidden and you can make them individual instances if you want to. Basically unpack them saving each component explicitly. This would save diskspace.
+
+Levels:
+
+Make it so you can set start level, without having to recompile if possible
+
+Dialogue tree:
+Each dialogue can be an actor and you can draw lines between actors. The code does not need to be shown in the dialogue editor
+
+Widgets:
+
+Text can be wrappable by updating containers from where a change was first made.
+Widgets also need to be made so they are grabbable as UI instead of in-world actors.
+
+Make it so text and maybe other widgets can live in world-space too.
+
+Fonts:
+Fonts should actually be saved as assets. Maybe even in the same array as the .png files?
+
+Animation:
+Make it so you can set costumes with drop-down lists. Only view one costume at a time. Preview feature should also be added. What should happen when you set the animation again is also to be debated. Does the current_frame_index become 0, or does it remain the same?
+
+Sprite:
+
+Should add more consistency and controll over how sprites are scaled and rotated. For example offsetting and rotating vs rotation and THEN offsetting.
+
+[DONE] generated.h
+
+Fix so that relative paths are used for custom actors. The relative path can easily be extracted since generated.h is in the top of the folder hierarchy.

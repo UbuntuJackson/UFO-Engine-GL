@@ -21,6 +21,7 @@
 #include "../tilemap/tile_map.h"
 #include "../src/text.h"
 #include "../src/widget.h"
+#include "../src/animation.h"
 
 namespace UFOEngineStudio{
 
@@ -165,6 +166,19 @@ public:
                 },
                 "Sprite",
                 "Sprite"
+            ))
+        );
+
+        spawnable_actor_map.emplace(
+            "Animation",
+            std::move(std::make_unique<AdvancedActorSpawner>(
+                [](Editor* _editor, AdvancedActorSpawner* _this){
+                    return std::make_unique<Animation>(
+                        Vector2f(0.0f, 0.0f)
+                    );
+                },
+                "Animation",
+                "Animation"
             ))
         );
 

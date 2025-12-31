@@ -153,7 +153,11 @@ def search_folders_for_ufo_classes(
             if extension in [".ufo.hpp", ".ufo.h"]:
                 file_to_parse = _working_directory + "/" + _local_path + "/" + directory
                 print("[UFO-Header Tool] Parsing file", file_to_parse)
-                local_classes, header_tool_log_for_file = search_file(file_to_parse)
+                local_classes, header_tool_log_for_file = search_file(
+                    file_to_parse,
+                    _local_path,
+                    directory,  # Not a directory here but a file.
+                )
                 _grand_header_tool_log.obj += (
                     "Hierarchal scope structure of " + file_to_parse
                 )
@@ -161,7 +165,9 @@ def search_folders_for_ufo_classes(
                 _grand_class_list += local_classes
 
 
-def search_file(_path):
+def search_file(_path, _local_path, _file_name):
+    print("[UFO-Header Tool] local path", _local_path)
+
     f = open(_path)
 
     file_contents = f.read()
@@ -220,7 +226,8 @@ def search_file(_path):
     header_tool_file_log += pprint.pformat(dictionary, indent=4) + "\n"
 
     for i in dictionary:
-        i["class"]["header_file"] = _path
+        i["class"]["header_file"] = _local_path[1:] + "/" + _file_name
+        # print("UFO-Header Tool: path", _path)
 
     return (dictionary, header_tool_file_log)
 
