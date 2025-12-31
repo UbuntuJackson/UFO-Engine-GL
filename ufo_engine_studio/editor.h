@@ -20,6 +20,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "../tilemap/tile_map.h"
 #include "../src/text.h"
+#include "../src/widget.h"
 
 namespace UFOEngineStudio{
 
@@ -135,6 +136,12 @@ public:
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Level>();
             }, "Level", "Level"))
+        );
+
+        spawnable_actor_map.emplace("Widget",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
+            }, "Widget", "Widget"))
         );
 
         spawnable_actor_map.emplace("Text",std::move(std::make_unique<AdvancedActorSpawner>(

@@ -3,6 +3,7 @@
 #include "widget.h"
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL.h>
+#include <unordered_map>
 #include "texture_2d.h"
 #include "font.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -13,20 +14,31 @@ namespace ufo{
 class Text : public Widget{
 private:
 
-    std::string text = "Hello world";
+    //std::string text = "Hello world";
 
     Texture2D texture;
 
+    bool is_wrapping = false;
+
 public:
+    std::unordered_map<std::string, std::string> language_to_text;
+
     Font font = Font("../UFO-Engine/res/fonts-japanese-gothic.ttf", 30.0f);
 
     void SetText(const std::string& _text){
-        text = _text;
+        language_to_text[engine->language] = _text;
         OnIrregularUpdate();
     }
 
+    std::string GetTextFromLanguageMap(){
+        if(!language_to_text.count(engine->language)){
+            return language_to_text.at("English");
+        }
+        return language_to_text.at(engine->language);
+    }
+
     std::string GetText(){
-        return text;
+        return language_to_text[engine->language];
     }
 
     Text(Vector2f _) : Widget(_){
@@ -45,11 +57,11 @@ public:
 
 
     void OnIrregularUpdate(){
-        if(text == "") return;
+        if(language_to_text[engine->language] == "") return;
 
         if(texture.id != 0) texture.Delete();
 
-        SDL_Surface* surface_original = TTF_RenderText_Blended(font.GetFont(), text.c_str(), 0,  (SDL_Color){255,255,255,255});
+        SDL_Surface* surface_original = TTF_RenderText_Blended(font.GetFont(), GetTextFromLanguageMap().c_str(), 0,  (SDL_Color){255,255,255,255});
 
         SDL_Surface* surface = SDL_CreateSurface(
             surface_original->w, surface_original->h,
@@ -92,11 +104,31 @@ public:
     }
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-        if(ImGui::InputText("Text", &text)) OnIrregularUpdate();
+        Widget::OnViewProperties(_level_editor_tab, _index);
+
+        if(ImGui::InputText("Text", &language_to_text[engine->language])) OnIrregularUpdate();
+
+        if(ImGui::BeginCombo("Languages###Languages", engine->language.c_str())){
+
+            for(int i = 0; i < engine->languages.size(); ++i){
+                bool is_selected = (engine->language == engine->languages[i]);
+
+                if(ImGui::Selectable(engine->languages[i].c_str(), &is_selected)){
+                    engine->language = engine->languages[i];
+                    OnIrregularUpdate();
+                }
+
+                if(is_selected){
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+
+            ImGui::EndCombo();
+        }
     }
 
     void OnWidgetDraw(ufo::Graphics* _graphics){
-        if(text == "") return;
+        if(language_to_text[engine->language] == "") return;
         _graphics->DrawPartialSprite(
             texture,
             GetGlobalPosition(),
@@ -109,6 +141,10 @@ public:
         );
     }
 
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+
+    }
+
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc){
         Console::PrintLine("Does this even run?");
 
@@ -116,7 +152,10 @@ public:
         ufo::gc::JsonArray* tiles = _gc->New<ufo::gc::JsonArray>();
 
 
-        parent_class_as_json->map.emplace("text", _gc->New<ufo::gc::JsonString>(text));
+        auto j_language_to_text = _gc->New<ufo::gc::JsonMap>();
+        for(const auto& [k,v] : language_to_text) j_language_to_text->map.emplace(k,_gc->New<ufo::gc::JsonString>(v));
+
+        parent_class_as_json->map.emplace("language_to_text", j_language_to_text);
         return parent_class_as_json;
     }
 

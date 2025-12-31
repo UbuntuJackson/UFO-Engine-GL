@@ -22,6 +22,13 @@ class Main;
 
 class Engine{
 public:
+    std::string language = "English";
+    std::vector<std::string> languages = {
+        "English",
+        "Japanese",
+        "Swedish"
+    };
+
     ufo::Texture2D sdl_text_texture;
 
     bool in_editor = false;

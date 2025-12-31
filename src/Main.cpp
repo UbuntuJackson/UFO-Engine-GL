@@ -327,6 +327,8 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
 void Main::Quit(){
     engine->asset_manager.Clear();
 
+    engine = nullptr;
+
     TTF_CloseFont(font);
     TTF_Quit();
 

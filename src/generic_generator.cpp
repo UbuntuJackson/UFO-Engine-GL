@@ -63,7 +63,9 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<ufo::Text>(Vector2f(_x, _y));
 
             try{
-                instance->SetText(_json->map.at("text")->AsString());
+                for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
+                    instance->language_to_text[k] = v->AsString();
+                }
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
