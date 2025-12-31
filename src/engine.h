@@ -7,7 +7,7 @@
 #include "openglv4_5_asset_manager.h"
 #include "level.h"
 #include "control_settings.h"
-#include "text_rendering.h"
+//#include "text_rendering.h"
 #include "generic_generator.h"
 #include <SDL3/SDL.h>
 
@@ -22,6 +22,8 @@ class Main;
 
 class Engine{
 public:
+    ufo::Texture2D sdl_text_texture;
+
     bool in_editor = false;
     bool quit = false;
 
@@ -42,7 +44,7 @@ public:
     Level* level_handle = nullptr;
     std::unique_ptr<Actor> level = nullptr;
 
-    ufo::TextRenderer text_renderer;
+    //ufo::TextRenderer text_renderer;
 
     //For opengl 4.5
     OpenGLv4_5_AssetManager asset_manager;

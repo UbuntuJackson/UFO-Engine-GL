@@ -6,9 +6,10 @@
 #include "graphics.h"
 #include "camera.h"
 #include "../glad/include/glad/glad.h"
-#include "sprite_renderer.h"
+#include "openglv4_5_graphics.h"
 #include "../shapes/rectangle.h"
 #include "../tilemap/tileset_manager.h"
+#include "text.h"
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
@@ -16,6 +17,15 @@ Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
 }
 
 void Level::OnSpawn(){
+    /*auto ut = std::make_unique<ufo::Text>();
+    ut->SetText("UFO-Engine 風船");
+    widget->AddWidgetUniquePtr(std::move(ut));
+
+    auto ut2 = std::make_unique<ufo::Text>();
+    ut2->local_position = Vector2f(200.0f, 300.0f);
+    ut2->SetText("すばらしい");
+    widget->AddWidgetUniquePtr(std::move(ut2));*/
+
     tileset_manager.engine = engine;
 
     tileset_manager.InitialiseTextures();
@@ -64,6 +74,8 @@ void Level::UpdatePhrase(float _delta_time){
     }
 
     CleanUpDeadActors();
+
+    //widget->Update();
 }
 
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -155,6 +167,19 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
     for(const auto& actor : actors){
         actor->WidgetDraw(_graphics);
     }
+
+    /*_graphics->DrawPartialSprite(
+        engine->sdl_text_texture,
+        Vector2f(0.0f, 0.0f),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(1.0f, 1.0f),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(engine->sdl_text_texture.width, engine->sdl_text_texture.height),
+        0.0f,
+        ufo::Colour(255,255,255,255)
+        );*/
+
+    //widget->Draw(_graphics);
 
 }
 

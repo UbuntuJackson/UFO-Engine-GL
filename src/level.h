@@ -4,6 +4,7 @@
 #include <memory>
 #include "actor.h"
 #include "../tilemap/tileset_manager.h"
+#include "widget.h"
 
 class Camera;
 
@@ -22,6 +23,8 @@ public:
         EACH_FRAME,
         CYCLICAL
     };
+
+    std::unique_ptr<ufo::Widget> widget = std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
 
     std::vector<int> deletion_history;
 

@@ -10,8 +10,10 @@
 #include "../ufo_engine_studio/editor.h"
 #include <filesystem>
 
-void
-OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
+//Todo: Different intialise function for the Editor would be a lot cleaner, eventhough this isn't as bad as it seems.
+// What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
+// you twist and turn it.
+void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     if(!_engine->in_editor){
         Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
         AssetJson j;

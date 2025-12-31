@@ -79,4 +79,8 @@ void Texture2D::Bind(){
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
+void Texture2D::Delete(){
+    glDeleteTextures(1, &id);
+}
+
 }

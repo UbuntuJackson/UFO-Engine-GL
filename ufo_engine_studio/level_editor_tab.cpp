@@ -2,7 +2,7 @@
 #include "../ufo_engine_studio/tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include <engine.h>
-#include <sprite_renderer.h>
+#include <openglv4_5_graphics.h>
 #include <level.h>
 #include <SDL3/SDL.h>
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"

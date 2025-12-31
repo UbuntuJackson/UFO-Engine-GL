@@ -1,5 +1,5 @@
 #include "texture_2d.h"
-#include "sprite_renderer.h"
+#include "openglv4_5_graphics.h"
 #include "shader.h"
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
@@ -237,7 +237,7 @@ void OpenGLv4_5_Graphics::DrawRectangleExtra(Vector2f _position, Vector2f _size,
 
 }
 
-void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key, glm::vec2 _position, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour){
+void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::vec2 _position, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour){
 
     //Change vertecies
 
@@ -253,8 +253,8 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
         1.0f, 0.0f, 1.0f, 0.0f
     };*/
 
-    unsigned int texture_width = engine->asset_manager.textures.at(_texture_key).width;
-    unsigned int texture_height = engine->asset_manager.textures.at(_texture_key).height;
+    unsigned int texture_width = _texture.width;
+    unsigned int texture_height = _texture.height;
 
     glm::vec2 size = glm::vec2((float)texture_width, (float)texture_height);
 
@@ -322,7 +322,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
     glActiveTexture(GL_TEXTURE0);
     //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
-    engine->asset_manager.textures.at(_texture_key).Bind();
+    _texture.Bind();
 
     glBindVertexArray(quadVAO);
     //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
@@ -335,11 +335,18 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(const std::string& _texture_key,
 
 }
 
-void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour){
+void OpenGLv4_5_Graphics::DrawPartialSprite(ufo::Texture2D& _texture, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour){
 
-    glm_DrawPartialSprite(_texture_key, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
+    glm_DrawPartialSprite(_texture, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
 
 }
+
+void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour){
+
+    glm_DrawPartialSprite(engine->asset_manager.textures.at(_texture_key), glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
+
+}
+
 
 void OpenGLv4_5_Graphics::CreateFrameBuffer(){
     glGenFramebuffers(1, &FBO);

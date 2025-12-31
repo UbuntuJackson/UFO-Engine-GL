@@ -4,8 +4,12 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include "../src/engine.h"
+#include "texture_2d.h"
 
 //#define USE_PGE
+
+struct TTF_Font;
+struct SDL_Texture;
 
 #ifndef USE_PGE
 
@@ -13,14 +17,20 @@ namespace ufo{
 
 class Main{
 public:
+
     SDL_Window* window = nullptr;
     SDL_GLContext open_gl_context;
     std::unique_ptr<Engine> engine = nullptr;
+
+    TTF_Font *font = nullptr;
+    SDL_Texture* text_texture;
 
 Main(unsigned int _width, unsigned int _height, const std::string& _window_title);
 
 void Start(std::unique_ptr<Engine> _custom_engine);
 void StartWithImGui(std::unique_ptr<Engine> _custom_engine);
+
+void Quit();
 
 };
 }

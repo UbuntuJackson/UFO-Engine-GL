@@ -6,7 +6,7 @@
 #include <chrono>
 #include "../utils/console.h"
 #include "openglv4_5_asset_manager.h"
-#include "sprite_renderer.h"
+#include "openglv4_5_graphics.h"
 #include "engine.h"
 #include "input.h"
 #include "../file/file.h"
@@ -24,7 +24,7 @@ void
 Engine::Init(Main* _main){
     SDL_GetWindowSize(_main->window, &width, &height);
 
-    text_renderer.Init(this);
+    //text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
     level->actors.reserve(50);
     level->engine = this;

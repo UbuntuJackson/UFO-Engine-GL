@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "../external/olcPixelGameEngine.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "texture_2d.h"
 
 namespace ufo{
 
@@ -29,10 +30,13 @@ public:
         glm::vec3 _colour) = 0;
 
     virtual void DrawCircle(Vector2f _position, float _radius, ufo::Colour _colour) = 0;
-    
+
     virtual void DrawRectangleExtra(Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, float _rotation, ufo::Colour _colour) = 0;
 
     virtual void DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour) = 0;
+    virtual void DrawPartialSprite(ufo::Texture2D& _texture, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour) = 0;
+
+    //virtual void DrawText();
 
     virtual void CreateFrameBuffer() = 0;
 

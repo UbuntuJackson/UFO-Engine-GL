@@ -25,6 +25,8 @@ public:
 
     void Bind();
 
+    void Delete();
+
 };
 
 };

@@ -1,3 +1,5 @@
+//Todo: This file isn't used yet.
+
 #pragma once
 #include "texture_2d.h"
 #include "shader.h"

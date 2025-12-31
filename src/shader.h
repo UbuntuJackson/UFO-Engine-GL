@@ -8,8 +8,10 @@ namespace ufo{
 
 class Shader{
 public:
+
+    //Todo: Shouldn't this be unsigned?
     int INFO_LOG_SIZE = 512;
-    
+
     unsigned int shader_program_id = 0;
 
     Shader();
@@ -24,7 +26,7 @@ public:
     void AttachGeometryShader(std::string _path);
 
     void Use();
-    
+
     void SetFloat(const char *_name, float _value, bool _use_shader = false);
 
     void SetInt(const char* _name, int _value, bool _use_shader = false);

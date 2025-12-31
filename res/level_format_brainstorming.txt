@@ -1,0 +1,42 @@
+#Least concise
+
+name Player
+class_name Player
+base_class_name Actor
+pos 20 30
+is_imported 0
+actors[
+    name Camera
+    class_name Camera
+    base_class_name Camera
+    pos 0 0,
+    is_imported 0
+    actors[]
+    name Sprite
+    key ../res/manandwoman.png
+    scale 1 1
+    frame_size 200 200
+    rotation 0.0
+    frame_index 0.0
+    is_imported 0
+    actors[]
+]
+
+#Concise
+
+name Player
+class_name Player
+base_class_name Actor
+pos 20 30
+actors[
+    name Camera
+    class_name & base_class_name Camera
+    pos 0,
+    name Sprite
+    class_name & base_class_name Sprite
+    key ../res/manandwoman.png
+    scale 1
+    frame_size 200
+    rotation 0.0
+    frame_index 0.0
+]

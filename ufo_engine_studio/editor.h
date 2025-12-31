@@ -19,14 +19,17 @@
 #include "../src/camera.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "../tilemap/tile_map.h"
+#include "../src/text.h"
 
 namespace UFOEngineStudio{
 
 class Editor : public Level, public ufo::gc::Root{
 public:
 
+    //The path to the UFO-Engine Header Tool & Boilerplate generator
     std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
 
+    //The current working directory for the projekt. Not for this program.
     std::string opened_directory_path = "";
     bool should_refresh_working_directory = true;
 
@@ -132,6 +135,12 @@ public:
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Level>();
             }, "Level", "Level"))
+        );
+
+        spawnable_actor_map.emplace("Text",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::Text>(Vector2f(0.0f, 0.0f));
+            }, "Text", "Text"))
         );
 
         spawnable_actor_map.emplace(

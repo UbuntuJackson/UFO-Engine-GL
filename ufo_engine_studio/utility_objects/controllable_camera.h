@@ -26,10 +26,10 @@ public:
     void OnUpdate(float _delta_time){
         Camera::OnUpdate(_delta_time);
 
-        if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;
+        /*if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("left")).is_held) local_position.x -= _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("up")).is_held) local_position.y -= _delta_time * 100.0f;
-        if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;
+        if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;*/
     }
 
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){

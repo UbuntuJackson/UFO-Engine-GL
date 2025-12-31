@@ -32,7 +32,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 # This assumes the SDL source is available in vendored/SDL
 add_subdirectory(SDL)
 add_subdirectory(freetype-2.14.1)
-#add_subdirectory(SDL_ttf-release-3.2.x)
+add_subdirectory(SDL_ttf-release-3.2.x)
 add_subdirectory(glm-1.0.1)
 
 set(
@@ -46,13 +46,13 @@ set(
     src/actor.cpp
     src/camera.cpp
     src/shader.cpp
-    src/sprite_renderer.cpp
+    src/openglv4_5_graphics.cpp
     src/sprite.cpp
     src/animation.cpp
     src/openglv4_5_asset_manager.cpp
     src/asset_json.cpp
     src/Main.cpp
-    src/text_rendering.cpp
+    #src/text_rendering.cpp
     src/control_settings.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
@@ -180,6 +180,7 @@ endif()
 
 # Link to the actual SDL3 library.
 target_link_libraries(UFO PUBLIC SDL3::SDL3)
+target_link_libraries(UFO PUBLIC SDL3_ttf::SDL3_ttf)
 target_link_libraries(UFO PUBLIC freetype)
 target_link_libraries(UFO PUBLIC glm)
 target_include_directories(UFO PUBLIC glad/include)

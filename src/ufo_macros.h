@@ -1,3 +1,6 @@
+//These macros expand to nothing, and are only used for The UFO-Header Tool & Boilerplate Generator.
+// Hence it seems a bit nonsensical and useless at first, but it's actually for external parsing.
+
 #pragma once
 
 #if defined(__GNUC__) && defined(__cplusplus)
@@ -52,6 +55,11 @@
 //This is not used
 #define ufo_garbage_collected()
 
+//Unimplemented but conceptually could be usefull to guard against parts you don't want to parse.
+#define begin_parsing()
+#define end_parsing()
+
+//Allcaps versions of the above macros. Not valid yet.
 #define UFO_CLASS()
 #define UFO_CATEGORY(_category)
 

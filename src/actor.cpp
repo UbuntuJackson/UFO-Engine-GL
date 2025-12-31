@@ -143,10 +143,11 @@ void Actor::Update(float _delta_time){
 }
 
 void Actor::WidgetDraw(ufo::Graphics* _graphics){
-    OnWidgetDraw(_graphics);
     for(const auto& actor : actors){
         actor->WidgetDraw(_graphics);
     }
+
+    OnWidgetDraw(_graphics);
 }
 
 void Actor::OnWidgetDraw(ufo::Graphics* _graphics){
@@ -154,10 +155,10 @@ void Actor::OnWidgetDraw(ufo::Graphics* _graphics){
 }
 
 void Actor::Draw(ufo::Graphics* _graphics, Camera* _camera){
-    OnDraw(_graphics, _camera);
     for(const auto& actor : actors){
         actor->Draw(_graphics, _camera);
     }
+    OnDraw(_graphics, _camera);
 }
 
 void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){

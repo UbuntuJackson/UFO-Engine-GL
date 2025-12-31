@@ -1,22 +1,25 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_events.h>
+#include <SDL3_ttf/SDL_ttf.h>
 #include "../utils/console.h"
 #include "../glad/include/glad/glad.h"
 #include <SDL3/SDL_opengl.h>
 #include <SDL3/SDL_video.h>
+#include <SDL3/SDL_pixels.h>
 #include "../file/file.h"
 #include "../src/openglv4_5_asset_manager.h"
 #include "../src/engine.h"
 #include "../src/input.h"
 #include "../src/opengl_debug_output.h"
 #include "../external/olcPixelGameEngine.h"
-#include "../src/sprite_renderer.h"
+#include "../src/openglv4_5_graphics.h"
 #include "Main.h"
 //Imgui
 #include "../imgui/imgui.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../imgui/backends/imgui_impl_sdl3.h"
+#include "texture_2d.h"
 
 #ifndef USE_PGE
 
@@ -90,6 +93,17 @@ Main::Main(unsigned int _width, unsigned int _height, const std::string& _window
     glViewport(0,0,_width,_height);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //Everything to do with SDL_ttf
+
+    if(!TTF_Init()){
+        Console::PrintLine("Failed to initialise SDL_ttf", SDL_GetError());
+    }
+
+    font = TTF_OpenFont("../UFO-Engine/res/fonts-japanese-gothic.ttf",30);
+    if(!font){
+        Console::PrintLine("Failed to load font", SDL_GetError());
+    }
 
     //This is where the main loop was before with the engine
 }
@@ -241,11 +255,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
     }
 
     engine->asset_manager.SaveAssets();
-    engine->asset_manager.Clear();
-
-    SDL_GL_DestroyContext(open_gl_context);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
+    Quit();
 }
 
 void Main::Start(std::unique_ptr<Engine> _custom_engine){
@@ -311,12 +321,20 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
 
     }
 
+    Quit();
+}
+
+void Main::Quit(){
     engine->asset_manager.Clear();
+
+    TTF_CloseFont(font);
+    TTF_Quit();
 
     SDL_GL_DestroyContext(open_gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
+
 
 }
 

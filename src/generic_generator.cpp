@@ -9,6 +9,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"
 #include "../tilemap/tile_map.h"
+#include "text.h"
 
 namespace ufo{
 
@@ -46,6 +47,23 @@ void GenericGenerator::Initialise(){
                 instance->number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
 
                 instance->editor_name = name;
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+            }
+            return std::move(instance);
+        }
+    );
+
+    factory_map.emplace(
+        "Text",
+        [](ufo::gc::JsonMap* _json){
+            std::string name = _json->map.at("name")->AsString();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            auto instance = std::make_unique<ufo::Text>(Vector2f(_x, _y));
+
+            try{
+                instance->SetText(_json->map.at("text")->AsString());
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
