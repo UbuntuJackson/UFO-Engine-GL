@@ -201,6 +201,7 @@ void GenericGenerator::Initialise(){
                         instance->costumes.emplace(costume.key, costume);
                     }
                     instance->SetCostume(_json->map.at("current_costume")->AsString());
+                    instance->preview = _json->map.at("preview")->AsFloat();
                 } catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
                 }

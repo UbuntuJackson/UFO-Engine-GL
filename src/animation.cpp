@@ -161,6 +161,7 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
 
     parent_class_as_json->map.emplace("costumes",j_costumes);
     parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(key));
+    parent_class_as_json->map.emplace("preview",_gc->New<ufo::gc::JsonNumber>(preview));
 
 
     return parent_class_as_json;
