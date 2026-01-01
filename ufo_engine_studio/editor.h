@@ -151,6 +151,12 @@ public:
             }, "Text", "Text"))
         );
 
+        spawnable_actor_map.emplace("Button",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::Button>(Vector2f(0.0f, 0.0f));
+            }, "Button", "Button"))
+        );
+
         spawnable_actor_map.emplace(
             "Sprite",
             std::move(std::make_unique<AdvancedActorSpawner>(

@@ -70,7 +70,27 @@ void GenericGenerator::Initialise(){
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Text instance", _error.what());
+            }
+            return std::move(instance);
+        }
+    );
+
+    factory_map.emplace(
+        "Button",
+        [](ufo::gc::JsonMap* _json){
+            std::string name = _json->map.at("name")->AsString();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
+
+            try{
+                for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
+                    instance->language_to_text[k] = v->AsString();
+                }
+                instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Button instance", _error.what());
             }
             return std::move(instance);
         }
@@ -96,7 +116,7 @@ void GenericGenerator::Initialise(){
                 instance->rectangle.size.y = widget_h;
 
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Widget instance", _error.what());
             }
             return std::move(instance);
         }

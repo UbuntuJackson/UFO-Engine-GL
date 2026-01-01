@@ -56,6 +56,7 @@ set(
     src/control_settings.cpp
     src/widget.cpp
     src/text.cpp
+    src/button.cpp
     src/font.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
