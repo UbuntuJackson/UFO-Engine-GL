@@ -54,6 +54,8 @@ set(
     src/Main.cpp
     #src/text_rendering.cpp
     src/control_settings.cpp
+    src/text.cpp
+    src/font.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
     file/file.cpp #To be deprecated.

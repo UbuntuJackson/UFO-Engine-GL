@@ -42,6 +42,8 @@ Engine::Init(Main* _main){
     asset_manager.LoadTexture(engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
 
     actor_generator->Initialise();
+
+    m_tp1 = std::chrono::system_clock::now();
 }
 
 Engine::~Engine(){

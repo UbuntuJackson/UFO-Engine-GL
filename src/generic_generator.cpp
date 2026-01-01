@@ -67,6 +67,7 @@ void GenericGenerator::Initialise(){
                 for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
                     instance->language_to_text[k] = v->AsString();
                 }
+                instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
@@ -200,7 +201,7 @@ void GenericGenerator::Initialise(){
 
                         instance->costumes.emplace(costume.key, costume);
                     }
-                    instance->SetCostume(_json->map.at("current_costume")->AsString());
+                    instance->key = _json->map.at("current_costume")->AsString();
                     instance->preview = _json->map.at("preview")->AsFloat();
                 } catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");

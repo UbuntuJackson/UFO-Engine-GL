@@ -1,7 +1,7 @@
+#include <exception>
 #include <unordered_map>
 #include <vector>
 #include "../ufo_maths/ufo_maths.h"
-#include "graphics.h"
 #include "actor.h"
 #include "animation.h"
 #include "sprite.h"
@@ -10,6 +10,7 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "texture_2d.h"
 
 Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
 
@@ -28,6 +29,14 @@ void Animation::SetCostume(const std::string& _configuration_key){
     rotation = costume.rotation;
     current_frame_index = costume.frame_index;
     animation_speed = costume.animation_speed;
+
+    ufo::Texture2D& ref_texture = engine->asset_manager.textures.at(key);
+    number_of_frames = (float)(ref_texture.width/(unsigned int)frame_size.x * ref_texture.height/(unsigned int)frame_size.y);
+
+    if(frame_size.x == 0.0f || frame_size.y == 0.0f){
+        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", frame_size.x, frame_size.y);
+        SetCostume("placeholder_icon");
+    }
 }
 
 void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index, float _animation_speed){
@@ -44,11 +53,16 @@ void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2
 
     costumes.emplace(_key, costume);
 
+    if(costume.frame_size.x == 0.0f || costume.frame_size.y == 0.0f){
+        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", frame_size.x, frame_size.y);
+    }
+
 }
 
 void Animation::OnSpawn(){
 
-    AddCostume(key, Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(32.0f,32.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
+    AddCostume("placeholder_icon", Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(32.0f,32.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
+    SetCostume(key);
 
 }
 
@@ -129,7 +143,10 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
 }
 
 void Animation::OnUpdate(float _delta_time){
-    if(preview) current_frame_index += animation_speed * _delta_time;
+    if(preview){
+        current_frame_index += animation_speed * _delta_time;
+        //current_frame_index = ufoMaths::Wrap(frame_counter, 0.0f, number_of_frames);
+    }
 }
 
 ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
