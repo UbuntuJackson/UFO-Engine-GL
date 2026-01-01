@@ -140,6 +140,44 @@ void Text::OnWidgetDraw(ufo::Graphics* _graphics){
     );
 }
 
+void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    Vector2f pos_min = GetGlobalPosition()+editor_hitbox.position;
+    Vector2f pos_max = GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size;
+
+    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
+
+    //Vector2f cursor_pos = Vector2f(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
+
+    ImVec2 content_pos = ImGui::GetWindowPos();
+    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+
+    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
+
+    Vector2f mouse_position_over_screenspace = engine->mouse.position-editor_viewport_pos;
+
+    Vector2f world_mouse = mouse_position_over_screenspace;
+    Vector2f former_world_mouse = engine->mouse.former_position-editor_viewport_pos;
+
+    bool parent_is_widget = false;
+
+    if(parent){
+        if(parent->DynamicCast<Widget>()) parent_is_widget = true;
+    }
+
+    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse) && !parent_is_widget){
+        //Console::PrintLine("Overlapping");
+        if(engine->mouse.is_left_button_held){
+            Vector2f dp = world_mouse - former_world_mouse;
+
+            local_position += dp;
+
+        }
+
+    }
+}
+
 void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 
 }

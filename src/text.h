@@ -42,6 +42,8 @@ public:
 
     void OnWidgetDraw(ufo::Graphics* _graphics);
 
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);

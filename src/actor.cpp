@@ -142,6 +142,17 @@ void Actor::Update(float _delta_time){
     }
 }
 
+void Actor::IrregularUpdate(){
+    for(const auto& actor : actors){
+        actor->IrregularUpdate();
+    }
+    OnIrregularUpdate();
+}
+
+void Actor::OnIrregularUpdate(){
+
+}
+
 void Actor::WidgetDraw(ufo::Graphics* _graphics){
     for(const auto& actor : actors){
         actor->WidgetDraw(_graphics);
@@ -609,10 +620,10 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 
     //ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos_min.x+viewport_pos.x, pos_min.y+viewport_pos.y), ImVec2(pos_max.x+viewport_pos.x, pos_max.y+viewport_pos.y), 0xFF995555, 3.0f,ImDrawFlags_RoundCornersAll);
 
-    ImGui::GetWindowDrawList()->AddImage((ImTextureID)(intptr_t)(engine->asset_manager.textures.at("actor_icon").id), ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y), ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y),
-        ImVec2(0,0),ImVec2(1,1), colour);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), 0xFF0000FF, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), 0xFF0000FF, 1.0f);
+    //ImGui::GetWindowDrawList()->AddImage((ImTextureID)(intptr_t)(engine->asset_manager.textures.at("actor_icon").id), ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y), ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y),
+    //    ImVec2(0,0),ImVec2(1,1), colour);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), colour, 1.0f);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), colour, 1.0f);
 }
 
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){

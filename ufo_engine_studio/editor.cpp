@@ -149,6 +149,7 @@ void Editor::OnUpdate(float _delta_time){
         for(const auto& tab : tabs){
             tab->Refresh();
         }
+        engine->asset_manager.SaveAssets();
         Console::PrintLine("Refreshed entire project");
         refresh_entire_project = false;
     }

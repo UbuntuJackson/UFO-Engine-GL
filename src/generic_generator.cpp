@@ -11,6 +11,7 @@
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"
 #include "../tilemap/tile_map.h"
 #include "text.h"
+#include "widget.h"
 
 namespace ufo{
 
@@ -68,6 +69,32 @@ void GenericGenerator::Initialise(){
                     instance->language_to_text[k] = v->AsString();
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+            }
+            return std::move(instance);
+        }
+    );
+
+    factory_map.emplace(
+        "Widget",
+        [](ufo::gc::JsonMap* _json){
+            std::string name = _json->map.at("name")->AsString();
+            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
+            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            auto instance = std::make_unique<ufo::Widget>(Vector2f(_x, _y));
+
+            try{
+                auto j_rectangle = _json->map.at("rectangle")->AsMap();
+                float widget_x = j_rectangle.at("x")->AsFloat();
+                float widget_y = j_rectangle.at("y")->AsFloat();
+                float widget_w = j_rectangle.at("w")->AsFloat();
+                float widget_h = j_rectangle.at("h")->AsFloat();
+                instance->rectangle.position.x = widget_x;
+                instance->rectangle.position.y = widget_y;
+                instance->rectangle.size.x = widget_w;
+                instance->rectangle.size.y = widget_h;
+
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
