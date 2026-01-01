@@ -18,10 +18,12 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
         Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
         AssetJson j;
         save_path = "../loaded_assets.json";
+        if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
         j.Read(save_path, "", this);
     }
     else{
         save_path = _engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path+"/loaded_assets.json";
+        if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
 
         Console::PrintLine(save_path);
         AssetJson j;

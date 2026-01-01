@@ -22,6 +22,7 @@
 #include "../src/text.h"
 #include "../src/widget.h"
 #include "../src/animation.h"
+#include "../src/button.h"
 
 namespace UFOEngineStudio{
 

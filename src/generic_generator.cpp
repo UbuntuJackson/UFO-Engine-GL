@@ -12,6 +12,7 @@
 #include "../tilemap/tile_map.h"
 #include "text.h"
 #include "widget.h"
+#include "button.h"
 
 namespace ufo{
 
@@ -69,6 +70,7 @@ void GenericGenerator::Initialise(){
                     instance->language_to_text[k] = v->AsString();
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
+                instance->editor_name = name;
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Text instance", _error.what());
             }
@@ -83,6 +85,7 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
             float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
             auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
+            instance->editor_name = name;
 
             try{
                 for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
@@ -114,6 +117,7 @@ void GenericGenerator::Initialise(){
                 instance->rectangle.position.y = widget_y;
                 instance->rectangle.size.x = widget_w;
                 instance->rectangle.size.y = widget_h;
+                instance->editor_name = name;
 
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Widget instance", _error.what());

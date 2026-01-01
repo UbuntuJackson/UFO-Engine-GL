@@ -26,6 +26,9 @@ current_frame_index{_frame_index}
 
 void Sprite::OnSpawn(){
 
+    if(!engine->asset_manager.textures.count(key)){
+        key = "placeholder_icon";
+    }
     //if(frame_size.x > engine->asset_manager.at(key).w) frame_size.x = engine->asset_manager.at(key).w;
     //if(frame_size.y > engine->asset_manager.at(key).h) frame_size.y = engine->asset_manager.at(key).h;
 }

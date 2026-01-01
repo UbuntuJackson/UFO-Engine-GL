@@ -11,7 +11,7 @@ Each dialogue can be an actor and you can draw lines between actors. The code do
 
 Widgets:
 
-Text can be wrappable by updating containers from where a change was first made.
+[DONE] Text can be wrappable by updating containers from where a change was first made.
 Widgets also need to be made so they are grabbable as UI instead of in-world actors.
 
 Make it so text and maybe other widgets can live in world-space too.
@@ -19,7 +19,7 @@ Make it so text and maybe other widgets can live in world-space too.
 Fonts:
 Fonts should actually be saved as assets. Maybe even in the same array as the .png files?
 
-Animation:
+[DONE] Animation:
 Make it so you can set costumes with drop-down lists. Only view one costume at a time. Preview feature should also be added. What should happen when you set the animation again is also to be debated. Does the current_frame_index become 0, or does it remain the same?
 
 Sprite:
@@ -29,3 +29,14 @@ Should add more consistency and controll over how sprites are scaled and rotated
 [DONE] generated.h
 
 Fix so that relative paths are used for custom actors. The relative path can easily be extracted since generated.h is in the top of the folder hierarchy.
+
+Actor:
+Renaming your Actor-derived classes is a crucial game-development feature. I suggest having something like this:
+
+### ufo_repeair.txt ###
+rename [Player Tux]
+
+This file is then taken into account every time a level file is loaded instead of directly changing every file, or having a pesky permanent identifier
+like
+
+ufo_permanent_identifier("PermanentClassID") class Player : public Actor{...

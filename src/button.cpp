@@ -6,7 +6,10 @@
 
 namespace ufo{
 
-Button::Button(Vector2f _) : Text(_){}
+Button::Button(Vector2f _) : Text(_){
+    class_name = "Button";
+    base_class_name = class_name;
+}
 
 bool Button::IsHovered(){
 
