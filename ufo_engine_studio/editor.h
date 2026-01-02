@@ -290,6 +290,6 @@ public:
 
 };
 
-void BuildAndRunProgram(const std::string& _build_directory);
+void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path);
 
 }

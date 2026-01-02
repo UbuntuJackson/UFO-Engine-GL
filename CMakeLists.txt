@@ -185,6 +185,5 @@ endif()
 # Link to the actual SDL3 library.
 target_link_libraries(UFO PUBLIC SDL3::SDL3)
 target_link_libraries(UFO PUBLIC SDL3_ttf::SDL3_ttf)
-target_link_libraries(UFO PUBLIC freetype)
 target_link_libraries(UFO PUBLIC glm)
 target_include_directories(UFO PUBLIC glad/include)

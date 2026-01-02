@@ -1,3 +1,4 @@
+#include <exception>
 #include <level.h>
 #include <string>
 #include <camera.h>
@@ -12,6 +13,8 @@
 #include "../src/engine.h"
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
+#include "file_dialogue.h"
+#include "../file/file_utils.h"
 
 namespace UFOEngineStudio{
 
@@ -89,6 +92,10 @@ void Editor::OnUpdate(float _delta_time){
     {
         if (ImGui::BeginMenu("File"))
         {
+            if(ImGui::MenuItem("Open Folder")){
+                SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenFolder, this, engine->window, "/home", false);
+            }
+
             if(ImGui::MenuItem("Save")){
                 if(active_tab) active_tab->OnSave(this);
             }
@@ -117,7 +124,7 @@ void Editor::OnUpdate(float _delta_time){
 
             if(ImGui::MenuItem("Run Project")){
                 const std::string build_directory = opened_directory_path+"/build";
-                std::thread t(&BuildAndRunProgram, build_directory);
+                std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
                 t.detach();
             }
 
@@ -157,7 +164,37 @@ void Editor::OnUpdate(float _delta_time){
     gc.Collect();
 }
 
-void BuildAndRunProgram(const std::string& _build_directory){
+void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path){
+    try{
+        std::string cmake_file_path = _opened_directory_path+"/CMakeLists.txt";
+        if(!ufo::FileSystem::FileExists(cmake_file_path)){
+            std::string cmake_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/CMakeLists.txt");
+            ufo::FileSystem::Write(cmake_file_path, cmake_file);
+        }
+
+        std::string main_file_path= _opened_directory_path+"/main.cpp";
+
+        if(!ufo::FileSystem::FileExists(main_file_path)){
+            std::string main_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/main.cpp");
+            ufo::FileSystem::Write(main_file_path, main_file);
+        }
+
+    }catch(const std::exception& _error){
+        Console::PrintLine(_error.what());
+    }
+
+    /*std::string main_file = _opened_directory_path+"/main.cpp";
+    if(!std::filesystem::exists(cmake_file.c_str())){
+        ufo::FileSystem::Write(cmake_file, "");
+        std::filesystem::copy("../UFO-Engine/project_templates/CMakeLists.txt", cmake_file.c_str());
+    }
+
+    if(!std::filesystem::exists(main_file.c_str())){
+
+        ufo::FileSystem::Write(main_file, main_file);
+        std::filesystem::copy("../UFO-Engine/project_templates/main.cpp", main_file.c_str());
+        }*/
+
     if(!std::filesystem::exists(_build_directory.c_str())){
         std::filesystem::create_directory(_build_directory.c_str());
     }
