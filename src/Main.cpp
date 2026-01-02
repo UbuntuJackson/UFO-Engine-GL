@@ -2,6 +2,7 @@
 #include <SDL3/SDL_main.h>
 #include <SDL3/SDL_events.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include <memory>
 #include "../utils/console.h"
 #include "../glad/include/glad/glad.h"
 #include <SDL3/SDL_opengl.h>
@@ -19,6 +20,7 @@
 #include "../imgui/imgui.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../imgui/backends/imgui_impl_sdl3.h"
+#include "../ufo_engine_studio/editor.h"
 #include "texture_2d.h"
 
 #ifndef USE_PGE
@@ -120,7 +122,7 @@ void Main::StartWithImGui(std::unique_ptr<Engine> _custom_engine){
 
     //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
 
-    engine->asset_manager.Initialise(engine.get());
+    //engine->asset_manager.Initialise(engine.get());
 
     engine->level_handle->Load();
 
@@ -335,6 +337,37 @@ void Main::Quit(){
     SDL_GL_DestroyContext(open_gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+}
+
+void Main::Unused_ResetUFOEngineStudio(){
+
+    //Hopefully a faithful copy of how engine is initialised in Main::StartImGui.
+
+    auto e = std::make_unique<ufo::Engine>();
+
+    auto editor = std::make_unique<UFOEngineStudio::Editor>();
+
+    //t_editor->OpenFolder()
+
+    e->level = std::move(editor);
+    e->level_handle = e->level->DynamicCast<Level>();
+
+    engine = std::move(e);
+
+    engine->window = window;
+
+    engine->Init(this);
+    engine->in_editor = true;
+    engine->graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(engine.get());
+
+    engine->graphics->CreateFrameBuffer();
+
+    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
+
+    engine->asset_manager.Initialise(engine.get());
+
+    engine->level_handle->Load();
+
 }
 
 

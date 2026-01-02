@@ -406,5 +406,8 @@ public:
     void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+protected:
+    bool is_top_actor_in_editor = false;
+    friend class UFOEngineStudio::LevelEditorTab;
 
 };

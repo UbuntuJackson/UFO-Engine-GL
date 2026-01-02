@@ -14,6 +14,8 @@
 // What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
 // you twist and turn it.
 void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
+    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+
     if(!_engine->in_editor){
         Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
         AssetJson j;

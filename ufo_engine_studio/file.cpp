@@ -44,7 +44,7 @@ namespace UFOEngineStudio{
                         Console::PrintLine("[UFO Engine Studio]", _error.what());
                     }
                 }
-                _editor->should_refresh_working_directory = true;
+                _editor->refresh_entire_project = true;
             }
         }
         else{
@@ -64,7 +64,7 @@ namespace UFOEngineStudio{
                         Console::PrintLine(file_node->path_for_drag_drop_payload_use_only);
                         if(this_path != file_node->path_for_drag_drop_payload_use_only){
                             std::filesystem::rename(file_node->path_for_drag_drop_payload_use_only, this_path+"/"+file_node->file_name);
-                            _editor->should_refresh_working_directory = true;
+                            _editor->refresh_entire_project = true;
                         }
                     }
                 //}
@@ -136,7 +136,7 @@ namespace UFOEngineStudio{
                 std::string full_path = _editor->opened_directory_path +"/"+ path+"/"+file_name;
                 int res = std::remove(full_path.c_str());
                 if(res) Console::PrintLine("TreeFile::Update(): Failture upon trying to remove", full_path.c_str());
-                _editor->should_refresh_working_directory = true;
+                _editor->refresh_entire_project = true;
 
             }
             if(ImGui::MenuItem("New File")){

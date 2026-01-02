@@ -19,19 +19,36 @@
 namespace UFOEngineStudio{
 
 Editor::Editor(){
-    OpenFolder("/home/uj/Documents/C++/blitbloot");
 
 }
 
 void Editor::OpenFolder(std::string _path){
+    spawnable_actor_map.clear();
+
     opened_directory = FileNode::ParseFolder(_path);
     opened_directory->file_name = "";
 
     opened_directory_path = _path;
+
+    engine->ResetUFOEngineStudio();
+
+    tabs.clear();
+    active_tab = nullptr;
+
+    refresh_entire_project = true;
+}
+
+void Editor::RefreshFolder(){
+
+    opened_directory = FileNode::ParseFolder(opened_directory_path);
+    opened_directory->file_name = "";
+
 }
 
 void
 Editor::Load(){
+    OpenFolder("/home/uj/Documents/C++/sta_replica");
+
     engine->asset_manager.LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
 
     Level::Load();
@@ -83,9 +100,6 @@ void Editor::OnUpdate(float _delta_time){
 
     opened_directory->AddFileNodesRecursive();
 
-    if(should_refresh_working_directory) OpenFolder(opened_directory_path);
-    should_refresh_working_directory = false;
-
     ImGui::End();
 
     if (ImGui::BeginMainMenuBar())
@@ -97,7 +111,10 @@ void Editor::OnUpdate(float _delta_time){
             }
 
             if(ImGui::MenuItem("Save")){
-                if(active_tab) active_tab->OnSave(this);
+                if(active_tab){
+                    active_tab->OnSave(this);
+                    refresh_entire_project = true;
+                }
             }
 
             if (ImGui::BeginMenu("New File"))
@@ -158,6 +175,10 @@ void Editor::OnUpdate(float _delta_time){
         }
         engine->asset_manager.SaveAssets();
         Console::PrintLine("Refreshed entire project");
+
+        //Refresh entire file tree.
+        RefreshFolder();
+
         refresh_entire_project = false;
     }
 
@@ -171,34 +192,37 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
             std::string cmake_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/CMakeLists.txt");
             ufo::FileSystem::Write(cmake_file_path, cmake_file);
         }
+    } catch(const std::exception& _error){
+        Console::PrintLine(_error.what());
+    }
 
+    try{
         std::string main_file_path= _opened_directory_path+"/main.cpp";
 
         if(!ufo::FileSystem::FileExists(main_file_path)){
             std::string main_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/main.cpp");
             ufo::FileSystem::Write(main_file_path, main_file);
         }
-
-    }catch(const std::exception& _error){
+    } catch(const std::exception& _error){
         Console::PrintLine(_error.what());
     }
 
-    /*std::string main_file = _opened_directory_path+"/main.cpp";
-    if(!std::filesystem::exists(cmake_file.c_str())){
-        ufo::FileSystem::Write(cmake_file, "");
-        std::filesystem::copy("../UFO-Engine/project_templates/CMakeLists.txt", cmake_file.c_str());
+    if(ufo::FileSystem::FileExists(_opened_directory_path+"/UFO-Engine-GL")){
+        Console::PrintLine("[UFO-Engine Studio] Error, please rename cloned repository to UFO-Engine");
+        return;
     }
 
-    if(!std::filesystem::exists(main_file.c_str())){
-
-        ufo::FileSystem::Write(main_file, main_file);
-        std::filesystem::copy("../UFO-Engine/project_templates/main.cpp", main_file.c_str());
-        }*/
+    if(!ufo::FileSystem::FileExists(_opened_directory_path+"/UFO-Engine")){
+        Console::PrintLine("[UFO-Engine Studio] Could not find folder "+_opened_directory_path+"/UFO-Engine");
+        return;
+    }
 
     if(!std::filesystem::exists(_build_directory.c_str())){
         std::filesystem::create_directory(_build_directory.c_str());
     }
-    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && gdb OUT").c_str());
+
+    //Could build with max available CPU here.
+    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 }
 

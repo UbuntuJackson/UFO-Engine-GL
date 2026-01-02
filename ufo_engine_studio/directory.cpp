@@ -29,7 +29,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
             }
             is_new_directory = false;
 
-            _editor->should_refresh_working_directory = true;
+            _editor->refresh_entire_project = true;
         }
     }
 
@@ -48,7 +48,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
                 Console::PrintLine(file_node->path_for_drag_drop_payload_use_only);
 
                 std::filesystem::rename(file_node->path_for_drag_drop_payload_use_only, this_path+"/"+file_node->file_name);
-                _editor->should_refresh_working_directory = true;
+                _editor->refresh_entire_project = true;
             }
         //}
 
@@ -63,7 +63,7 @@ void Directory::Update(int _file_index, Directory* _parent,std::string path , Ed
             std::string full_path = _editor->opened_directory_path + path+"/"+file_name;
             int res = std::remove(full_path.c_str());
             if(res) Console::PrintLine("Directory::Update(): failed to remove directory from at path", full_path.c_str());
-            _editor->should_refresh_working_directory = true;
+            _editor->refresh_entire_project = true;
 
         }
         if(ImGui::MenuItem("New File")){

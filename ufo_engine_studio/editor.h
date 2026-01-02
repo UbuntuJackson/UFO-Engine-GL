@@ -34,7 +34,6 @@ public:
 
     //The current working directory for the projekt. Not for this program.
     std::string opened_directory_path = "";
-    bool should_refresh_working_directory = true;
 
     bool refresh_entire_project = true;
 
@@ -46,6 +45,7 @@ public:
     bool set_all_actors_properties_open_to_false = false;
     Editor();
     void OpenFolder(std::string _path);
+    void RefreshFolder();
     void Load();
     void ImportHeaderFileToProject(std::string _path);
 

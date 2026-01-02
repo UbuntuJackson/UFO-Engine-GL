@@ -51,7 +51,7 @@ void TextEditorTab::OnSave(Editor* _editor){
 
     last_saved_text = text;
 
-    _editor->should_refresh_working_directory = true;
+    _editor->refresh_entire_project = true;
     Refresh();
 }
 

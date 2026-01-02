@@ -21,6 +21,7 @@ LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_edi
 
 void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
+    this_level->is_top_actor_in_editor = true;
 }
 
 void LevelEditorTab::Refresh(){
@@ -122,7 +123,6 @@ void LevelEditorTab::OnSave(Editor* _editor){
         SDL_ShowSaveFileDialog(&OnNewActorFile , this, _editor->engine->window, nullptr, 0, global_file_location);
     }
 
-    _editor->should_refresh_working_directory = true;
     Refresh();
 }
 

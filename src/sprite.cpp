@@ -93,6 +93,9 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
     }
 
+    bool texture_was_erased = false;
+    std::string name_of_erased_texture = "";
+
     for(const auto& [name, texture] : engine->asset_manager.textures){
         ImGui::Text("%s",name.c_str());
         ImGui::Image(
@@ -104,7 +107,21 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         ImGui::SameLine();
         if(ImGui::Button(std::string("Assign Texture to Sprite###Assign Texture to Sprite"+name).c_str())){
             key = name;
+            float w = (float)engine->asset_manager.textures.at(name).width;
+            float h = (float)engine->asset_manager.textures.at(name).height;
         }
+        ImGui::SameLine();
+        if(ImGui::Button(std::string("Unload###UnloadTexture"+name).c_str())){
+            name_of_erased_texture = name;
+            texture_was_erased = true;
+        }
+    }
+
+    if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
+        engine->asset_manager.textures.at(name_of_erased_texture).Delete();
+        engine->asset_manager.textures.erase(name_of_erased_texture);
+
+        if(key == name_of_erased_texture) key = "placeholder_icon";
     }
 
 }

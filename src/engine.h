@@ -65,6 +65,7 @@ public:
 
     Engine();
     void Init(Main* _main);
+    void ResetUFOEngineStudio();
 
     virtual ~Engine();
 

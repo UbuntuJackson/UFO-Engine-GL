@@ -39,11 +39,17 @@ Engine::Init(Main* _main){
         }
         }*/
 
-    asset_manager.LoadTexture(engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
-
     actor_generator->Initialise();
 
     m_tp1 = std::chrono::system_clock::now();
+}
+
+void Engine::ResetUFOEngineStudio(){
+    asset_manager.SaveAssets();
+    asset_manager.shaders.clear();
+    asset_manager.textures.clear();
+
+    asset_manager.Initialise(this);
 }
 
 Engine::~Engine(){

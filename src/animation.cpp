@@ -30,6 +30,13 @@ void Animation::SetCostume(const std::string& _configuration_key){
     current_frame_index = costume.frame_index;
     animation_speed = costume.animation_speed;
 
+    if(!engine->asset_manager.textures.count(_configuration_key)){
+        Console::PrintLine("[UFO-Engine] Animation::SetCostume: Could not find texture with key:", _configuration_key);
+        costumes.erase(_configuration_key);
+        SetCostume("placeholder_icon");
+        return;
+    }
+
     ufo::Texture2D& ref_texture = engine->asset_manager.textures.at(key);
     number_of_frames = (float)(ref_texture.width/(unsigned int)frame_size.x * ref_texture.height/(unsigned int)frame_size.y);
 
@@ -51,11 +58,12 @@ void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2
         _animation_speed
     };
 
-    costumes.emplace(_key, costume);
-
     if(costume.frame_size.x == 0.0f || costume.frame_size.y == 0.0f){
-        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", frame_size.x, frame_size.y);
+        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", costume.frame_size.x, costume.frame_size.y);
+        return;
     }
+
+    costumes.emplace(_key, costume);
 
 }
 
@@ -123,6 +131,9 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
     }
 
+    bool texture_was_erased = false;
+    std::string name_of_erased_texture = "";
+
     for(const auto& [name, texture] : engine->asset_manager.textures){
         ImGui::Text("%s",name.c_str());
         ImGui::Image(
@@ -132,12 +143,25 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
             ImVec2(1,1)
         );
         ImGui::SameLine();
-        if(ImGui::Button(std::string("Add Texture as Costume"+name).c_str())){
+        if(ImGui::Button(std::string("Add Texture as Costume###AddCostume"+name).c_str())){
             float w = (float)engine->asset_manager.textures.at(name).width;
             float h = (float)engine->asset_manager.textures.at(name).height;
             AddCostume(name, Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(w,h), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
             SetCostume(name);
         }
+        ImGui::SameLine();
+        if(ImGui::Button(std::string("Unload###UnloadCostume"+name).c_str())){
+            name_of_erased_texture = name;
+            texture_was_erased = true;
+        }
+    }
+
+    if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
+
+        engine->asset_manager.textures.at(name_of_erased_texture).Delete();
+        engine->asset_manager.textures.erase(name_of_erased_texture);
+
+        if(key == name_of_erased_texture) SetCostume("placeholder_icon");
     }
 
 }

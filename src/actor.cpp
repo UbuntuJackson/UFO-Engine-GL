@@ -334,9 +334,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         if(ImGui::MenuItem("Rename")){
             TurnOnEditMode();
         }
-        if(ImGui::MenuItem("Delete")){
-            is_dead = true;
+        if(!is_top_actor_in_editor){
+            if(ImGui::MenuItem("Delete")){
+                is_dead = true;
 
+            }
         }
         if(ImGui::MenuItem("Add Actor")){
             adding_new_actor = true;

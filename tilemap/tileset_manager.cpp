@@ -151,11 +151,15 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
 
     int rows = (int)height/16;
 
+    int tileset_start_id = 1;
+
+    if(!tileset_data.empty()) tileset_start_id = tileset_data.back().tileset_start_id+tileset_data.back().tile_count;
+
     tileset_data.push_back(
         TilesetData{
             ".."+relative_path,
             columns,
-            tileset_data.back().tileset_start_id+tileset_data.back().tile_count,
+            tileset_start_id,
             (float)width, (float)height,
             16.0f, 16.0f,
             columns*rows
