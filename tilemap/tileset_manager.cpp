@@ -175,7 +175,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     ImGui::SameLine();
 
     if(ImGui::Button("Eraser")){
-        currently_selected_tile = 0;
+        currently_selected_tiles = ManyTiles{{0},0,0,1,1};
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
@@ -219,10 +219,8 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                             1,1,
                             currently_selected_tile
                         };
-                        Console::PrintLine(x,y);
-                        Console::PrintLine("Tileset Mouse Pressed");
                     }
-                    if(ImGui::IsMouseDragging(0)){
+                    if(ImGui::IsMouseDragging(0) || ImGui::IsMouseReleased(0)){
                         currently_selected_tiles.tiles.clear();
 
                         UpdateSelectedTilesetTile(tileset);
@@ -233,22 +231,35 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
                         int columns_in_buffer = x-currently_selected_tiles.column+1;
                         int rows_in_buffer = y-currently_selected_tiles.row+1;
-                        Console::PrintLine("first tile id",tileset.tileset_start_id, "rect",x, columns_in_buffer,y,rows_in_buffer);
+                        //Console::PrintLine("first tile id",tileset.tileset_start_id, "rect",x, columns_in_buffer,y,rows_in_buffer);
 
+                        int x0 = currently_selected_tiles.column;
+                        int y0 = currently_selected_tiles.row;
+                        int x1 = x+1;
+                        int y1 = y+1;
 
+                        /*if(y1-y0 <= 0){
+                            int y0_t = y0;
+                            y0 = y1;
+                            y1 = y0_t;
+                        }
 
-                        for(int r = currently_selected_tiles.row; r < y+1; r++){
-                            for(int c = currently_selected_tiles.column; c < x+1; c++){
+                        if(x1-x0 <= 0){
+                            int x0_t = x0;
+                            x0 = x1;
+                            x1 = x0_t;
+                        }*/
+
+                        for(int r = y0; r < y1; r++){
+                            for(int c = x0; c < x1; c++){
                                 int t = (r*tileset.columns)+ c + tileset.tileset_start_id;
-                                Console::PrintLine("Added tile",t);
+                                //Console::PrintLine("Added tile",t);
                                 currently_selected_tiles.tiles.push_back(t);
                             }
                         }
 
                         currently_selected_tiles.number_of_columns = columns_in_buffer;
                         currently_selected_tiles.number_of_rows = rows_in_buffer;
-
-                        Console::PrintLine("Tileset Mouse Released");
 
                     }
                 }

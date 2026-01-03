@@ -307,7 +307,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     currently_hovered_tile_x = hovered_tile_x;
     currently_hovered_tile_y = hovered_tile_y;
 
-    if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+    if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
 
         int xx = 0;
         int yy = 0;
@@ -316,8 +316,6 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
 
             if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
-
-            Console::PrintLine("Placed in TileMap",i,hovered_tile_x+xx, hovered_tile_y+yy);
 
             xx++;
             if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
