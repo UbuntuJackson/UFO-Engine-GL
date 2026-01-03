@@ -127,6 +127,9 @@ void Editor::OnUpdate(float _delta_time){
                 if(ImGui::MenuItem("Textfile (.txt)")){
                     tabs.push_back(std::make_unique<TextEditorTab>("","",this));
                 }
+                /*if(ImGui::MenuItem("Actor (ufo.h)")){
+                    tabs.push_back(std::make_unique<TextEditorTab>("","",this));
+                    }*/
 
                 ImGui::EndMenu();
             }
