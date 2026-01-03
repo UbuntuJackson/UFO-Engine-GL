@@ -68,17 +68,34 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     this_level->ViewProperties(this, 0);
     ImGui::End();
 
-    ImGui::Begin(std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(), nullptr, window_flags);
+    ImGui::Begin(std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(), nullptr, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 
     LevelUpdatePhase(_delta_time);
     LevelDrawPhase(engine->graphics.get());
 
+    float w_h_ratio = (float)engine->width/(float)engine->height;
+
+
+
     ImGui::Image(
         (void*)(intptr_t)(dynamic_cast<ufo::OpenGLv4_5_Graphics*>(engine->graphics.get())->texture_id),
-        ImVec2(engine->width, engine->height),
+        ImVec2(ImGui::GetWindowSize().y*w_h_ratio, ImGui::GetWindowSize().y),
         ImVec2(0,0),
         ImVec2(1,-1)
     );
+
+    float window_to_engine_ratio = engine->height / ImGui::GetWindowSize().y;
+
+    {
+        ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+        ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+
+        Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
+
+        mouse_position_over_screenspace = ((engine->mouse.position)-editor_viewport_pos)*window_to_engine_ratio;
+
+    }
 
     this_level->UpdateEditorViewport(editor, this);
 

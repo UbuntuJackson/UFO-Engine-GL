@@ -18,6 +18,10 @@ public:
     bool is_right_button_pressed = false;
     bool is_right_button_released = false;
 
+    bool is_middle_button_held = false;
+    bool is_middle_button_pressed = false;
+    bool is_middle_button_released = false;
+
     void ResetTemporaryStates();
 
     void CheckEvents(SDL_Event& event);

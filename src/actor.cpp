@@ -552,9 +552,6 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
 
-    //Vector2f cursor_pos = Vector2f(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
-
-    ImVec2 content_pos = ImGui::GetWindowPos();
     ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
 
     Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);

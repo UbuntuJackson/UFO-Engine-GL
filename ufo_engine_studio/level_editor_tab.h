@@ -23,6 +23,8 @@ public:
     std::unique_ptr<Actor> replace_with_actor;
     std::string header_file;
 
+    Vector2f mouse_position_over_screenspace;
+
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
 
     void Initialise();

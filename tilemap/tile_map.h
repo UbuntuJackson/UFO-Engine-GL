@@ -32,6 +32,8 @@ public:
 
     int currently_hovered_tile_x = 0;
     int currently_hovered_tile_y = 0;
+    int current_world_mouse_x = 0;
+    int current_world_mouse_y = 0;
 
     TileMap(Vector2f _);
 

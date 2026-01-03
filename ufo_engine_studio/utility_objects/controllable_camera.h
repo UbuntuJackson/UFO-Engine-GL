@@ -26,6 +26,14 @@ public:
     void OnUpdate(float _delta_time){
         Camera::OnUpdate(_delta_time);
 
+        if(engine->mouse.is_middle_button_held){
+            Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
+
+            Console::PrintLine("is_middle_button_pressed");
+
+            local_position += delta_mouse;
+        }
+
         /*if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("left")).is_held) local_position.x -= _delta_time * 100.0f;
         if(engine->keyboard.GetKey(controls->GetControl("up")).is_held) local_position.y -= _delta_time * 100.0f;

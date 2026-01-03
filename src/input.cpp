@@ -11,6 +11,9 @@ void Mouse::ResetTemporaryStates(){
     is_left_button_released = false;
     is_right_button_pressed = false;
     is_right_button_released = false;
+
+    is_middle_button_pressed = false;
+    is_middle_button_released = false;
 }
 
 void Mouse::CheckEvents(SDL_Event& event){
@@ -24,6 +27,10 @@ void Mouse::CheckEvents(SDL_Event& event){
             is_right_button_held = true;
             is_right_button_pressed = true;
         }
+        if(event.button.button == SDL_BUTTON_MIDDLE){
+            is_middle_button_held = true;
+            is_middle_button_pressed = true;
+        }
     }
     if(event.type == SDL_EVENT_MOUSE_BUTTON_UP){
 
@@ -34,6 +41,10 @@ void Mouse::CheckEvents(SDL_Event& event){
         if(event.button.button == SDL_BUTTON_RIGHT){
             is_right_button_held = false;
             is_right_button_released = true;
+        }
+        if(event.button.button == SDL_BUTTON_MIDDLE){
+            is_middle_button_held = false;
+            is_middle_button_released = true;
         }
 
     }

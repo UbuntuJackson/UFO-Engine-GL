@@ -147,6 +147,15 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<Level>();
             instance->editor_name = name;
 
+            try{
+                float size_x = _json->map.at("size_x")->AsFloat();
+                float size_y = _json->map.at("size_y")->AsFloat();
+                instance->size.x = size_x;
+                instance->size.y = size_y;
+            } catch(const std::exception& _error){
+
+            }
+
             ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
             for(const auto& j_tileset : j_tilesets->AsArray()){
 

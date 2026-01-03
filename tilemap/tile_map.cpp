@@ -11,6 +11,7 @@
 #include "../src/engine.h"
 #include "../src/graphics.h"
 #include "../src/engine.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
 
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
@@ -206,6 +207,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     ImGui::Text("Tile x: %i tiles", currently_hovered_tile_x);
     ImGui::Text("Tile y: %i tiles", currently_hovered_tile_y);
 
+    ImGui::Text("Current world mouse x: %i", current_world_mouse_x);
+    ImGui::Text("Current world mouse y: %i", current_world_mouse_y);
+
     try{
 
     if(!resize_right){
@@ -293,11 +297,15 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(!properties_open) return;
 
-    ImVec2 mouse_pos = ImGui::GetMousePos();
-    ImVec2 item_rect_pos = ImGui::GetItemRectMin();
+    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
-    int hovered_tile_x = int(mouse_pos.x-item_rect_pos.x)/tile_width;
-    int hovered_tile_y = int(mouse_pos.y-item_rect_pos.y)/tile_height;
+    current_world_mouse_x = world_mouse.x;
+    current_world_mouse_y = world_mouse.y;
+
+    //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
+
+    int hovered_tile_x = int(world_mouse.x)/tile_width;
+    int hovered_tile_y = int(world_mouse.y)/tile_height;
 
     if(hovered_tile_x < 0) hovered_tile_x = 0;
     if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;

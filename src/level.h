@@ -62,6 +62,8 @@ public:
 
     void UpdatePhrase(float _delta_time);
 
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
@@ -96,6 +98,10 @@ public:
         }
 
         parent_class_as_json->map.emplace("tilesets",tilesets);
+
+        parent_class_as_json->map.emplace("size_x",_gc->New<ufo::gc::JsonNumber>(size.x));
+        parent_class_as_json->map.emplace("size_y",_gc->New<ufo::gc::JsonNumber>(size.y));
+
         return parent_class_as_json;
     }
 

@@ -183,6 +183,11 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
 
 }
 
+void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    ImGui::InputFloat(std::string("size.x###size.x"+editor_name+std::to_string(_index)).c_str(), &size.x);
+    ImGui::InputFloat(std::string("size.y###size.y"+editor_name+std::to_string(_index)).c_str(), &size.y);
+}
+
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics){
 
     for(const auto& actor : actors){
