@@ -172,6 +172,12 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
     }
 
+    ImGui::SameLine();
+
+    if(ImGui::Button("Eraser")){
+        currently_selected_tile = 0;
+    }
+
     if(ImGui::BeginTabBar("TilesetManager")){
         for(auto& tileset : tileset_data){
             if(ImGui::BeginTabItem(tileset.name.c_str(), &tileset.to_not_be_removed, ImGuiTabItemFlags_None)){
@@ -192,19 +198,72 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                 ImVec2 mouse_pos = ImGui::GetMousePos();
                 ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 
-                if(ImGui::IsItemClicked(0)){
+                //For selectig one tile
+                /*if(ImGui::IsItemClicked(0)){
 
 
                     UpdateSelectedTilesetTile(tileset);
+                    }*/
+
+                if(ImGui::IsItemHovered()){
+                    if(ImGui::IsMouseClicked(0)){
+                        UpdateSelectedTilesetTile(tileset);
+
+                        int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
+                        int x = tile_on_tile_selector%tileset.columns;
+                        int y = tile_on_tile_selector/tileset.columns;
+
+                        currently_selected_tiles = ManyTiles{
+                            {},
+                            x,y,
+                            1,1,
+                            currently_selected_tile
+                        };
+                        Console::PrintLine(x,y);
+                        Console::PrintLine("Tileset Mouse Pressed");
+                    }
+                    if(ImGui::IsMouseDragging(0)){
+                        currently_selected_tiles.tiles.clear();
+
+                        UpdateSelectedTilesetTile(tileset);
+
+                        int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
+                        int x = tile_on_tile_selector%tileset.columns;
+                        int y = tile_on_tile_selector/tileset.columns;
+
+                        int columns_in_buffer = x-currently_selected_tiles.column+1;
+                        int rows_in_buffer = y-currently_selected_tiles.row+1;
+                        Console::PrintLine("first tile id",tileset.tileset_start_id, "rect",x, columns_in_buffer,y,rows_in_buffer);
+
+
+
+                        for(int r = currently_selected_tiles.row; r < y+1; r++){
+                            for(int c = currently_selected_tiles.column; c < x+1; c++){
+                                int t = (r*tileset.columns)+ c + tileset.tileset_start_id;
+                                Console::PrintLine("Added tile",t);
+                                currently_selected_tiles.tiles.push_back(t);
+                            }
+                        }
+
+                        currently_selected_tiles.number_of_columns = columns_in_buffer;
+                        currently_selected_tiles.number_of_rows = rows_in_buffer;
+
+                        Console::PrintLine("Tileset Mouse Released");
+
+                    }
                 }
 
-                int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
-                int x = tile_on_tile_selector%tileset.columns;
-                int y = tile_on_tile_selector/tileset.columns;
-
-                ImGui::GetWindowDrawList()->AddRect(
+                /*ImGui::GetWindowDrawList()->AddRect(
                     ImVec2(item_rect_pos.x + x*tileset.tile_width , item_rect_pos.y + y*tileset.tile_height),
                     ImVec2(item_rect_pos.x + x*tileset.tile_width+tileset.tile_width , item_rect_pos.y + y*tileset.tile_height+tileset.tile_height),
+                    0xFFFF00FF, 0.0f, 0, 1.0f);*/
+
+                ImGui::GetWindowDrawList()->AddRect(
+                    ImVec2(item_rect_pos.x + currently_selected_tiles.column*tileset.tile_width , item_rect_pos.y + currently_selected_tiles.row*tileset.tile_height),
+                    ImVec2(item_rect_pos.x +
+                        currently_selected_tiles.column*tileset.tile_width+tileset.tile_width*currently_selected_tiles.number_of_columns ,
+                        item_rect_pos.y +
+                        currently_selected_tiles.row*tileset.tile_height+tileset.tile_height*currently_selected_tiles.number_of_rows),
                     0xFFFF00FF, 0.0f, 0, 1.0f);
 
                 ImGui::EndTabItem();

@@ -22,7 +22,7 @@ Actor::Actor(Vector2f _local_position) : local_position{_local_position}{
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
-    InitEditorProperties();
+    //InitEditorProperties();
 }
 
 Vector2f Actor::GetGlobalPosition(){
@@ -451,11 +451,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
     }
 }
 
-void Actor::InitEditorProperties(){
-    editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("x","x",&(local_position.x)));
-    editor_properties.push_back(std::make_unique<EditorPropertyFloatHandle>("y","y",&(local_position.y)));
-}
-
 void Actor::OpenProperties(){
     properties_open = false;
     if(should_open_properties){
@@ -527,6 +522,9 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
         }
     }
+
+    ImGui::InputFloat(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x);
+    ImGui::InputFloat(std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), &local_position.y);
 
     for(int i = 0; i < editor_properties.size(); i++){
         editor_properties[i]->Update(editor_name, i);
@@ -638,22 +636,13 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
 
     for(const auto& property : editor_properties){
-        if(property->variable_name == "x"
-            ||property->variable_name == "y"
-            ||property->variable_name == "offset_x"
-            ||property->variable_name == "offset_y"
-            ||property->variable_name == "frame_size_x"
-            ||property->variable_name == "frame_size_y"
-            ||property->variable_name == "scale_x"
-            ||property->variable_name == "scale_y"
-            ||property->variable_name == "rotation"
-            ||property->variable_name == "frame_index"
 
-        ){
-            this_actor->map.emplace(property->variable_name, property->GetJson(_gc));
-        }
-        else j_custom_editor_properties->map.emplace(property->variable_name,property->GetJson(_gc));
+        this_actor->map.emplace(property->variable_name, property->GetJson(_gc));
+
     }
+
+    this_actor->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(local_position.x));
+    this_actor->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(local_position.y));
 
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 

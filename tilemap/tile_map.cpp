@@ -12,12 +12,6 @@
 #include "../src/graphics.h"
 #include "../src/engine.h"
 
-void TileMap::InitEditorProperties(){
-    //Actor::InitEditorProperties();
-    //editor_properties.push_back(std::make_unique<EditorPropertyIntHandle>("Number of Columns","Number of Columns",&number_of_columns));
-    //editor_properties.push_back(std::make_unique<EditorPropertyIntHandle>("Number of Columns","Number of Rows",&number_of_rows));
-}
-
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
 
@@ -26,7 +20,6 @@ void TileMap::OnSpawn(){
 TileMap::TileMap(Vector2f _) : Actor(_){
     base_class_name = "TileMap";
     class_name = base_class_name;
-    InitEditorProperties();
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
 }
 
@@ -314,13 +307,35 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     currently_hovered_tile_x = hovered_tile_x;
     currently_hovered_tile_y = hovered_tile_y;
 
-    if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
+    if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+
+        int xx = 0;
+        int yy = 0;
+        for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
+
+            int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+
+            if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+
+            Console::PrintLine("Placed in TileMap",i,hovered_tile_x+xx, hovered_tile_y+yy);
+
+            xx++;
+            if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                xx = 0;
+                yy++;
+            }
+
+        }
+
+    }
+
+    /*if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
 
         int tile_to_be_set = hovered_tile_y*number_of_columns + hovered_tile_x;
 
         if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
 
-    }
+        }*/
 }
 
 ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){

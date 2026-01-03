@@ -33,8 +33,6 @@ public:
     int currently_hovered_tile_x = 0;
     int currently_hovered_tile_y = 0;
 
-    void InitEditorProperties();
-
     TileMap(Vector2f _);
 
     void OnSpawn();

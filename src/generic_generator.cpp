@@ -21,8 +21,8 @@ void GenericGenerator::Initialise(){
         "Actor",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Actor>(Vector2f(_x, _y));
             instance->editor_name = name;
             return std::move(instance);
@@ -33,8 +33,8 @@ void GenericGenerator::Initialise(){
         "TileMap",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
 
             try{
@@ -61,8 +61,8 @@ void GenericGenerator::Initialise(){
         "Text",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Text>(Vector2f(_x, _y));
 
             try{
@@ -82,8 +82,8 @@ void GenericGenerator::Initialise(){
         "Button",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
             instance->editor_name = name;
 
@@ -103,8 +103,8 @@ void GenericGenerator::Initialise(){
         "Widget",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Widget>(Vector2f(_x, _y));
 
             try{
@@ -130,8 +130,8 @@ void GenericGenerator::Initialise(){
         "Camera",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Camera>(Vector2f(_x, _y));
             instance->editor_name = name;
             return std::move(instance);
@@ -142,8 +142,8 @@ void GenericGenerator::Initialise(){
         "Level",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Level>();
             instance->editor_name = name;
 
@@ -172,8 +172,8 @@ void GenericGenerator::Initialise(){
         "ControllableCamera",
         [](ufo::gc::JsonMap* _json){
             std::string name = _json->map.at("name")->AsString();
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ControllableCamera>(Vector2f(_x, _y));
             instance->editor_name = name;
             return std::move(instance);
@@ -182,8 +182,8 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Sprite",
         [](ufo::gc::JsonMap* _json){
-            float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-            float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
             std::string _key = "placeholder_icon";
             float _offset_x = 0.0f;
             float _offset_y = 0.0f;
@@ -225,8 +225,8 @@ void GenericGenerator::Initialise(){
         factory_map.emplace(
             "Animation",
             [](ufo::gc::JsonMap* _json){
-                float _x = _json->map.at("x")->AsMap().at("value")->AsFloat();
-                float _y = _json->map.at("y")->AsMap().at("value")->AsFloat();
+                float _x = _json->map.at("x")->AsFloat();
+                float _y = _json->map.at("y")->AsFloat();
 
                 std::string name = _json->map.at("name")->AsString();
 

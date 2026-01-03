@@ -30,6 +30,15 @@ struct TileCollisionData{
     std::vector<int> tiles;
 };
 
+struct ManyTiles{
+    std::vector<int> tiles;
+    int column;
+    int row;
+    int number_of_columns;
+    int number_of_rows;
+    int first_selected_tile = 0;
+};
+
 class TilesetManager{
 public:
     ufo::Engine* engine = nullptr;
@@ -48,6 +57,9 @@ public:
     const int SLOPE_22dot5_RIGHT_2 = 7;
 
     int currently_selected_tile = 0;
+
+    //Many tiles selected at the same time
+    ManyTiles currently_selected_tiles;
 
     std::vector<std::vector<int>> layer_data_sets;
     std::vector<std::vector<int>> foreground_layer_data_sets;

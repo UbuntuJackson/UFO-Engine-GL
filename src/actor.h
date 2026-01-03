@@ -186,8 +186,6 @@ public:
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, int _index);
 
-    virtual void InitEditorProperties();
-
     class EditorProperty{
     public:
         std::string variable_name;
@@ -407,6 +405,7 @@ public:
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 protected:
+//To determine whether actor is the container node for all other actors
     bool is_top_actor_in_editor = false;
     friend class UFOEngineStudio::LevelEditorTab;
 
