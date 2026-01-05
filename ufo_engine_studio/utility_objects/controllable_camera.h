@@ -17,6 +17,7 @@ public:
 
     void OnSpawn(){
         Camera::OnSpawn();
+        clamp = false;
 
         level->active_camera_handles.push_back(this);
 

@@ -19,6 +19,11 @@ LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_edi
     this_level->Load();
 }
 
+Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
+    Vector2f position = this_level->active_camera_handles.back()->Transform(_position)/window_to_engine_ratio;
+    return level_viewport_position + position;
+}
+
 void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
@@ -84,7 +89,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         ImVec2(1,-1)
     );
 
-    float window_to_engine_ratio = engine->height / ImGui::GetWindowSize().y;
+    window_to_engine_ratio = engine->height / ImGui::GetWindowSize().y;
 
     {
         ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
@@ -93,7 +98,10 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
         Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
 
+        level_viewport_position = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
+
         mouse_position_over_screenspace = ((engine->mouse.position)-editor_viewport_pos)*window_to_engine_ratio;
+        former_mouse_position_over_screenspace = ((engine->mouse.former_position)-editor_viewport_pos)*window_to_engine_ratio;
 
     }
 

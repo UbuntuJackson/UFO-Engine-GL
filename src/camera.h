@@ -3,6 +3,17 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 
+namespace ufo{
+    class GarbageCollector;
+    namespace gc{
+        class JsonMap;
+    }
+}
+
+namespace UFOEngineStudio{
+    class LevelEditorTab;
+}
+
 struct Bounds{
     float x0;
     float x1;
@@ -14,7 +25,7 @@ struct Bounds{
 
 class Camera : public Actor{
 public:
-    bool clamp = false;
+    bool clamp = true;
     int target_id = -1; //target looks through cameras and takes the id matching with it's own
     Bounds view;
     Bounds world;
@@ -37,4 +48,7 @@ public:
     //SpriteReference Transform(const SpriteReference& _sprite);
     bool IsOnScreen(olc::vf2d _position, olc::vf2d _offset = {0.0f, 0.0f});
     ufo::Rectangle GetOnScreenRectangleInWorld(olc::vf2d _offset = {0.0f, 0.0f});
+
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

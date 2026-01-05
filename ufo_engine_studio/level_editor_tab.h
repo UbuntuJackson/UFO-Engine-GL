@@ -20,12 +20,18 @@ public:
     ufo::Engine* engine = nullptr;
     Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;
+    float window_to_engine_ratio = 1.0f;
     std::unique_ptr<Actor> replace_with_actor;
     std::string header_file;
 
+    Vector2f level_viewport_position;
+
     Vector2f mouse_position_over_screenspace;
+    Vector2f former_mouse_position_over_screenspace;
 
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
+
+    Vector2f TranslateToEditorScreenSpace(Vector2f _position);
 
     void Initialise();
 

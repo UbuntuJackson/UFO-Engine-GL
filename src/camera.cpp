@@ -3,6 +3,10 @@
 #include "camera.h"
 #include "level.h"
 #include "engine.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../imgui/imgui.h"
+#include <garbage_collector.h>
+#include <gc_json.h>
 
 Camera::Camera(olc::vf2d _position):
 Actor(_position),
@@ -15,7 +19,7 @@ original_local_position{_position}
 void Camera::OnSpawn(){
     view = Bounds{0.0f,(float)engine->width, 0.0f, (float)engine->height};
     world = Bounds{0.0f,level->size.x, 0.0f ,level->size.y};
-    clamp = true;
+
     if(!engine->in_editor) level->active_camera_handles.push_back(this);
     class_name = "Camera";
     base_class_name = "Camera";
@@ -127,4 +131,23 @@ Camera::GetOnScreenRectangleInWorld(olc::vf2d _offset){
     float y0 = (GetGlobalPosition().y-(viewport.size.y/2.0f)/scale-_offset.y*scale);
     float y1 = (GetGlobalPosition().y+(viewport.size.y/2.0f)/scale+_offset.y*scale);
     return ufo::Rectangle({x0, y0}, {x1-x0, y1-y0});
+}
+
+void Camera::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+
+    Actor::OnViewProperties(_level_editor_tab, _index);
+
+    ImGui::Checkbox("Clamp", &clamp);
+    ImGui::InputFloat("Scale", &scale);
+
+}
+
+ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+
+    parent_class_as_json->map.emplace("clamp",_gc->New<ufo::gc::JsonNumber>(clamp));
+    parent_class_as_json->map.emplace("scale",_gc->New<ufo::gc::JsonNumber>(scale));
+
+    return parent_class_as_json;
 }

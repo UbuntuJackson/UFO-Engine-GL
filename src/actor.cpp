@@ -545,21 +545,14 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 }
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    Vector2f pos_min = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition()+editor_hitbox.position);
-    Vector2f pos_max = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
+    const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
+    const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
 
-    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+    const  Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
+    Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
 
-    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
-
-    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
-
-    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
-
-    Vector2f mouse_position_over_screenspace = engine->mouse.position-editor_viewport_pos;
-
-    Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
-    Vector2f former_world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(engine->mouse.former_position-editor_viewport_pos);
+    const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
+    const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse)){
         //Console::PrintLine("Overlapping");
@@ -571,6 +564,24 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         }
 
     }
+
+    ImU32 colour = 0xFFFFFFFF;
+    if(parent->base_class_name != "Level") colour = 0xFF664422;
+
+    ImU32 line_clour =  0x66664422;
+
+    Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+
+    for(const auto& child : actors){
+
+        Vector2f child_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(child->GetGlobalPosition());
+
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y), ImVec2(this_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, child_screen_pos.y), ImVec2(child_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
+    }
+
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
 }
 
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -589,38 +600,7 @@ void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 }
 
 void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
-    Vector2f pos_min = _camera->Transform(GetGlobalPosition()+editor_hitbox.position);
-    Vector2f pos_max = _camera->Transform(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
-    Vector2f global_position = _camera->Transform(GetGlobalPosition());
 
-    //Console::PrintLine(engine->mouse.GetPosition());
-
-    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
-
-    //float width_through_height = 1920.0f/1080.0f
-
-    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
-
-    ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "Level") colour = 0xFF664422;
-
-    ImU32 line_clour =  0x66664422;
-
-    for(const auto& child : actors){
-        Vector2f this_screen_pos = viewport_pos + global_position;
-
-        Vector2f child_screen_pos = viewport_pos + _camera->Transform(child->GetGlobalPosition());
-
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y), ImVec2(this_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, child_screen_pos.y), ImVec2(child_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
-    }
-
-    //ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos_min.x+viewport_pos.x, pos_min.y+viewport_pos.y), ImVec2(pos_max.x+viewport_pos.x, pos_max.y+viewport_pos.y), 0xFF995555, 3.0f,ImDrawFlags_RoundCornersAll);
-
-    //ImGui::GetWindowDrawList()->AddImage((ImTextureID)(intptr_t)(engine->asset_manager.textures.at("actor_icon").id), ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y), ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y),
-    //    ImVec2(0,0),ImVec2(1,1), colour);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), colour, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), colour, 1.0f);
 }
 
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){

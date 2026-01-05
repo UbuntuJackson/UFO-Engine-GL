@@ -10,6 +10,7 @@
 #include "../shapes/rectangle.h"
 #include "../tilemap/tileset_manager.h"
 #include "text.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
@@ -79,7 +80,12 @@ void Level::UpdatePhrase(float _delta_time){
 }
 
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+    Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
 
+    ImGui::GetWindowDrawList()->AddRect(
+        ImVec2(min.x, min.y),
+        ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
 }
 
 void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
@@ -190,8 +196,7 @@ void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics){
 
-    for(const auto& actor : actors){
-        actor->DrawGizmos(_graphics,active_camera_handles.back());
-    }
+
+    DrawGizmos(_graphics,active_camera_handles.back());
 
 }

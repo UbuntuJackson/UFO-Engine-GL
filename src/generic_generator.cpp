@@ -134,6 +134,15 @@ void GenericGenerator::Initialise(){
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Camera>(Vector2f(_x, _y));
             instance->editor_name = name;
+
+            try{
+                instance->clamp = (bool)_json->map.at("clamp")->AsFloat();
+                instance->scale = _json->map.at("scale")->AsFloat();
+
+            } catch(const std::exception& _error){
+                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Camera instance", _error.what());
+            }
+
             return std::move(instance);
         }
     );
@@ -153,7 +162,7 @@ void GenericGenerator::Initialise(){
                 instance->size.x = size_x;
                 instance->size.y = size_y;
             } catch(const std::exception& _error){
-
+                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Level instance", _error.what());
             }
 
             ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
