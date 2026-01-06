@@ -26,20 +26,20 @@ struct Bounds{
 class Camera : public Actor{
 public:
     bool clamp = true;
-    int target_id = -1; //target looks through cameras and takes the id matching with it's own
     Bounds view;
     Bounds world;
     float rotation;
     float scale;
-    olc::vf2d original_local_position;
-    olc::vf2d offset_from_local_position;
-    bool local_position_set_elsewhere = true;
+
+    //Force camera to follow specific local position
+    bool follow_initial_local_position = false;
 
     //For GL
     ufo::Rectangle viewport = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
 
     Camera(olc::vf2d _position);
     void OnSpawn();
+    void OnUpdate(float _delta_time);
     void EarlyUpdate();
     void ClampLocalPosition();
     void HandleUpdate();

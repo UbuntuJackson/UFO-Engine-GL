@@ -1,4 +1,5 @@
 #include <exception>
+#include <stdexcept>
 #include <unordered_map>
 #include <vector>
 #include "../ufo_maths/ufo_maths.h"
@@ -20,15 +21,20 @@ Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _loc
 }
 
 void Animation::SetCostume(const std::string& _configuration_key){
-    Costume& costume = costumes.at(_configuration_key);
-    key = costume.key;
-    local_position = costume.local_position;
-    offset = costume.offset;
-    frame_size = costume.frame_size;
-    scale = costume.scale;
-    rotation = costume.rotation;
-    current_frame_index = costume.frame_index;
-    animation_speed = costume.animation_speed;
+    try{
+        Costume& costume = costumes.at(_configuration_key);
+        key = costume.key;
+        local_position = costume.local_position;
+        offset = costume.offset;
+        frame_size = costume.frame_size;
+        scale = costume.scale;
+        rotation = costume.rotation;
+        current_frame_index = costume.frame_index;
+        animation_speed = costume.animation_speed;
+    } catch(const std::out_of_range& _out_of_bounds){
+        Console::PrintLine("Out of range", _configuration_key);
+        throw;
+    }
 
     if(!engine->asset_manager.textures.count(_configuration_key)){
         Console::PrintLine("[UFO-Engine] Animation::SetCostume: Could not find texture with key:", _configuration_key);

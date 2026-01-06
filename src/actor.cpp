@@ -223,59 +223,76 @@ void Actor::DeclareImportedRecursive(){
     }
 }
 
-void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor){
-    if(new_actor_queue.size() != 0) return;
-    Console::PrintLine("Saw",editor_name, actors.size(), new_actor_queue.size());
-
-    for(int a = 0; a < actors.size(); a++){
-
-        //This part is good, usavable objects aren't supposed to be modified
-        if(!actors[a]->is_savable) continue;
-
-        actors[a]->UpdateActorStructure(_editor);
-
-        auto act = _editor->spawnable_actor_map.at(actors[a]->class_name)->Spawn(_editor);
-        act->class_name = actors[a]->class_name;
-
-        std::unordered_map<std::string, std::unique_ptr<Actor>> old_actors;
-
-        /*for(int b = actors[a]->actors.size()-1; b != -1; b++){
-
-            old_actors.emplace(actors[a]->actors[b]->editor_name, std::move(actors[a]->actors[b]));
-
-        }*/
-
-        for(int i = actors[a]->actors.size()-1; i != -1; i--){
-            if(actors[a]->actors[i]->is_imported){
-                old_actors.emplace(actors[a]->actors[i]->editor_name, std::move(actors[a]->actors[i]));
-                actors[a]->actors.erase(actors[a]->actors.begin()+i);
-            }
-            else{
-
-            }
-        }
-
-        for(int b = 0; b < act->new_actor_queue.size(); b++){
-            if(old_actors.count(act->new_actor_queue[b]->editor_name)){
-
-                act->new_actor_queue[b] = std::move(old_actors.at(act->new_actor_queue[b]->editor_name));
-
-                /*act->new_actor_queue[b]->engine = old_actors.at(act->new_actor_queue[b]->editor_name)->engine;
-                act->new_actor_queue[b]->parent = old_actors.at(act->new_actor_queue[b]->editor_name)->parent;
-                act->new_actor_queue[b]->level = old_actors.at(act->new_actor_queue[b]->editor_name)->level;
-                OnAddActor(act->new_actor_queue[b].get());*/
-
-                old_actors.erase(act->new_actor_queue[b]->editor_name);
-
-            }
-
-        }
-
+void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
+    if(import_mode == ImportModes::WRAPPED){
+        Console::PrintLine("UpdateActorStructure",editor_name);
+        actors.clear();
+        auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
+        act->class_name = class_name;
         for(auto&& actor : act->new_actor_queue){
-            actors[a]->AddActorUniquePtr(std::move(actor));
+            AddActorUniquePtr(std::move(actor));
         }
-
+        for(auto&& actor : new_actor_queue){
+            actor->UpdateActorStructure(_editor, false);
+        }
+    } else if(import_mode == ImportModes::UNWRAPPED) {
+        for(const auto& actor : actors){
+            actor->UpdateActorStructure(_editor, false);
+        }
     }
+
+    /*if(import_mode == ImportModes::MODIFIABLE || _parent_is_modifiable){
+        if(new_actor_queue.size() != 0) return;
+        Console::PrintLine("Saw",editor_name, actors.size(), new_actor_queue.size());
+
+        for(int a = 0; a < actors.size(); a++){
+
+            //This part is good, usavable objects aren't supposed to be modified
+            if(!actors[a]->is_savable) continue;
+
+            actors[a]->UpdateActorStructure(_editor, true);
+
+            auto act = _editor->spawnable_actor_map.at(actors[a]->class_name)->Spawn(_editor);
+            act->class_name = actors[a]->class_name;
+
+            std::unordered_map<std::string, std::unique_ptr<Actor>> old_actors;
+
+            for(int i = actors[a]->actors.size()-1; i != -1; i--){
+                if(actors[a]->actors[i]->is_imported){
+                    old_actors.emplace(actors[a]->actors[i]->editor_name, std::move(actors[a]->actors[i]));
+                    actors[a]->actors.erase(actors[a]->actors.begin()+i);
+                }
+                else{
+
+                }
+            }
+
+            for(int b = 0; b < act->new_actor_queue.size(); b++){
+                if(old_actors.count(act->new_actor_queue[b]->editor_name)){
+
+                    act->new_actor_queue[b] = std::move(old_actors.at(act->new_actor_queue[b]->editor_name));
+
+                    old_actors.erase(act->new_actor_queue[b]->editor_name);
+
+                }
+
+            }
+
+            for(auto&& actor : act->new_actor_queue){
+                actors[a]->AddActorUniquePtr(std::move(actor));
+            }
+
+        }
+    }
+    else if(ImportModes::UNWRAPPED || _parent_is_modifiable){
+        is_imported = false;
+        for(auto&& actor : actors){
+            actor->UpdateActorStructure(_editor, true);
+        }
+    }
+    else if(ImportModes::WRAPPED){
+
+    }*/
 
 }
 
@@ -286,6 +303,18 @@ void Actor::TurnOnEditMode(){
 
 void Actor::OnUpdateEditorTree(int _index){
 
+}
+
+std::string Actor::GetImportStatus(){
+    if(import_mode == ImportModes::MODIFIABLE){
+        return "Modifiable";
+    }
+    if(import_mode == ImportModes::WRAPPED){
+        return "Wrapped";
+    }
+    if(import_mode == ImportModes::UNWRAPPED){
+        return "";
+    }
 }
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
@@ -310,7 +339,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         ImGui::EndDragDropTarget();
     }
 
-    std::string imported_or_not_str = is_imported ? "(imported)" : "";
+    std::string imported_or_not_str = GetImportStatus();
 
     bool tree_node_opened = ImGui::TreeNodeEx(editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str());
 
@@ -606,6 +635,7 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("is_imported", _gc->New<ufo::gc::JsonNumber>(int(is_imported)));
+    this_actor->map.emplace("import_mode", _gc->New<ufo::gc::JsonNumber>(int(import_mode)));
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
     this_actor->map.emplace("base_class_name", _gc->New<ufo::gc::JsonString>(base_class_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
@@ -623,9 +653,11 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 
-    for(const auto& actor : actors){
-        if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
-    }
+    //if(import_mode == ImportModes::UNWRAPPED){
+        for(const auto& actor : actors){
+            if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
+        }
+    //}
 
     this_actor->map.emplace("actors", children);
 

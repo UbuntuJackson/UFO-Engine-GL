@@ -203,6 +203,43 @@ void OpenGLv4_5_Graphics::DrawCircle(Vector2f _position, float _radius, ufo::Col
 
 void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 _size, glm::vec2 _centre, glm::vec2 _v_scale, float _rotation, glm::vec4 _colour){
 
+    unsigned int VBO;
+
+    float verticies[] = {
+        //position  //texture
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 0.0f,
+
+        0.0f, 1.0f, 0.0f, 1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 0.0f, 1.0f, 0.0f
+    };
+
+    glGenBuffers(1, &VBO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindVertexArray(quadVAO);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glEnableVertexAttribArray(0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glBindVertexArray(0);
+    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
     rectangle_shader.Use();
 
     //Are these all ones?
@@ -221,13 +258,19 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
     rectangle_shader.SetMatrix4("model", model);
     rectangle_shader.SetVector4f("spriteColor", _colour);
 
-    // I don't think I need to bind a texture here?
-    //glActiveTexture(GL_TEXTURE0);
-    //engine->asset_manager.textures.at("face").Bind();
+    glActiveTexture(GL_TEXTURE0);
+    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    //_texture.Bind();
 
     glBindVertexArray(quadVAO);
+    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
     glBindVertexArray(0);
+    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
+    glDeleteBuffers(1, &VBO);
 
 }
 
@@ -310,7 +353,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
 
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
+    //model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
     model = glm::scale(model, glm::vec3(size, 1.0f));
 

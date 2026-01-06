@@ -135,6 +135,14 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
+    enum ImportModes{
+        WRAPPED,
+        MODIFIABLE,
+        UNWRAPPED
+    };
+
+    int import_mode = ImportModes::UNWRAPPED;
+
     bool is_savable = true;
 
     static inline int editor_id_counter = 0;
@@ -180,7 +188,9 @@ public:
 
     void TurnOnEditMode();
 
-    bool is_imported = false; void DeclareImportedRecursive(); void UpdateActorStructure(UFOEngineStudio::Editor* _editor);
+    std::string GetImportStatus();
+
+    bool is_imported = false; void DeclareImportedRecursive(); void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
 
     bool adding_new_actor = false;
 

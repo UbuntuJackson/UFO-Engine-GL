@@ -97,7 +97,7 @@ public:
                         auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
 
                         //Need to somehow know if these actors are imported
-                        for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
+                        //for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
 
                         std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
                         if(base_class_of_actor_config != act->base_class_name){
@@ -116,6 +116,8 @@ public:
             for(const auto& property : properties){
                 act->editor_properties.push_back(property->Copy());
             }
+
+            act->import_mode = Actor::ImportModes::WRAPPED;
 
             return std::move(act);
         }

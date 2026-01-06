@@ -305,6 +305,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 		instance->class_name = _json->map.at("class_name")->AsString();
 		try{
 		    instance->is_imported = (bool)_json->map.at("is_imported")->AsFloat();
+			instance->import_mode = _json->map.at("import_mode")->AsFloat();
 		}catch(const std::exception& _error){
 		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
 		}

@@ -10,8 +10,7 @@
 
 Camera::Camera(olc::vf2d _position):
 Actor(_position),
-scale{1.0f},
-original_local_position{_position}
+scale{1.0f}
 {
 
 }
@@ -25,6 +24,10 @@ void Camera::OnSpawn(){
     base_class_name = "Camera";
 
     Console::PrintLine("Camera Spawned", editor_name);
+}
+
+void Camera::OnUpdate(float _delta_time){
+
 }
 
 void
@@ -90,8 +93,6 @@ Camera::HandleUpdate(){ //Updates as a handle.
             local_position.y -= (GetGlobalPosition().y - (world.y1 - scaled_height_half));
 
         }
-
-        local_position_set_elsewhere = true;
 
     }
 }

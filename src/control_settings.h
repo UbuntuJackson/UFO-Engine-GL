@@ -27,13 +27,14 @@ public:
         controls.back().controls["left"] = SDLK_LEFT;
         controls.back().controls["up"] = SDLK_UP;
         controls.back().controls["down"] = SDLK_DOWN;
-        controls.back().controls["shoot"] = SDLK_SPACE;
+        controls.back().controls["run"] = SDLK_X;
+        controls.back().controls["jump"] = SDLK_Z;
         controls.push_back(Controls());
         controls.back().controls["right"] = SDLK_D;
         controls.back().controls["left"] = SDLK_A;
         controls.back().controls["up"] = SDLK_W;
         controls.back().controls["down"] = SDLK_S;
-        controls.back().controls["shoot"] = SDLK_LSHIFT;
+        controls.back().controls["run"] = SDLK_LSHIFT;
         controls.push_back(Controls());
     }
 
