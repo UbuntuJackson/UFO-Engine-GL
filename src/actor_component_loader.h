@@ -10,12 +10,18 @@ class ActorComponentLoader : public ufo::gc::Root{
 public:
     void Load(ufo::GenericGenerator* _actor_generator, Actor* _parent_actor){
 
+        Console::PrintLine("[UFO-Engine] Fetching additional components for instance of type",_parent_actor->class_name);
+
         std::string actor_config_path = "";
 
-        ufo::gc::JsonMap* structured_classes_json = ufo::gc::JsonRead(&gc, "../structured_classes");
+        bool found_class = false;
+
+        ufo::gc::JsonMap* structured_classes_json = ufo::gc::JsonRead(&gc, "../structured_classes.json");
         auto classes = structured_classes_json->map.at("contents")->AsArray();
         for(const auto& cl : classes){
             auto macros = cl->AsMap().at("macros")->AsArray();
+            found_class = cl->AsMap().at("class")->AsMap().at("name")->AsString() == _parent_actor->class_name;
+            if(!found_class) continue;
 
             for(const auto& macro : macros){
                 if(macro->AsMap().at("name")->AsString() == "ufo_actor_config"){
@@ -30,6 +36,12 @@ public:
                     }
                 }
             }
+            if(found_class) break;
+        }
+
+        if(!found_class){
+            Console::PrintLine("[UFO-Engine] Error: Could not fine ufo_actor_config file for class", _parent_actor->class_name);
+            return;
         }
 
         //Now using the config path

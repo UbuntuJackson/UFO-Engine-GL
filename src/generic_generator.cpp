@@ -1,3 +1,4 @@
+#include "generic_generator.h"
 #include <exception>
 #include <memory>
 #include <map>
@@ -291,26 +292,47 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 		instance->class_name = _json->map.at("class_name")->AsString();
 		instance->editor_name = _json->AsMap().at("name")->AsString();
 
-		try{
-
-			instance->import_mode = _json->map.at("import_mode")->AsFloat();
-			if(instance->import_mode == Actor::ImportModes::WRAPPED){
-                instance->new_actor_queue.clear();
-			    //Importing components instead of the entire actor.
-				ActorComponentLoader actor_component_loader;
-				actor_component_loader.Load(this, instance.get());
-
-			}
-
-		}catch(const std::exception& _error){
-		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJsonInGame: Could not find data 'is_imported'");
-		}
-
 	    return std::move(instance);
 	}
 	else{
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("class_name")->AsString());
 					return std::move(factory_map.at("Actor")(_json));
+	}
+}
+
+std::unique_ptr<Actor> GenericGenerator::JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
+
+    std::unique_ptr<Actor> actor = FromJson(_json);
+
+    for(ufo::gc::Json* j : _json->AsMap().at("actors")->AsArray()){
+        auto j_map = dynamic_cast<ufo::gc::JsonMap*>(j);
+
+        if(j_map) actor->AddActorUniquePtr(JsonToActorTree(_gc, j_map));
+        else Console::PrintLine("std::unique_ptr<Actor> Actor::FromJsonToActor: Non-JsonMap item found in json");
+    }
+
+    OnJsonToActorTree(actor.get(), _json);
+
+    return std::move(actor);
+
+}
+
+void GenericGenerator::JsonToActorTreeInGameComponentLoad(Actor* _actor, ufo::gc::JsonMap* _json){
+    try{
+
+		_actor->import_mode = _json->map.at("import_mode")->AsFloat();
+		if(_actor->import_mode == Actor::ImportModes::WRAPPED){
+                Console::PrintLine("new actor queue size before whiping",_actor->new_actor_queue.size(), _actor->actors.size());
+                _actor->new_actor_queue.clear();
+
+		    //Importing components instead of the entire actor.
+			ActorComponentLoader actor_component_loader;
+			actor_component_loader.Load(this, _actor);
+
+		}
+
+	}catch(const std::exception& _error){
+	    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJsonInGame: Could not find data 'import_mode'");
 	}
 }
 

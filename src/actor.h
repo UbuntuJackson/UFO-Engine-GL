@@ -192,6 +192,8 @@ public:
 
     bool is_imported = false; void DeclareImportedRecursive(); void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
 
+    void UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable);
+
     bool adding_new_actor = false;
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, int _index);

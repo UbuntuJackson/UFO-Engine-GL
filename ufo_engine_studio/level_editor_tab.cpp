@@ -27,6 +27,7 @@ Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
 void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
+    this_level->UpdateActorStructureFirstFrame(editor, false);
 }
 
 void LevelEditorTab::Refresh(){

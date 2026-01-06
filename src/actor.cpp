@@ -223,6 +223,25 @@ void Actor::DeclareImportedRecursive(){
     }
 }
 
+void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
+    if(import_mode == ImportModes::WRAPPED){
+        Console::PrintLine("UpdateActorStructure",editor_name);
+        actors.clear();
+        auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
+        act->class_name = class_name;
+        for(auto&& actor : act->new_actor_queue){
+            AddActorUniquePtr(std::move(actor));
+        }
+        for(auto&& actor : new_actor_queue){
+            actor->UpdateActorStructure(_editor, false);
+        }
+    } else if(import_mode == ImportModes::UNWRAPPED) {
+        for(const auto& actor : new_actor_queue){
+            actor->UpdateActorStructure(_editor, false);
+        }
+    }
+}
+
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
     if(import_mode == ImportModes::WRAPPED){
         Console::PrintLine("UpdateActorStructure",editor_name);
@@ -653,11 +672,11 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 
-    //if(import_mode == ImportModes::UNWRAPPED){
+    if(import_mode == ImportModes::UNWRAPPED){
         for(const auto& actor : actors){
             if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
         }
-    //}
+    }
 
     this_actor->map.emplace("actors", children);
 
