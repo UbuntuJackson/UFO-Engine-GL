@@ -27,7 +27,7 @@
 
 namespace ufo{
 
-Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title ){
+Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title, bool _vsync_on){
 
     bool vsync_on = false;
 
