@@ -29,7 +29,7 @@ namespace ufo{
 
 Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title, bool _vsync_on){
 
-    bool vsync_on = false;
+    bool vsync_on = _vsync_on;
 
     window = nullptr;
     //SDL_GL_Context is unassigned here
