@@ -57,6 +57,8 @@ public:
         return std::move(actor);
 
     }
+
+    virtual ~GenericGenerator() = default;
 };
 
 }
