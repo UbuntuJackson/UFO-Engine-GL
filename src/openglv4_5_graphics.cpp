@@ -350,10 +350,10 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     model = glm::translate(model, glm::vec3(_position, 0.0f));
 
     model = glm::scale(model, glm::vec3(_v_scale, 1.0f));
-    model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
+    //model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
 
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
-    //model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
+    model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
 
     model = glm::scale(model, glm::vec3(size, 1.0f));
 
