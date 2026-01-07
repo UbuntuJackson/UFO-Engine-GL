@@ -37,6 +37,7 @@ public:
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

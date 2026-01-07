@@ -358,7 +358,7 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     model = glm::scale(model, glm::vec3(size, 1.0f));
 
     partial_sprite_shader.SetMatrix4("model", model);
-    partial_sprite_shader.SetVector3f("spriteColor", _colour);
+    partial_sprite_shader.SetVector4f("spriteColor", _colour);
     partial_sprite_shader.SetVector2f("sample_position", sample_position_normalised);
     partial_sprite_shader.SetVector2f("sample_size", sample_size_normalised);
 

@@ -149,6 +149,8 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
 }
 
 void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
+    if(!visible) return;
+
     float scale = _camera->scale;
     Bounds world_bounds = _camera->world;
 
@@ -198,6 +200,8 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     Actor::OnViewProperties(_level_editor_tab, _index);
 
     ImGui::Separator();
+
+    ImGui::Checkbox(std::string("Visible###"+std::to_string(editor_id)).c_str(), &visible);
 
     ImGui::Text("Tilemap Width: %i tiles", number_of_columns);
     ImGui::Text("Tilemap Height: %i tiles", number_of_rows);
@@ -354,5 +358,6 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("tiles",tiles);
     parent_class_as_json->map.emplace("number_of_columns", _gc->New<ufo::gc::JsonNumber>(number_of_columns));
     parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
+    parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
     return parent_class_as_json;
 }

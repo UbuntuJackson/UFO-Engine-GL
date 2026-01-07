@@ -51,6 +51,8 @@ void GenericGenerator::Initialise(){
                 instance->number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
                 instance->number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
 
+                instance->visible = (int)_json->map.at("visible")->AsFloat();
+
                 instance->editor_name = name;
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());

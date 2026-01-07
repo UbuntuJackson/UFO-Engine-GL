@@ -10,6 +10,7 @@
 #include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
+#include "../ufo_garbage_collector/gc_json.h"
 
 Sprite::Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
 key{_key},
@@ -87,6 +88,13 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
     ImGui::InputFloat("rotation (degrees)",&rotation);
     ImGui::InputFloat("current_frame_index",&current_frame_index);
 
+    ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
+        tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+        Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+    }
+
     ImGui::Separator();
 
     if(ImGui::Button("Add Texture")){
@@ -140,6 +148,14 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(scale.y));
     parent_class_as_json->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(rotation));
     parent_class_as_json->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(current_frame_index));
+
+    ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.g));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
+
+    parent_class_as_json->map.emplace("colour", j_colour);
 
 
     return parent_class_as_json;
