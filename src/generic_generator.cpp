@@ -205,26 +205,6 @@ void GenericGenerator::Initialise(){
             float _rotation = 0.0f;
             int _frame_index = 0;
 
-            //A good example of large amount of properties being written to an object
-            // Potential solution, have an additional map which handles writing of default properties.
-            // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
-            // Son of a biscuit this has been redundant.
-            // Writing of custom properties handled in generated.h.
-
-            try{
-                _key = _json->map.at("key")->AsString();
-                _offset_x = _json->map.at("offset_x")->AsFloat();
-                _offset_y = _json->map.at("offset_y")->AsFloat();
-                _frame_size_x = _json->map.at("frame_size_x")->AsFloat();
-                _frame_size_y = _json->map.at("frame_size_y")->AsFloat();
-                _scale_x = _json->map.at("scale_x")->AsFloat();
-                _scale_y = _json->map.at("scale_y")->AsFloat();
-                _rotation = _json->map.at("rotation")->AsFloat();
-                _frame_index = (int)_json->map.at("frame_index")->AsFloat();
-            } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
-            }
-
             auto instance = std::make_unique<Sprite>(
             	_key,
             	Vector2f(_x, _y),

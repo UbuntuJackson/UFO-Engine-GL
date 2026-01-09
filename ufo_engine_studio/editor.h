@@ -99,6 +99,8 @@ public:
                         //Need to somehow know if these actors are imported
                         //for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
 
+                        act->import_mode = Actor::ImportModes::WRAPPED;
+
                         std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
                         if(base_class_of_actor_config != act->base_class_name){
                             Console::PrintLine("[UFO-Engine Studio] AdvancedActorSpawner base of this", act->class_name, "does not match base of actor_config",
@@ -116,8 +118,6 @@ public:
             for(const auto& property : properties){
                 act->editor_properties.push_back(property->Copy());
             }
-
-            act->import_mode = Actor::ImportModes::WRAPPED;
 
             return std::move(act);
         }

@@ -40,4 +40,6 @@ public:
     ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
 };

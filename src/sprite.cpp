@@ -160,3 +160,25 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
 
     return parent_class_as_json;
 }
+
+void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    //A good example of large amount of properties being written to an object
+    // Potential solution, have an additional map which handles writing of default properties.
+    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
+    // Son of a biscuit this has been redundant.
+    // Writing of custom properties handled in generated.h.
+
+    try{
+        key = _json->map.at("key")->AsString();
+        offset.x = _json->map.at("offset_x")->AsFloat();
+        offset.y = _json->map.at("offset_y")->AsFloat();
+        frame_size.x = _json->map.at("frame_size_x")->AsFloat();
+        frame_size.y = _json->map.at("frame_size_y")->AsFloat();
+        scale.x = _json->map.at("scale_x")->AsFloat();
+        scale.y = _json->map.at("scale_y")->AsFloat();
+        rotation = _json->map.at("rotation")->AsFloat();
+        current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
+    } catch(const std::exception& _error){
+        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
+    }
+}
