@@ -237,7 +237,7 @@ void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, boo
         }
     } else if(import_mode == ImportModes::UNWRAPPED) {
         for(const auto& actor : new_actor_queue){
-            actor->UpdateActorStructure(_editor, false);
+            actor->UpdateActorStructureFirstFrame(_editor, false);
         }
     }
 }
