@@ -43,3 +43,11 @@ This file is then taken into account every time a level file is loaded instead o
 like
 
 ufo_permanent_identifier("PermanentClassID") class Player : public Actor{...
+
+### TileMap ###
+
+Copying, pasting and moving groups of tiles
+
+Copying, pasting and moving Actors
+
+Can an actor live inside a grid instance without issues?

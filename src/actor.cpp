@@ -166,10 +166,10 @@ void Actor::OnWidgetDraw(ufo::Graphics* _graphics){
 }
 
 void Actor::Draw(ufo::Graphics* _graphics, Camera* _camera){
+    OnDraw(_graphics, _camera);
     for(const auto& actor : actors){
         actor->Draw(_graphics, _camera);
     }
-    OnDraw(_graphics, _camera);
 }
 
 void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
@@ -611,6 +611,16 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
         }
 
+        if(engine->mouse.is_left_button_released){
+            if(parent->base_class_name == "TileMap"){
+                TileMap* tile_map = parent->DynamicCast<TileMap>();
+
+                local_position = Vector2f(
+                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
+            }
+        }
+
     }
 
     ImU32 colour = 0xFFFFFFFF;
@@ -633,18 +643,20 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 }
 
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    for(const auto& actor : actors){
-        actor->UpdateEditorViewport(_editor, _level_editor_tab);
+    if(import_mode != ImportModes::WRAPPED){
+        for(const auto& actor : actors){
+            actor->UpdateEditorViewport(_editor, _level_editor_tab);
+        }
     }
 
     OnUpdateEditorViewport(_editor, _level_editor_tab);
 }
 
 void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    OnDrawGizmos(_graphics, _camera, _level_editor_tab);
     for(const auto& actor : actors){
         actor->DrawGizmos(_graphics, _camera, _level_editor_tab);
     }
-    OnDrawGizmos(_graphics, _camera, _level_editor_tab);
 }
 
 void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
