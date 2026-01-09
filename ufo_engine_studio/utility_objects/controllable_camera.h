@@ -41,7 +41,7 @@ public:
         if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;*/
     }
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     }
 

@@ -108,8 +108,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     this_level->UpdateEditorViewport(editor, this);
 
-    this_level->DrawGizmosPhase(editor->engine->graphics.get());
-
     ImGui::End();
 }
 
@@ -133,6 +131,7 @@ void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     this_level->DrawPhase(_graphics);
+    this_level->DrawGizmosPhase(editor->engine->graphics.get(), this);
 
     _graphics->UnbindFrameBuffer();
 }

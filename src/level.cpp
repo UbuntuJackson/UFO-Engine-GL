@@ -88,7 +88,7 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
 }
 
-void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 
@@ -194,9 +194,9 @@ void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
     ImGui::InputFloat(std::string("size.y###size.y"+editor_name+std::to_string(_index)).c_str(), &size.y);
 }
 
-void Level::DrawGizmosPhase(ufo::Graphics* _graphics){
+void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 
-    DrawGizmos(_graphics,active_camera_handles.back());
+    DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
 
 }

@@ -411,9 +411,9 @@ public:
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
-    virtual void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+    virtual void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
-    void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
+    void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
     virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);

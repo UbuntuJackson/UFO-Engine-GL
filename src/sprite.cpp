@@ -72,7 +72,7 @@ void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     );
 }
 
-void Sprite::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void Sprite::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

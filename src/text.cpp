@@ -178,7 +178,7 @@ void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStu
     }
 }
 
-void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

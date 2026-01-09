@@ -640,14 +640,14 @@ void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStud
     OnUpdateEditorViewport(_editor, _level_editor_tab);
 }
 
-void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     for(const auto& actor : actors){
-        actor->DrawGizmos(_graphics, _camera);
+        actor->DrawGizmos(_graphics, _camera, _level_editor_tab);
     }
-    OnDrawGizmos(_graphics, _camera);
+    OnDrawGizmos(_graphics, _camera, _level_editor_tab);
 }
 
-void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

@@ -17,26 +17,8 @@ Widget::Widget(Vector2f _) : Actor(_){
     base_class_name = class_name;
 }
 
-void Widget::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
-    Vector2f pos_min = GetGlobalPosition()+rectangle.position;
-    Vector2f pos_max = GetGlobalPosition()+rectangle.position+rectangle.size;
-    Vector2f global_position = GetGlobalPosition();
+void Widget::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    //Console::PrintLine(engine->mouse.GetPosition());
-
-    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
-
-    //float width_through_height = 1920.0f/1080.0f
-
-    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
-
-    ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "Level") colour = 0xFF664422;
-
-    ImGui::GetWindowDrawList()->AddRect(ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y),ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y), colour);
-
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), 0xFF0000FF, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), 0xFF0000FF, 1.0f);
 }
 
 void Widget::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -129,6 +111,28 @@ void Widget::ResizeOrMove(Vector2f _screen_space_mouse_position){
 }
 
 void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    {
+        Vector2f pos_min = GetGlobalPosition()+rectangle.position;
+        Vector2f pos_max = GetGlobalPosition()+rectangle.position+rectangle.size;
+        Vector2f global_position = GetGlobalPosition();
+
+        //Console::PrintLine(engine->mouse.GetPosition());
+
+        ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+        //float width_through_height = 1920.0f/1080.0f
+
+        Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
+
+        ImU32 colour = 0xFFFFFFFF;
+        if(parent->base_class_name != "Level") colour = 0xFF664422;
+
+        ImGui::GetWindowDrawList()->AddRect(ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y),ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y), colour);
+
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), 0xFF0000FF, 1.0f);
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), 0xFF0000FF, 1.0f);
+    }
 
     ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
 

@@ -144,8 +144,74 @@ void TileMap::CancelAllResizeDialogues(){
     resize_bottom = false;
 }
 
-void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera){
+void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(!visible || !properties_open) return;
 
+    float scale = _camera->scale;
+
+    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+
+    current_world_mouse_x = world_mouse.x;
+    current_world_mouse_y = world_mouse.y;
+
+    //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
+
+    int hovered_tile_x = int(world_mouse.x)/tile_width;
+    int hovered_tile_y = int(world_mouse.y)/tile_height;
+
+    if(hovered_tile_x < 0) hovered_tile_x = 0;
+    if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
+    if(hovered_tile_y < 0) hovered_tile_y = 0;
+    if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
+
+    currently_hovered_tile_x = hovered_tile_x;
+    currently_hovered_tile_y = hovered_tile_y;
+
+    //Actually draw the tiles
+    {
+        Console::PrintLine("Actually draw the tiles");
+
+        int xx = 0;
+        int yy = 0;
+        for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
+
+            for(auto&& tileset : level->tileset_manager.tileset_data){
+
+                int tile_id = i;
+
+                olc::vd2d tile_position = {(hovered_tile_x+ xx)*tileset.tile_width, (hovered_tile_y+yy)*tileset.tile_height};
+
+                Console::PrintLine(tile_position);
+
+                if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
+                    ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(tileset.name,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
+                    //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
+                    _graphics->DrawPartialSprite(
+                        tileset.name,
+                        _camera->Transform(tile_position),
+                        {0.0f, 0.0f},
+                        {scale, scale},
+                        sample_rectangle.position,
+                        sample_rectangle.size,
+                        0.0f,
+                        ufo::Colour(255,255,255,255)
+                    );
+                }
+
+            }
+
+            //int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+
+            //if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+
+            xx++;
+            if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                xx = 0;
+                yy++;
+            }
+
+        }
+    }
 }
 
 void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
