@@ -38,7 +38,7 @@ Main::Main(unsigned int _width, unsigned int _height, const std::string& _window
             public:
             void Read(const std::string& _path, bool& _v_sync){
                 auto j_settings = gc::JsonRead(&gc, _path);
-                _v_sync = (bool)j_settings->map["vsync"];
+                _v_sync = (bool)j_settings->map["vsync"]->AsFloat();
             }
         };
 
