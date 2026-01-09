@@ -29,6 +29,10 @@ namespace UFOEngineStudio{
 class Editor : public Level, public ufo::gc::Root{
 public:
 
+    bool will_compile_game = false;
+    bool will_run_game = false;
+    bool v_sync = true;
+
     //The path to the UFO-Engine Header Tool & Boilerplate generator
     std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
 

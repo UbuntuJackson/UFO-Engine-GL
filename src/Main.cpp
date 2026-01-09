@@ -22,14 +22,30 @@
 #include "../imgui/backends/imgui_impl_sdl3.h"
 #include "../ufo_engine_studio/editor.h"
 #include "texture_2d.h"
+#include "../file/file_utils.h"
 
 #ifndef USE_PGE
 
 namespace ufo{
 
-Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title, bool _vsync_on){
+Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title){
 
-    bool vsync_on = _vsync_on;
+    bool vsync_on = true;
+
+    if(ufo::FileSystem::FileExists("../settings.json")){
+
+        class SettingsReader : public ufo::gc::Root{
+            public:
+            void Read(const std::string& _path, bool& _v_sync){
+                auto j_settings = gc::JsonRead(&gc, _path);
+                _v_sync = (bool)j_settings->map["vsync"];
+            }
+        };
+
+        SettingsReader r;
+        r.Read("../settings.json", vsync_on);
+
+    }
 
     window = nullptr;
     //SDL_GL_Context is unassigned here

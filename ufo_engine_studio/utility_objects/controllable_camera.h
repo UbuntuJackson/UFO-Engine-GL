@@ -43,4 +43,8 @@ public:
 
     }
 
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    }
+
 };

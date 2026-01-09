@@ -25,7 +25,7 @@ public:
     TTF_Font *font = nullptr;
     SDL_Texture* text_texture;
 
-    Main(unsigned int _width, unsigned int _height, const std::string& _window_title, bool _vsync_on);
+    Main(unsigned int _width, unsigned int _height, const std::string& _window_title);
 
     void Start(std::unique_ptr<Engine> _custom_engine);
     void StartWithImGui(std::unique_ptr<Engine> _custom_engine);

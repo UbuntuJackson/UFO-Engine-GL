@@ -143,15 +143,39 @@ void Editor::OnUpdate(float _delta_time){
             }
 
             if(ImGui::MenuItem("Compile Game")){
-                const std::string build_directory = opened_directory_path+"/build";
-                std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
-                t.detach();
+                refresh_entire_project = true;
+                will_compile_game = true;
             }
 
             if(ImGui::MenuItem("Run Game")){
                 const std::string build_directory = opened_directory_path+"/build";
                 std::thread t(&RunGame, build_directory, opened_directory_path);
                 t.detach();
+            }
+
+            if(ImGui::Checkbox("Vsync###EditorVsync On", &v_sync)){
+                if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
+                    auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
+                    try{
+                        j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                    }catch(const std::exception& _error){
+                        Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+                    }
+                    j_settings->Write(opened_directory_path+"/settings.json");
+                }
+                else{
+                    auto j_settings = gc.New<ufo::gc::JsonMap>();
+                    try{
+                        j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                    }catch(const std::exception& _error){
+                        Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+                    }
+                    j_settings->Write(opened_directory_path+"/settings.json");
+                }
+            }
+
+            if(ImGui::MenuItem("Window Size")){
+
             }
 
             ImGui::EndMenu();
@@ -189,6 +213,13 @@ void Editor::OnUpdate(float _delta_time){
         RefreshFolder();
 
         refresh_entire_project = false;
+    }
+
+    if(will_compile_game){
+        const std::string build_directory = opened_directory_path+"/build";
+        std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
+        t.detach();
+        will_compile_game = false;
     }
 
     gc.Collect();
