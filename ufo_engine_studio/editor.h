@@ -293,5 +293,6 @@ public:
 };
 
 void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path);
+void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 
 }

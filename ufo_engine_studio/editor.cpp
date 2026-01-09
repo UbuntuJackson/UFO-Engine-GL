@@ -142,9 +142,15 @@ void Editor::OnUpdate(float _delta_time){
                 refresh_entire_project = true;
             }
 
-            if(ImGui::MenuItem("Run Project")){
+            if(ImGui::MenuItem("Compile Game")){
                 const std::string build_directory = opened_directory_path+"/build";
                 std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
+                t.detach();
+            }
+
+            if(ImGui::MenuItem("Run Game")){
+                const std::string build_directory = opened_directory_path+"/build";
+                std::thread t(&RunGame, build_directory, opened_directory_path);
                 t.detach();
             }
 
@@ -227,6 +233,12 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     //Could build with max available CPU here.
     int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
+}
+
+void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
+    //Could build with max available CPU here.
+    int success = std::system(std::string("cd "+_build_directory+" && ./OUT").c_str());
+    Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
 }
 
 }

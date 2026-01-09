@@ -174,8 +174,17 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
     ImGui::SameLine();
 
+    if(ImGui::Button("Brush")){
+        tool = Tools::BRUSH;
+    }
+
     if(ImGui::Button("Eraser")){
         currently_selected_tiles = ManyTiles{{0},0,0,1,1};
+        tool = Tools::BRUSH;
+    }
+
+    if(ImGui::Button("Fill Bucket")){
+        tool = Tools::FILL_BUCKET;
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){

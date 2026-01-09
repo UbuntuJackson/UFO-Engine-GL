@@ -30,8 +30,6 @@ public:
         if(engine->mouse.is_middle_button_held){
             Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
 
-            Console::PrintLine("is_middle_button_pressed");
-
             local_position += delta_mouse;
         }
 

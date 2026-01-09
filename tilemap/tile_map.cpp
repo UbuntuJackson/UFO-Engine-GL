@@ -12,6 +12,7 @@
 #include "../src/graphics.h"
 #include "../src/engine.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "tileset_manager.h"
 
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
@@ -167,9 +168,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
     currently_hovered_tile_x = hovered_tile_x;
     currently_hovered_tile_y = hovered_tile_y;
 
-    //Actually draw the tiles
     {
-        Console::PrintLine("Actually draw the tiles");
 
         int xx = 0;
         int yy = 0;
@@ -180,8 +179,6 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                 int tile_id = i;
 
                 olc::vd2d tile_position = {(hovered_tile_x+ xx)*tileset.tile_width, (hovered_tile_y+yy)*tileset.tile_height};
-
-                Console::PrintLine(tile_position);
 
                 if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
                     ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(tileset.name,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
@@ -386,32 +383,77 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     currently_hovered_tile_y = hovered_tile_y;
 
     if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
+        if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
+            int xx = 0;
+            int yy = 0;
+            for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
 
-        int xx = 0;
-        int yy = 0;
-        for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
+                int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
 
-            int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+                if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
 
-            if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+                xx++;
+                if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                    xx = 0;
+                    yy++;
+                }
 
-            xx++;
-            if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
-                xx = 0;
-                yy++;
+            }
+        }
+        else if(level->tileset_manager.tool == TilesetManager::Tools::FILL_BUCKET){
+            bool tiles_are_being_added = true;
+
+            std::vector<Vector2i> tiles_to_fill;
+
+            tiles_to_fill.push_back(Vector2i(hovered_tile_x, hovered_tile_y));
+
+            int max_number_of_tiles = 100;
+
+            while(tiles_are_being_added && max_number_of_tiles > 0){
+                max_number_of_tiles--;
+
+                std::vector<Vector2i> additional_tiles;
+
+                tiles_are_being_added = false;
+                for(Vector2i tile_position : tiles_to_fill){
+
+                    std::vector<Vector2i> directions = {
+                        tile_position+Vector2i(1, 0),
+                        tile_position+Vector2i(-1, 0),
+                        tile_position+Vector2i(0, -1),
+                        tile_position+Vector2i(0, 1)
+
+                    };
+
+                    for(Vector2i tile_direction : directions){
+                        if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
+                        if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
+
+                        int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
+
+                        if(tile_index > -1 && tile_index < tilemap_data.size()){
+                            if(tilemap_data[tile_index] == 0){
+
+                                tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
+
+                                additional_tiles.push_back(tile_direction);
+
+                                tiles_are_being_added = true;
+
+                            }
+
+                        }
+                    }
+                }
+
+                tiles_to_fill = additional_tiles;
+
             }
 
+            if(max_number_of_tiles <= 0) Console::PrintLine("TileMap: Reached max tiles");
         }
 
     }
-
-    /*if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
-
-        int tile_to_be_set = hovered_tile_y*number_of_columns + hovered_tile_x;
-
-        if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = level->tileset_manager.currently_selected_tile;
-
-        }*/
 
     Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
     Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));

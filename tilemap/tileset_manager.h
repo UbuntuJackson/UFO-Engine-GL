@@ -56,6 +56,14 @@ public:
     const int SLOPE_22dot5_RIGHT_1 = 6;
     const int SLOPE_22dot5_RIGHT_2 = 7;
 
+    enum Tools{
+        FILL_BUCKET,
+        BRUSH,
+        ERASER
+    };
+
+    Tools tool = BRUSH;
+
     int currently_selected_tile = 0;
 
     //Many tiles selected at the same time
