@@ -22,11 +22,9 @@ void GenericGenerator::Initialise(){
 	factory_map.emplace(
         "Actor",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Actor>(Vector2f(_x, _y));
-            instance->editor_name = name;
             return std::move(instance);
         }
     );
@@ -34,7 +32,6 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "TileMap",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
@@ -53,7 +50,6 @@ void GenericGenerator::Initialise(){
 
                 instance->visible = (int)_json->map.at("visible")->AsFloat();
 
-                instance->editor_name = name;
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
@@ -64,7 +60,6 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Text",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Text>(Vector2f(_x, _y));
@@ -74,7 +69,6 @@ void GenericGenerator::Initialise(){
                     instance->language_to_text[k] = v->AsString();
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
-                instance->editor_name = name;
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Text instance", _error.what());
             }
@@ -85,11 +79,10 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Button",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
+
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
-            instance->editor_name = name;
 
             try{
                 for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
@@ -106,7 +99,7 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Widget",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
+
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Widget>(Vector2f(_x, _y));
@@ -121,7 +114,7 @@ void GenericGenerator::Initialise(){
                 instance->rectangle.position.y = widget_y;
                 instance->rectangle.size.x = widget_w;
                 instance->rectangle.size.y = widget_h;
-                instance->editor_name = name;
+
 
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Widget instance", _error.what());
@@ -133,11 +126,10 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Camera",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
+
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Camera>(Vector2f(_x, _y));
-            instance->editor_name = name;
 
             try{
                 instance->clamp = (bool)_json->map.at("clamp")->AsFloat();
@@ -154,11 +146,10 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "Level",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
+
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Level>();
-            instance->editor_name = name;
 
             try{
                 float size_x = _json->map.at("size_x")->AsFloat();
@@ -193,11 +184,9 @@ void GenericGenerator::Initialise(){
     factory_map.emplace(
         "ControllableCamera",
         [](ufo::gc::JsonMap* _json){
-            std::string name = _json->map.at("name")->AsString();
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ControllableCamera>(Vector2f(_x, _y));
-            instance->editor_name = name;
             return std::move(instance);
         }
     );
@@ -215,6 +204,13 @@ void GenericGenerator::Initialise(){
             float _scale_y = 0.0f;
             float _rotation = 0.0f;
             int _frame_index = 0;
+
+            //A good example of large amount of properties being written to an object
+            // Potential solution, have an additional map which handles writing of default properties.
+            // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
+            // Son of a biscuit this has been redundant.
+            // Writing of custom properties handled in generated.h.
+
             try{
                 _key = _json->map.at("key")->AsString();
                 _offset_x = _json->map.at("offset_x")->AsFloat();
@@ -229,16 +225,12 @@ void GenericGenerator::Initialise(){
                 Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
             }
 
-            std::string name = _json->map.at("name")->AsString();
-
             auto instance = std::make_unique<Sprite>(
             	_key,
             	Vector2f(_x, _y),
             	Vector2f(_offset_x, _offset_y),
             	Vector2f(_frame_size_x, _frame_size_y),
             	Vector2f(_scale_x, _scale_y), _rotation, _frame_index);
-
-            instance->editor_name = name;
 
             return std::move(instance);
         }
@@ -250,37 +242,8 @@ void GenericGenerator::Initialise(){
                 float _x = _json->map.at("x")->AsFloat();
                 float _y = _json->map.at("y")->AsFloat();
 
-                std::string name = _json->map.at("name")->AsString();
-
                 auto instance = std::make_unique<Animation>(
                    	Vector2f(_x, _y));
-
-                try{
-
-                    for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
-                        Animation::Costume costume;
-                        costume.key = j_costume->AsMap().at("key")->AsString();
-                        costume.local_position.x = j_costume->AsMap().at("local_position_x")->AsFloat();
-                        costume.local_position.y = j_costume->AsMap().at("local_position_y")->AsFloat();
-                        costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
-                        costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
-                        costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
-                        costume.frame_size.y = j_costume->AsMap().at("frame_size_y")->AsFloat();
-                        costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
-                        costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
-                        costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
-                        costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
-                        costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
-
-                        instance->costumes.emplace(costume.key, costume);
-                    }
-                    instance->key = _json->map.at("current_costume")->AsString();
-                    instance->preview = _json->map.at("preview")->AsFloat();
-                } catch(const std::exception& _error){
-                    Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
-                }
-
-                instance->editor_name = name;
 
                 return std::move(instance);
             }
@@ -293,6 +256,8 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 
 		instance->class_name = _json->map.at("class_name")->AsString();
 		instance->editor_name = _json->AsMap().at("name")->AsString();
+
+		instance->OnLoadDefaultProperties(_json);
 
 	    return std::move(instance);
 	}
@@ -343,12 +308,14 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
 
 		instance->class_name = _json->map.at("class_name")->AsString();
+		instance->editor_name = _json->map.at("name")->AsString();
 		try{
 		    instance->is_imported = (bool)_json->map.at("is_imported")->AsFloat();
 			instance->import_mode = _json->map.at("import_mode")->AsFloat();
 		}catch(const std::exception& _error){
 		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
 		}
+		instance->OnLoadDefaultProperties(_json);
 
 		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
 

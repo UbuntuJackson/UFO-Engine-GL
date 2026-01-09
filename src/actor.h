@@ -416,6 +416,7 @@ public:
     void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera);
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
 protected:
 //To determine whether actor is the container node for all other actors
     bool is_top_actor_in_editor = false;

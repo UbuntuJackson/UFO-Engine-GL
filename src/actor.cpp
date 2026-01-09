@@ -682,3 +682,8 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
     return this_actor;
 }
+
+//Actor generator calls this.
+void Actor::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+
+}

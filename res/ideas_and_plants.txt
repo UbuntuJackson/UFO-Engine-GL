@@ -2,6 +2,9 @@ Actor trees:
 
 Make actor trees so that imported actors have their child actors hidden and you can make them individual instances if you want to. Basically unpack them saving each component explicitly. This would save diskspace.
 
+An issue, actors should only be wrapped if they come with a .ason file. Right now it just makes it wrapped indiscriminately. Wrapped basically means
+that everything under it is bundled WITH it. Logical.
+
 Levels:
 
 Make it so you can set start level, without having to recompile if possible

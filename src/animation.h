@@ -57,5 +57,6 @@ public:
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
 
 };
