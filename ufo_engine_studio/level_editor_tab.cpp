@@ -11,6 +11,7 @@
 #include "dock_utils.h"
 #include "file_dialogue.h"
 #include "editor.h"
+#include "imgui_utils.h"
 
 namespace UFOEngineStudio{
 
@@ -86,22 +87,31 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         categories.at(v->category).push_back(v.get());
     }
 
-    for(const auto& [k,v] : categories){
-        ImGui::Text("%s",k.c_str());
-        for(const auto& s : v){
-            int w = engine->asset_manager.textures.at("actor_icon").width;
-            int h = engine->asset_manager.textures.at("actor_icon").height;
+    if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
+    {
+        UFOEngineStudio::PushStyleCompact();
+        for(const auto& [k,v] : categories){
+            ImGui::TableNextColumn();
+            ImGui::Text("%s",k.c_str());
 
-            bool pressed = ImGui::ImageButton(
+            for(const auto& s : v){
+                int w = engine->asset_manager.textures.at("actor_icon").width;
+                int h = engine->asset_manager.textures.at("actor_icon").height;
 
-                std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
-                (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
-                ImVec2(w, h));
+                bool pressed = ImGui::ImageButton(
 
-            ImGui::SameLine();
+                    std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
+                    (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
+                    ImVec2(w, h));
 
-            ImGui::Text("%s", std::string(s->class_name).c_str());
+                ImGui::SameLine();
+
+                ImGui::TextWrapped("%s", (s->comment == "" ? s->class_name.c_str() : std::string(s->class_name+"\n-- Description --\n"+s->comment)).c_str());
+            }
         }
+        UFOEngineStudio::PopStyleCompact();
+
+        ImGui::EndTable();
     }
 
     ImGui::Separator();

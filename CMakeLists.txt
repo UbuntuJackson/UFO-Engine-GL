@@ -102,6 +102,7 @@ set(
     ufo_engine_studio/level_editor_tab.cpp
     ufo_engine_studio/file_dialogue.cpp
     ufo_engine_studio/text_editor_tab.cpp
+    ufo_engine_studio/imgui_utils.cpp
 
 )
 

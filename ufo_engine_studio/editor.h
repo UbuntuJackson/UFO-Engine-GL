@@ -70,7 +70,8 @@ public:
     class AdvancedActorSpawner{
     public:
         std::string actor_config_path = "";
-        std::string category = "";
+        std::string category = "UFO-Engine";
+        std::string comment = "";
 
         std::string base;
         std::string class_name = "";
@@ -235,6 +236,15 @@ public:
                         auto arr = macro->AsMap().at("args")->AsArray();
                         if(arr.size() == 1){
                             act_spawner->category = arr[0]->AsString();
+
+                        }
+                }
+
+                if(macro->AsMap().at("name")->AsString() == "ufo_comment"){
+
+                        auto arr = macro->AsMap().at("args")->AsArray();
+                        if(arr.size() == 1){
+                            act_spawner->comment = arr[0]->AsString();
 
                         }
                 }
