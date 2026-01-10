@@ -61,6 +61,61 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     ImGui::End();
 
+    ImGui::Begin(std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str());
+
+    ImGuiID level_viewport_dockspace_id = ImGui::GetID(std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str());
+    //ImGuiDockSpaceFill(content_browser_dockspace_id, ImGui::GetWindowSize(), std::string("ActorTree###ActorTree"+std::to_string(id)).c_str());
+
+    ImGuiDockSpaceSplit(
+        level_viewport_dockspace_id,
+        ImGui::GetWindowSize(),
+        std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str(),
+        std::string("ActorPicker###ActorPicker"+std::to_string(id)),
+        SplitDirections::VERTICAL);
+
+    ImGui::DockSpace(level_viewport_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+
+    ImGui::End();
+
+    ImGui::Begin(std::string("ActorPicker###ActorPicker"+std::to_string(id)).c_str());
+
+    std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
+
+    for(const auto& [k,v] : _editor->spawnable_actor_map){
+        if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
+        categories.at(v->category).push_back(v.get());
+    }
+
+    for(const auto& [k,v] : categories){
+        ImGui::Text("%s",k.c_str());
+        for(const auto& s : v){
+            int w = engine->asset_manager.textures.at("actor_icon").width;
+            int h = engine->asset_manager.textures.at("actor_icon").height;
+
+            bool pressed = ImGui::ImageButton(
+
+                std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
+                (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
+                ImVec2(w, h));
+
+            ImGui::SameLine();
+
+            ImGui::Text("%s", std::string(s->class_name).c_str());
+        }
+    }
+
+    ImGui::Separator();
+
+    for(const auto& [k,v] : _editor->spawnable_actor_map){
+        if(ImGui::Button(std::string("Add "+k).c_str())){
+            /*auto inst = v->Spawn(_editor);
+            inst->class_name = k;
+            AddActorUniquePtr(std::move(inst));*/
+        }
+    }
+
+    ImGui::End();
+
     ImGui::Begin(std::string("ActorTree###ActorTree"+std::to_string(id)).c_str());
 
     //I don't want a class to necessarily require a .ason, so for how you don't specity the header file in the .ason, but the .ason in the header file
@@ -74,7 +129,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     this_level->ViewProperties(this, 0);
     ImGui::End();
 
-    ImGui::Begin(std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(), nullptr, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+    ImGui::Begin(std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str(), nullptr, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 
     LevelUpdatePhase(_delta_time);
     LevelDrawPhase(engine->graphics.get());
@@ -115,8 +170,8 @@ void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _progr
     ImGuiDockSpaceSplit(
         _local_dockspace_id,
         ImGui::GetWindowSize(),
-        std::string(name_and_imgui_id.c_str()+std::to_string(id)).c_str(),
-        std::string("ContentBrowser###ContentBrowser"+std::to_string(id)).c_str(),
+        std::string(name_and_imgui_id.c_str()+std::to_string(id)),
+        std::string("ContentBrowser###ContentBrowser"+std::to_string(id)),
         SplitDirections::HORIZONTAL);
 }
 

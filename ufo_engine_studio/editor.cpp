@@ -35,6 +35,25 @@ void Editor::OpenFolder(std::string _path){
     tabs.clear();
     active_tab = nullptr;
 
+    if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
+        auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
+        try{
+             v_sync = (bool)j_settings->map["vsync"]->AsFloat();
+        }catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+        }
+        j_settings->Write(opened_directory_path+"/settings.json");
+    }
+    else{
+        auto j_settings = gc.New<ufo::gc::JsonMap>();
+        try{
+            j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+        }catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+        }
+        j_settings->Write(opened_directory_path+"/settings.json");
+    }
+
     refresh_entire_project = true;
 }
 
@@ -262,13 +281,13 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     }
 
     //Could build with max available CPU here.
-    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 }
 
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
     //Could build with max available CPU here.
-    int success = std::system(std::string("cd "+_build_directory+" && ./OUT").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"gdb OUT\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
 }
 
