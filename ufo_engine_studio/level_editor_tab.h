@@ -17,6 +17,10 @@ namespace UFOEngineStudio{
 
 class LevelEditorTab : public Tab{
 public:
+    enum Tools{ SELECT, PLACE, ERASE };
+
+    Tools current_tool = Tools::SELECT;
+
     ufo::Engine* engine = nullptr;
     Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;

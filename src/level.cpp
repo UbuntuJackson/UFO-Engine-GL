@@ -11,6 +11,7 @@
 #include "../tilemap/tileset_manager.h"
 #include "text.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/editor.h"
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
@@ -86,6 +87,20 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
     ImGui::GetWindowDrawList()->AddRect(
         ImVec2(min.x, min.y),
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
+
+    if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+        if(_editor->currently_selected_actor_type != ""){
+            if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
+                auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
+
+                inst->class_name = _editor->currently_selected_actor_type;
+
+                inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+
+                AddActorUniquePtr(std::move(inst));
+            }
+        }
+    }
 }
 
 void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

@@ -39,6 +39,8 @@ public:
     //The current working directory for the projekt. Not for this program.
     std::string opened_directory_path = "";
 
+    std::string currently_selected_actor_type = "";
+
     bool refresh_entire_project = true;
 
     std::unique_ptr<FileNode> opened_directory = nullptr;

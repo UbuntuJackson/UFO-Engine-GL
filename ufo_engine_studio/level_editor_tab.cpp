@@ -87,6 +87,22 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         categories.at(v->category).push_back(v.get());
     }
 
+    if(ImGui::Button("Place")){
+        current_tool = Tools::PLACE;
+    }
+
+    ImGui::SameLine();
+
+    if(ImGui::Button("Select")){
+        current_tool = Tools::SELECT;
+    }
+
+    if(ImGui::Button("Erase")){
+        current_tool = Tools::ERASE;
+    }
+
+    ImGui::Separator();
+
     if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
     {
         UFOEngineStudio::PushStyleCompact();
@@ -103,6 +119,15 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                     std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
                     (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
                     ImVec2(w, h));
+
+                if(editor->currently_selected_actor_type == s->class_name){
+                    ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 0x55FFFFFF);
+                }
+
+                if(pressed){
+                    editor->currently_selected_actor_type = s->class_name;
+                    current_tool = Tools::PLACE;
+                }
 
                 ImGui::SameLine();
 

@@ -281,13 +281,13 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     }
 
     //Could build with max available CPU here.
-    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8\"").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && echo \"Press any key to continue...\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 }
 
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
     //Could build with max available CPU here.
-    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"gdb OUT\"").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"gdb OUT && echo \"Press any key to continue...\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
 }
 
