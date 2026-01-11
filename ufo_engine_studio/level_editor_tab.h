@@ -22,6 +22,8 @@ public:
     Tools current_tool = Tools::SELECT;
 
     ufo::Engine* engine = nullptr;
+
+    Actor* spawn_cursor = nullptr;
     Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;
     float window_to_engine_ratio = 1.0f;

@@ -93,8 +93,6 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
             if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
                 auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
 
-                inst->class_name = _editor->currently_selected_actor_type;
-
                 inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
                 AddActorUniquePtr(std::move(inst));

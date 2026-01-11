@@ -228,7 +228,6 @@ void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, boo
         Console::PrintLine("UpdateActorStructure",editor_name);
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
-        act->class_name = class_name;
         for(auto&& actor : act->new_actor_queue){
             AddActorUniquePtr(std::move(actor));
         }
@@ -247,7 +246,6 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
         Console::PrintLine("UpdateActorStructure",editor_name);
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
-        act->class_name = class_name;
         for(auto&& actor : act->new_actor_queue){
             AddActorUniquePtr(std::move(actor));
         }
@@ -432,7 +430,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             for(const auto& s : v){
                 if(ImGui::Button(std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str())){
                     auto inst = s->Spawn(_editor);
-                    inst->class_name = s->class_name;
+
                     AddActorUniquePtr(std::move(inst));
                     adding_new_actor = false;
                 }
@@ -444,7 +442,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         for(const auto& [k,v] : _editor->spawnable_actor_map){
             if(ImGui::Button(std::string("Add "+k).c_str())){
                 auto inst = v->Spawn(_editor);
-                inst->class_name = k;
+
                 AddActorUniquePtr(std::move(inst));
                 adding_new_actor = false;
             }

@@ -29,6 +29,8 @@ void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
     this_level->UpdateActorStructureFirstFrame(editor, false);
+
+    spawn_cursor = this_level->AddActor<Actor>(Vector2f(0.0f, 0.0f));
 }
 
 void LevelEditorTab::Refresh(){
@@ -58,7 +60,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         std::string(currently_viewed_properties_actor_name+"###Properties"+std::to_string(id)).c_str(),
         SplitDirections::VERTICAL);
 
-    ImGui::DockSpace(content_browser_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(content_browser_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar);
 
     ImGui::End();
 
@@ -74,7 +76,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         std::string("ActorPicker###ActorPicker"+std::to_string(id)),
         SplitDirections::VERTICAL);
 
-    ImGui::DockSpace(level_viewport_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+    ImGui::DockSpace(level_viewport_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar);
 
     ImGui::End();
 
@@ -95,7 +97,10 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     if(ImGui::Button("Select")){
         current_tool = Tools::SELECT;
+        spawn_cursor->actors.clear();
     }
+
+    ImGui::SameLine();
 
     if(ImGui::Button("Erase")){
         current_tool = Tools::ERASE;
@@ -127,6 +132,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 if(pressed){
                     editor->currently_selected_actor_type = s->class_name;
                     current_tool = Tools::PLACE;
+
+                    spawn_cursor->actors.clear();
+                    spawn_cursor->AddActorUniquePtr(editor->spawnable_actor_map.at(s->class_name)->Spawn(editor));
                 }
 
                 ImGui::SameLine();
@@ -194,6 +202,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         mouse_position_over_screenspace = ((engine->mouse.position)-editor_viewport_pos)*window_to_engine_ratio;
         former_mouse_position_over_screenspace = ((engine->mouse.former_position)-editor_viewport_pos)*window_to_engine_ratio;
 
+        spawn_cursor->local_position = this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
     }
 
     this_level->UpdateEditorViewport(editor, this);

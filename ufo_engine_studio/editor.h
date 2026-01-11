@@ -33,6 +33,8 @@ public:
     bool will_run_game = false;
     bool v_sync = true;
 
+    bool project_settings_open = false;
+
     //The path to the UFO-Engine Header Tool & Boilerplate generator
     std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
 
@@ -93,8 +95,6 @@ public:
         std::unique_ptr<Actor> Spawn(Editor* _editor){
             auto act = spawner_function(_editor,this);
 
-            act->class_name = class_name;
-
             if(actor_config_path != ""){
                 ufo::gc::JsonMap* actor_config = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+"/"+actor_config_path);
 
@@ -126,9 +126,14 @@ public:
                 act->editor_properties.push_back(property->Copy());
             }
 
+            act->class_name = class_name;
+            act->editor_name = act->class_name+std::to_string(_editor->actor_count_for_naming_purposes++);
+
             return std::move(act);
         }
     };
+
+    int actor_count_for_naming_purposes = 0;
 
     void PopulateSpawnableActorMapWithBaseObjects(){
         spawnable_actor_map.emplace("Actor",std::move(std::make_unique<AdvancedActorSpawner>(
@@ -309,6 +314,7 @@ public:
 };
 
 void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path);
+void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 
 }

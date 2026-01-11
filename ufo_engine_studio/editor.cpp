@@ -15,6 +15,7 @@
 #include "text_editor_tab.h"
 #include "file_dialogue.h"
 #include "../file/file_utils.h"
+#include "../imgui/imgui_internal.h"
 
 namespace UFOEngineStudio{
 
@@ -107,7 +108,7 @@ void Editor::OnUpdate(float _delta_time){
 
     UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
-    ImGui::DockSpace(dock_space_id, ImVec2(0.0f,0.0f), 0);
+    ImGui::DockSpace(dock_space_id, ImVec2(0.0f,0.0f), ImGuiDockNodeFlags_NoTabBar);
 
     ImGui::End();
 
@@ -157,6 +158,7 @@ void Editor::OnUpdate(float _delta_time){
             ImGui::EndMenu();
         }
         if(ImGui::BeginMenu("Project")){
+
             if(ImGui::MenuItem("Reload Project")){
                 refresh_entire_project = true;
             }
@@ -166,10 +168,20 @@ void Editor::OnUpdate(float _delta_time){
                 will_compile_game = true;
             }
 
+            if(ImGui::MenuItem("Debug Game")){
+                const std::string build_directory = opened_directory_path+"/build";
+                std::thread t(&DebugGame, build_directory, opened_directory_path);
+                t.detach();
+            }
+
             if(ImGui::MenuItem("Run Game")){
                 const std::string build_directory = opened_directory_path+"/build";
                 std::thread t(&RunGame, build_directory, opened_directory_path);
                 t.detach();
+            }
+
+            if(ImGui::MenuItem("Settings")){
+                project_settings_open = true;
             }
 
             if(ImGui::Checkbox("Vsync###EditorVsync On", &v_sync)){
@@ -193,10 +205,6 @@ void Editor::OnUpdate(float _delta_time){
                 }
             }
 
-            if(ImGui::MenuItem("Window Size")){
-
-            }
-
             ImGui::EndMenu();
         }
 
@@ -214,6 +222,41 @@ void Editor::OnUpdate(float _delta_time){
     ImGui::EndTabBar();
 
     ImGui::End();
+
+    if(project_settings_open){
+        ImGui::Begin("Game Settings", &project_settings_open);
+
+        if(ImGui::Checkbox("Vsync###EditorVsync On", &v_sync)){
+            if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
+                auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
+                try{
+                    j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                }catch(const std::exception& _error){
+                    Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+                }
+                j_settings->Write(opened_directory_path+"/settings.json");
+            }
+            else{
+                auto j_settings = gc.New<ufo::gc::JsonMap>();
+                try{
+                    j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                }catch(const std::exception& _error){
+                    Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
+                }
+                j_settings->Write(opened_directory_path+"/settings.json");
+            }
+        }
+
+        int w = 0;
+        int h = 0;
+
+        ImGui::InputInt("Window Width", &w);
+        ImGui::InputInt("Window Height", &h);
+
+        ImGui::Text("Execution mode");
+
+        ImGui::End();
+    }
 
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
@@ -285,9 +328,15 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 }
 
-void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
+void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path){
     //Could build with max available CPU here.
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"gdb OUT && echo \"Press any key to continue...\" && read p\"").c_str());
+    Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
+}
+
+void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
+    //Could build with max available CPU here.
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"./OUT && echo \"Press any key to continue...\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
 }
 

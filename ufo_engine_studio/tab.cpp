@@ -8,6 +8,7 @@
 #include "editor.h"
 #include "im_vec.h"
 #include "file_dialogue.h"
+#include "../imgui/imgui_internal.h"
 
 namespace UFOEngineStudio{
 
@@ -33,7 +34,7 @@ void Tab::Update(Editor* _editor, float _delta_time){
 
         OnMakeDockSpace(local_dockspace_id, _editor);
 
-        ImGui::DockSpace(local_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGui::DockSpace(local_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar);
 
         //ImGui::End();
 
