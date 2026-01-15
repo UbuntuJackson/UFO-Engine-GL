@@ -203,6 +203,7 @@ public:
         std::string variable_name;
         std::string alias;
         bool to_be_removed = false;
+        bool viewport_text = false;
 
         EditorProperty(const std::string& _variable_name, const std::string& _alias) : variable_name{_variable_name}, alias{_alias}{}
 

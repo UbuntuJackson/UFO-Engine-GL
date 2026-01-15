@@ -221,7 +221,9 @@ public:
             if(class_.at("extends")->AsArray().size() > 0) inherits = class_.at("extends")->AsArray()[0]->AsString();
 
             auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
-                            return std::move(_editor->spawnable_actor_map.at(_this->base)->Spawn(_editor));
+                            auto instance = _editor->spawnable_actor_map.at(_this->base)->Spawn(_editor);
+
+                            return std::move(instance);
                         },
                         inherits,
                         class_.at("name")->AsString()
