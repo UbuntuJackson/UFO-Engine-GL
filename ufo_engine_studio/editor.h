@@ -259,9 +259,28 @@ public:
 
             for(const auto& member : class_.at("members")->AsArray()){
 
-                std::string name = member->AsArray()[1]->AsMap().at("name")->AsString();
-                std::string value = member->AsArray()[1]->AsMap().at("variable_value")->AsString();
-                std::string data_type = member->AsArray()[1]->AsMap().at("data_type")->AsString();
+                std::string name = "<Faulty Name>";
+                std::string value = "<Faulty Value>";
+                std::string data_type = "<Faulty DataType>";
+
+                if(member->AsArray()[1]->AsMap().count("name")) name = member->AsArray()[1]->AsMap().at("name")->AsString();
+                else{
+                    Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable name");
+                    continue;
+                }
+
+                if(member->AsArray()[1]->AsMap().count("variable_value")) value = member->AsArray()[1]->AsMap().at("variable_value")->AsString();
+                else{
+                    Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable value");
+                    continue;
+                }
+
+                if(member->AsArray()[1]->AsMap().count("data_type")) data_type = member->AsArray()[1]->AsMap().at("data_type")->AsString();
+                else{
+                    Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable datatype");
+                    continue;
+                }
+
                 std::string alias = name;
 
                 for(const auto& macro : member->AsArray()[0]->AsArray()){
@@ -294,6 +313,14 @@ public:
 
                         if(data_type == "int") act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyInt>(name,alias,std::stoi(value)));
                         if(data_type == "float") act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyFloat>(name,alias,std::stoi(value)));
+                        if(data_type == "bool"){
+                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
+                            Console::PrintLine("Checkbox with alias", alias);
+                        }
+                        if(data_type == "std::string"){
+                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyString>(name,alias,value));
+                            Console::PrintLine("Checkbox with alias", alias);
+                        }
                     }
                 }
             }

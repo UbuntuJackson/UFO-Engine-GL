@@ -380,7 +380,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         if(ImGui::MenuItem("Rename")){
             TurnOnEditMode();
         }
-        if(!is_top_actor_in_editor){
+        if(!is_top_actor_in_editor && !unremovable){
             if(ImGui::MenuItem("Delete")){
                 is_dead = true;
 
@@ -530,6 +530,9 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
             if(!properties_of_this.count(k)){
                 editor_properties.push_back(v->Copy());
             }
+            else{
+                properties_of_this.at(k)->alias = properties_template.at(k)->alias;
+            }
         }
 
         for(const auto& [k,v] : properties_of_this){
@@ -593,6 +596,8 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
     const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
+
+    if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
 
     const  Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
     Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
@@ -673,7 +678,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
     for(const auto& property : editor_properties){
 
-        this_actor->map.emplace(property->variable_name, property->GetJson(_gc));
+        j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
 
     }
 

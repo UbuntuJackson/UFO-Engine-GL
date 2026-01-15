@@ -11,7 +11,7 @@ public:
 
     ControllableCamera(Vector2f _local_position) : Camera(_local_position){
         class_name = "ControllableCamera";
-        editor_name = "@InstanceControlableCamera";
+        editor_name = "ControllableCamera (Editor Tool)";
         is_savable = false;
     }
 

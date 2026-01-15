@@ -58,7 +58,7 @@ def make_generated_file(_path, _classes):
 
         function_ += "          try{\n"
 
-        function_ += 'auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();'
+        function_ += 'auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();\n'
 
         for member in cl["class"]["members"]:
             if member[1]["data_type"] == "int":
@@ -77,9 +77,17 @@ def make_generated_file(_path, _classes):
                     + member[1]["name"]
                     + '")->AsMap().at("value")->AsFloat());\n'
                 )
+            if member[1]["data_type"] == "bool":
+                function_ += (
+                    "                instance->"
+                    + member[1]["name"]
+                    + ' = (bool)(custom_properties.at("'
+                    + member[1]["name"]
+                    + '")->AsMap().at("value")->AsFloat());\n'
+                )
             if member[1]["data_type"] == "Vector2f":
                 pass
-            if member[1]["data_type"] == "string":
+            if member[1]["data_type"] == "std::string":
                 function_ += (
                     "                instance->"
                     + member[1]["name"]
@@ -565,6 +573,22 @@ def analyse_class_or_variable(_object):
             )
         return "0"
 
+    def extract_bool(_list):
+        print("extract_bool", _list)
+        if len(_list) == 1:
+            if _list[0] == "true":
+                return "1"
+            elif _list[0] == "false":
+                return "0"
+            else:
+                print(
+                    "[UFO Header Tool Warning] Parsing error, parameter has to be boolean litteral"
+                )
+        else:
+            print(
+                "[UFO Header Tool Warning] Parsing error, parameter has to be single litteral"
+            )
+
     def extract_float(_list):
         if len(_list) == 0:
             return "0.0"
@@ -702,6 +726,8 @@ def analyse_class_or_variable(_object):
             value = extract_string(value)
         elif data_type == "int":
             value = extract_int(value)
+        elif data_type == "bool":
+            value = extract_bool(value)
         elif data_type == "float":
             value = extract_float(value)
         elif data_type == "Vector2f":

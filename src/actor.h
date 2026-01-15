@@ -319,6 +319,33 @@ public:
         }
     };
 
+    class EditorPropertyString : public EditorProperty{
+    public:
+        std::string value;
+
+        EditorPropertyString(const std::string& _name,const std::string& _alias, const std::string& _value) : EditorProperty(_name,_alias),
+            value{_value}{
+
+            }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::InputText(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("std::string"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonString>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyString"));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyString>(variable_name,alias,value);
+        }
+    };
+
     class EditorPropertyIntSlider : public EditorProperty{
     public:
         int value = 0;
@@ -348,6 +375,33 @@ public:
 
         std::unique_ptr<EditorProperty> Copy(){
             return std::make_unique<EditorPropertyIntSlider>(variable_name,alias,value,min,max);
+        }
+    };
+
+    class EditorPropertyCheckBox : public EditorProperty{
+    public:
+        bool value = false;
+
+        EditorPropertyCheckBox(const std::string& _name,const std::string& _alias, bool _value) : EditorProperty(_name,_alias),
+        value{_value}{
+
+        }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::Checkbox(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("bool"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyCheckBox"));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyCheckBox>(variable_name,alias,value);
         }
     };
 
@@ -409,6 +463,8 @@ public:
     void OpenProperties();
 
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    std::string editor_viewport_text;
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
@@ -420,6 +476,7 @@ public:
 protected:
 //To determine whether actor is the container node for all other actors
     bool is_top_actor_in_editor = false;
+    bool unremovable = false;
     friend class UFOEngineStudio::LevelEditorTab;
 
 };

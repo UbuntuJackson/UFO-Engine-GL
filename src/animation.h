@@ -22,6 +22,7 @@ public:
 
     struct Costume{
         std::string key;
+        //To be swapped for a variable called position, to avoid inconsistencies with local_position.
         olc::vf2d local_position;
         olc::vf2d offset;
         olc::vf2d frame_size;

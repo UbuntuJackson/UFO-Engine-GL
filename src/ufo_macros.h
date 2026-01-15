@@ -36,6 +36,8 @@
 //Sets the display name in the editor.
 #define ufo_alias(_alias)
 
+#define ufo_info()
+
 #define ufo_colour()
 
 #define ufo_vector2f()

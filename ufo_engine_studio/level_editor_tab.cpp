@@ -29,8 +29,12 @@ void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
     this_level->UpdateActorStructureFirstFrame(editor, false);
+    this_level->unremovable = true;
 
     spawn_cursor = this_level->AddActor<Actor>(Vector2f(0.0f, 0.0f));
+    spawn_cursor->is_savable = false;
+    spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
+    spawn_cursor->unremovable = true;
 }
 
 void LevelEditorTab::Refresh(){

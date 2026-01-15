@@ -307,17 +307,58 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 			if(!v->AsMap().count("hint")) continue;
 
 			std::string hint = v->AsMap().at("hint")->AsString();
-			if(hint == ""){
+			if(hint == "EditorPropertyCheckBox"){
 
+			    try{
+    			    std::string name = v->AsMap().at("name")->AsString();
+    				bool value = (bool)v->AsMap().at("value")->AsFloat();
+
+                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyCheckBox>(name, name, value));
+				} catch(const std::exception& _error){
+				    Console::PrintLine(
+								"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyCheckBox of type",
+								instance->class_name, "and name",
+								instance->editor_name);
+				}
 			}
-			else if(hint == ""){
+			else if(hint == "EditorPropertyInt"){
+                try{
+     			    std::string name = v->AsMap().at("name")->AsString();
+    				int value = v->AsMap().at("value")->AsFloat();
 
+                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyInt>(name, name, value));
+                } catch(const std::exception& _error){
+                    Console::PrintLine(
+                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
+                				instance->class_name, "and name",
+                				instance->editor_name);
+                }
 			}
-			else if(hint == ""){
+			else if(hint == "EditorPropertyFloat"){
+                try{
+     			    std::string name = v->AsMap().at("name")->AsString();
+    				float value = v->AsMap().at("value")->AsFloat();
 
+                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyFloat>(name, name, value));
+                } catch(const std::exception& _error){
+                    Console::PrintLine(
+                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
+                				instance->class_name, "and name",
+                				instance->editor_name);
+                }
 			}
-			else if(hint == ""){
+			else if(hint == "EditorPropertyString"){
+                try{
+     			    std::string name = v->AsMap().at("name")->AsString();
+    				std::string value = v->AsMap().at("value")->AsString();
 
+                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyString>(name, name, value));
+                } catch(const std::exception& _error){
+                    Console::PrintLine(
+                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
+                				instance->class_name, "and name",
+                				instance->editor_name);
+                }
 			}
 			else{
 
