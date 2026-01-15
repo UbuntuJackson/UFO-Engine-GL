@@ -57,6 +57,7 @@ Sprite::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _f
 }
 
 void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
+    if(!visible) return;
 
     ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
     _graphics->DrawPartialSprite(

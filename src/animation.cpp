@@ -24,7 +24,6 @@ void Animation::SetCostume(const std::string& _configuration_key){
     try{
         Costume& costume = costumes.at(_configuration_key);
         key = costume.key;
-        local_position = costume.local_position;
         offset = costume.offset;
         frame_size = costume.frame_size;
         scale = costume.scale;
@@ -191,8 +190,6 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
         auto j_costume = _gc->New<ufo::gc::JsonMap>();
 
         j_costume->map.emplace("key", _gc->New<ufo::gc::JsonString>(v.key));
-        j_costume->map.emplace("local_position_x", _gc->New<ufo::gc::JsonNumber>(v.local_position.x));
-        j_costume->map.emplace("local_position_y", _gc->New<ufo::gc::JsonNumber>(v.local_position.y));
         j_costume->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(v.offset.x));
         j_costume->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(v.offset.y));
         j_costume->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(v.frame_size.x));
@@ -221,8 +218,6 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
             Animation::Costume costume;
             costume.key = j_costume->AsMap().at("key")->AsString();
-            costume.local_position.x = j_costume->AsMap().at("local_position_x")->AsFloat();
-            costume.local_position.y = j_costume->AsMap().at("local_position_y")->AsFloat();
             costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
             costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
             costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
