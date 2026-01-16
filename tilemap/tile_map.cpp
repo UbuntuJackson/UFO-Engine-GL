@@ -475,6 +475,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     }
 
     ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
+
 }
 
 ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){

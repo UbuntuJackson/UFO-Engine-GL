@@ -112,6 +112,7 @@ void Widget::ResizeOrMove(Vector2f _screen_space_mouse_position){
 
 void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
+
     {
         Vector2f pos_min = GetGlobalPosition()+rectangle.position;
         Vector2f pos_max = GetGlobalPosition()+rectangle.position+rectangle.size;
@@ -164,6 +165,7 @@ void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineS
             }*/
 
     }
+
 }
 
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){

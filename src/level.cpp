@@ -81,6 +81,7 @@ void Level::UpdatePhrase(float _delta_time){
 }
 
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
     Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
     Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
 
@@ -99,6 +100,7 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
             }
         }
     }
+
 }
 
 void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

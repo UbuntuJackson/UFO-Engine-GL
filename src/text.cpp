@@ -141,6 +141,7 @@ void Text::OnWidgetDraw(ufo::Graphics* _graphics){
 }
 
 void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
     Vector2f pos_min = GetGlobalPosition()+editor_hitbox.position;
     Vector2f pos_max = GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size;
 
@@ -176,6 +177,7 @@ void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStu
         }
 
     }
+
 }
 
 void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

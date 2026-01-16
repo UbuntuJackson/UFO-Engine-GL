@@ -210,6 +210,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
 
     this_level->UpdateEditorViewport(editor, this);
+    this_level->UpdateEditorViewportFocus(editor, this);
 
     ImGui::End();
 }

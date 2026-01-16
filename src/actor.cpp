@@ -594,37 +594,11 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 }
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
     const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
     const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
 
     if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
-
-    const  Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
-    Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
-
-    const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
-    const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
-
-    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse)){
-        //Console::PrintLine("Overlapping");
-        if(engine->mouse.is_left_button_held){
-            Vector2f dp = world_mouse - former_world_mouse;
-
-            local_position += dp;
-
-        }
-
-        if(engine->mouse.is_left_button_released){
-            if(parent->base_class_name == "TileMap"){
-                TileMap* tile_map = parent->DynamicCast<TileMap>();
-
-                local_position = Vector2f(
-                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
-                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
-            }
-        }
-
-    }
 
     ImU32 colour = 0xFFFFFFFF;
     if(parent->base_class_name != "Level") colour = 0xFF664422;
@@ -643,16 +617,78 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
+
 }
 
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
     if(import_mode != ImportModes::WRAPPED){
         for(const auto& actor : actors){
             actor->UpdateEditorViewport(_editor, _level_editor_tab);
+            //if(focused) return true;
         }
     }
 
     OnUpdateEditorViewport(_editor, _level_editor_tab);
+}
+
+bool Actor::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    if(import_mode != ImportModes::WRAPPED){
+        for(const auto& actor : actors){
+            bool focused = actor->UpdateEditorViewportFocus(_editor, _level_editor_tab);
+            if(focused || actor->is_grabbed_by_cursor){
+                return true;
+            }
+        }
+    }
+
+    return OnUpdateEditorViewportFocus(_editor, _level_editor_tab);
+}
+
+bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    bool focused = false;
+
+    const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position;
+    const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
+
+    if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
+
+    const  Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
+    Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
+
+    const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
+    const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
+
+    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse)){
+        //Console::PrintLine("Overlapping");
+        if(engine->mouse.is_left_button_held){
+            focused = true;
+
+            is_grabbed_by_cursor = true;
+
+        }
+
+    }
+
+    if(engine->mouse.is_left_button_released && is_grabbed_by_cursor){
+        is_grabbed_by_cursor = false;
+        if(parent->base_class_name == "TileMap"){
+            TileMap* tile_map = parent->DynamicCast<TileMap>();
+
+            local_position = Vector2f(
+                std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
+        }
+    }
+
+    if(is_grabbed_by_cursor){
+        Vector2f dp = world_mouse - former_world_mouse;
+
+        local_position += dp;
+    }
+
+    return focused;
 }
 
 void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

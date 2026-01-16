@@ -28,6 +28,7 @@ class Actor{
 public:
 
     Vector2f local_position;
+    Vector2f former_local_position;
 
     bool is_dead = false;
 
@@ -445,7 +446,7 @@ public:
     EditorPropertyVector2f* editor_attribute_local_position = nullptr;*/
 
 
-    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-16.0f, -16.0f),Vector2f(32.0f, 32.0f));
+    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
 
     std::vector<std::unique_ptr<EditorProperty>> editor_properties;
 
@@ -463,7 +464,12 @@ public:
 
     void OpenProperties();
 
+    bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    virtual bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     std::string editor_viewport_text;
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
