@@ -89,5 +89,7 @@ public:
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
+    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };

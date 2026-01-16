@@ -478,6 +478,10 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
 }
 
+bool TileMap::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    return false;
+}
+
 ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
     Console::PrintLine("Does this even run?");
 

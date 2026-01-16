@@ -23,6 +23,7 @@
 #include "../src/widget.h"
 #include "../src/animation.h"
 #include "../src/button.h"
+#include "../src/platformer_rectangle_collision.h"
 
 namespace UFOEngineStudio{
 
@@ -140,6 +141,12 @@ public:
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<Actor>(Vector2f(0.0f, 0.0f));
             }, "Actor", "Actor"))
+        );
+
+        spawnable_actor_map.emplace("ufo::PlatformerRectangleCollision",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(0.0f, 0.0f));
+            }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision"))
         );
 
         spawnable_actor_map.emplace("TileMap",std::move(std::make_unique<AdvancedActorSpawner>(

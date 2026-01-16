@@ -15,6 +15,7 @@
 #include "widget.h"
 #include "button.h"
 #include "actor_component_loader.h"
+#include "platformer_rectangle_collision.h"
 
 namespace ufo{
 
@@ -25,6 +26,16 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Actor>(Vector2f(_x, _y));
+            return std::move(instance);
+        }
+    );
+
+    factory_map.emplace(
+        "ufo::PlatformerRectangleCollision",
+        [](ufo::gc::JsonMap* _json){
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
+            auto instance = std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(_x, _y));
             return std::move(instance);
         }
     );
