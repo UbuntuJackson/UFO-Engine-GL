@@ -18,7 +18,7 @@
 #include <sstream>
 #include <unordered_map>
 
-Actor::Actor(Vector2f _local_position) : local_position{_local_position}{
+Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former_local_position(_local_position){
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
