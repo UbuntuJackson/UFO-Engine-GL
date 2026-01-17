@@ -58,6 +58,7 @@ set(
     src/text.cpp
     src/button.cpp
     src/font.cpp
+    src/collision_grid.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
     file/file.cpp #To be deprecated.

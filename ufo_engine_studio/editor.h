@@ -24,6 +24,7 @@
 #include "../src/animation.h"
 #include "../src/button.h"
 #include "../src/platformer_rectangle_collision.h"
+#include "../src/collision_grid.h"
 
 namespace UFOEngineStudio{
 
@@ -143,6 +144,12 @@ public:
             }, "Actor", "Actor"))
         );
 
+        spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::CollisionGrid>(Vector2f(0.0f, 0.0f));
+            }, "ufo::CollisionGrid", "ufo::CollisionGrid"))
+        );
+
         spawnable_actor_map.emplace("ufo::PlatformerRectangleCollision",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(0.0f, 0.0f));
@@ -228,9 +235,17 @@ public:
             if(class_.at("extends")->AsArray().size() > 0) inherits = class_.at("extends")->AsArray()[0]->AsString();
 
             auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
-                            auto instance = _editor->spawnable_actor_map.at(_this->base)->Spawn(_editor);
+                            if(_editor->spawnable_actor_map.count(_this->base)){
+                                auto instance = _editor->spawnable_actor_map.at(_this->base)->Spawn(_editor);
 
-                            return std::move(instance);
+                                return std::move(instance);
+                            }
+
+                            Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Error, could not find spawner of base-type",
+                                _this->base,
+                                "and type", _this->class_name);
+
+                            return _editor->spawnable_actor_map.at("Actor")->Spawn(_editor);
                         },
                         inherits,
                         class_.at("name")->AsString()
