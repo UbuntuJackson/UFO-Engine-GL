@@ -50,6 +50,11 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
     _editor->set_all_actors_properties_open_to_false = false;
 
+    if(reset_selection_status){
+        this_level->ResetSelectionStatus();
+    }
+    reset_selection_status = false;
+
     ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar;
 
     ImGui::Begin(std::string("ContentBrowser###ContentBrowser"+std::to_string(id)).c_str());

@@ -154,6 +154,14 @@ public:
         std::unique_ptr<Actor> actor;
     };
 
+    bool is_selected = false;
+
+    void AddToLevelEditorTabIfSelected(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+
+    bool should_be_selected = false;
+
+    void ResetSelectionStatus();
+
     std::vector<InsertedActor> inserted_actor_queue;
 
     void InsertActors();

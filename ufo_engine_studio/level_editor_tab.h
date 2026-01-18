@@ -4,6 +4,7 @@
 #include "../imgui/imgui.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../src/actor.h"
+#include <vector>
 
 class Level;
 
@@ -34,6 +35,10 @@ public:
 
     Vector2f mouse_position_over_screenspace;
     Vector2f former_mouse_position_over_screenspace;
+
+    std::vector<Actor::DraggedActorWhereAbouts> drag_dropped_actors;
+
+    bool reset_selection_status = false;
 
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
 

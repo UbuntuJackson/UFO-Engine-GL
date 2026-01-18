@@ -187,6 +187,25 @@ void Actor::InvokeGarbageCollector(){
     }
 }
 
+void Actor::AddToLevelEditorTabIfSelected(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    int index = 0;
+
+    for(const auto& actor : actors){
+        actor->AddToLevelEditorTabIfSelected(_level_editor_tab,index);
+        index++;
+    }
+    if(is_selected) _level_editor_tab->drag_dropped_actors.push_back(DraggedActorWhereAbouts{parent, _index});
+}
+
+void Actor::ResetSelectionStatus(){
+    if(!should_be_selected) is_selected = false;
+    should_be_selected = false;
+
+    for(const auto& actor : actors){
+        actor->ResetSelectionStatus();
+    }
+}
+
 void Actor::InsertActors(){
     for(auto&& inserted_actor : inserted_actor_queue){
         actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
@@ -329,9 +348,9 @@ std::string Actor::GetImportStatus(){
     if(import_mode == ImportModes::WRAPPED){
         return "Wrapped";
     }
-    if(import_mode == ImportModes::UNWRAPPED){
-        return "";
-    }
+
+    return "";
+
 }
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
@@ -358,7 +377,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
     std::string imported_or_not_str = GetImportStatus();
 
-    bool tree_node_opened = ImGui::TreeNodeEx(editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str());
+    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
+
+    bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
+
+    ImGui::SameLine();
 
     if(editing_name){
         ImGui::SameLine();
@@ -369,10 +392,23 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }
     }
     else{
-        if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
+        if(ImGui::Selectable(unique_id_actor.c_str(),&is_selected)){
+            if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
+                if(_editor->active_tab){
+                    UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
+                    level_editor_tab->reset_selection_status = true;
+                    should_be_selected = is_selected;
+                }
+
+            }
             _editor->set_all_actors_properties_open_to_false = true;
             should_open_properties = true;
         }
+
+        /*if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
+            _editor->set_all_actors_properties_open_to_false = true;
+            should_open_properties = true;
+        }*/
 
     }
 
@@ -458,13 +494,20 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
         ImGui::SetDragDropPayload("ActorDragDrop", &dragged_actor_where_abouts, sizeof(DraggedActorWhereAbouts));
         ImGui::Text("%s",editor_name.c_str());
+        is_selected = true;
+
+        if(_editor->active_tab){
+            UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
+            level_editor_tab->drag_dropped_actors.clear();
+            level->AddToLevelEditorTabIfSelected(level_editor_tab, 0);
+        }
 
         ImGui::EndDragDropSource();
     }
 
     if(ImGui::BeginDragDropTarget()){
 
-        const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
+        /*const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
         if(payload_data){
             DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
 
@@ -473,6 +516,28 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             new_actor_queue.push_back(std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]));
 
             dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
+
+        }*/
+
+        const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
+        if(payload_data){
+            if(_editor->active_tab){
+                UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
+
+                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
+                   return _second.index < _first.index;
+                });
+
+                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = this;
+
+                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
+
+                    dragged_actor_where_abouts_.parent->actors.erase(dragged_actor_where_abouts_.parent->actors.begin()+dragged_actor_where_abouts_.index);
+                }
+
+                level_editor_tab->drag_dropped_actors.clear();
+            }
 
         }
 
@@ -649,19 +714,21 @@ bool Actor::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngin
 bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     bool focused = false;
 
-    const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position;
-    const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
+    const Vector2f pos_min = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition())+editor_hitbox.position;
+    const Vector2f pos_max = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
 
     if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
 
-    const  Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
-    Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
+    const Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
+    const Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
 
     const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
-    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse)){
-        //Console::PrintLine("Overlapping");
+    Console::PrintLine("rect", pos_min,pos_max,"cursor",mouse_position_over_screenspace);
+
+    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+        Console::PrintLine("Overlapping");
         if(engine->mouse.is_left_button_held){
             focused = true;
 

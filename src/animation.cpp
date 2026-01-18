@@ -118,8 +118,6 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
         }
     }
 
-    if(ImGui::InputFloat("position.x",&costumes.at(key).local_position.x)) local_position.x = costumes.at(key).local_position.x;
-    if(ImGui::InputFloat("position.y",&costumes.at(key).local_position.y)) local_position.y = costumes.at(key).local_position.y;
     if(ImGui::InputFloat("offset.x",&costumes.at(key).offset.x)) offset.x = costumes.at(key).offset.x;
     if(ImGui::InputFloat("offset.y",&costumes.at(key).offset.y)) offset.y = costumes.at(key).offset.y;
     if(ImGui::InputFloat("frame_size.x",&costumes.at(key).frame_size.x)) frame_size.x = costumes.at(key).frame_size.x;

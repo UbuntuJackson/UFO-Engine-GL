@@ -51,3 +51,7 @@ Copying, pasting and moving groups of tiles
 Copying, pasting and moving Actors
 
 Can an actor live inside a grid instance without issues?
+
+### ImGui Actor Tree and File Tree ###
+
+Make it so items are selectable, so that multiple actors can be drag-dropped. This could be done by specifying multiple actors in actor whereabouts.
