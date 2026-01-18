@@ -98,10 +98,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         categories.at(v->category).push_back(v.get());
     }
 
-    if(ImGui::Button("Place")){
-        current_tool = Tools::PLACE;
-    }
-
     ImGui::SameLine();
 
     if(ImGui::Button("Select")){

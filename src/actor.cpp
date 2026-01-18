@@ -777,6 +777,10 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
 
             is_grabbed_by_cursor = true;
 
+            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
+                is_dead = true;
+            }
+
         }
 
     }
