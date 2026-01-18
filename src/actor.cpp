@@ -360,7 +360,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
     if(ImGui::BeginDragDropTarget()){
 
-        const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
+        /*const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
         if(payload_data){
             DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
 
@@ -370,6 +370,31 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
             dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
 
+        }*/
+
+        const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
+        if(payload_data && !is_selected){
+            if(_editor->active_tab){
+                UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
+
+                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+
+                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = parent;
+
+                    parent->inserted_actor_queue.push_back(InsertedActor{_index,std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index])});
+
+                }
+
+                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
+                   return _second.index < _first.index;
+                });
+
+                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                    dragged_actor_where_abouts_.parent->actors.erase(dragged_actor_where_abouts_.parent->actors.begin()+dragged_actor_where_abouts_.index);
+                }
+
+                level_editor_tab->drag_dropped_actors.clear();
+            }
         }
 
         ImGui::EndDragDropTarget();
@@ -520,20 +545,24 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }*/
 
         const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
-        if(payload_data){
+        if(payload_data && !is_selected){
             if(_editor->active_tab){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
+
+                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = this;
+
+                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
+                }
 
                 std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
                    return _second.index < _first.index;
                 });
 
                 for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
-                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = this;
-
-                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
 
                     dragged_actor_where_abouts_.parent->actors.erase(dragged_actor_where_abouts_.parent->actors.begin()+dragged_actor_where_abouts_.index);
+
                 }
 
                 level_editor_tab->drag_dropped_actors.clear();
