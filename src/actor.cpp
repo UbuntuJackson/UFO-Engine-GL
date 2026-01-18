@@ -712,6 +712,20 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
 
+    if(is_selected){
+        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+            if(_editor->currently_selected_actor_type != ""){
+                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
+                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
+
+                    inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
+
+                    AddActorUniquePtr(std::move(inst));
+                }
+            }
+        }
+    }
+
 }
 
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

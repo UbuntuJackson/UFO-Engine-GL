@@ -89,14 +89,16 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         ImVec2(min.x, min.y),
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
 
-    if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
-        if(_editor->currently_selected_actor_type != ""){
-            if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
-                auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
+    if(is_selected){
+        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+            if(_editor->currently_selected_actor_type != ""){
+                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
+                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
 
-                inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+                    inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
-                AddActorUniquePtr(std::move(inst));
+                    AddActorUniquePtr(std::move(inst));
+                }
             }
         }
     }

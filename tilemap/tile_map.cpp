@@ -13,6 +13,7 @@
 #include "../src/engine.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "tileset_manager.h"
+#include "../ufo_engine_studio/editor.h"
 
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
@@ -475,6 +476,22 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     }
 
     ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
+
+    //Placing actors
+
+    if(is_selected){
+        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+            if(_editor->currently_selected_actor_type != ""){
+                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
+                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
+
+                    inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
+
+                    AddActorUniquePtr(std::move(inst));
+                }
+            }
+        }
+    }
 
 }
 

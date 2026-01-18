@@ -212,6 +212,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         former_mouse_position_over_screenspace = ((engine->mouse.former_position)-editor_viewport_pos)*window_to_engine_ratio;
 
         spawn_cursor->local_position = this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
+        if(spawn_cursor->actors.size() > 0){
+            spawn_cursor->actors[0]->local_position = {0.0f, 0.0f};
+        }
     }
 
     this_level->UpdateEditorViewport(editor, this);
