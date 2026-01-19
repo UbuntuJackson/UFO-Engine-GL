@@ -374,7 +374,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }*/
 
         const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
-        if(payload_data && !is_selected){
+        if(payload_data && !parent->is_selected){
             if(_editor->active_tab){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
 
@@ -424,6 +424,8 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
                     UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
                     level_editor_tab->reset_selection_status = true;
                     should_be_selected = is_selected;
+                    //level->ResetSelectionStatus();
+
                 }
 
             }
@@ -773,7 +775,7 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
-        if(engine->mouse.is_left_button_held){
+        if(engine->mouse.is_left_button_held && ImGui::IsItemHovered()){
             focused = true;
 
             should_open_properties = true;
