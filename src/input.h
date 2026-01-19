@@ -22,6 +22,8 @@ public:
     bool is_middle_button_pressed = false;
     bool is_middle_button_released = false;
 
+    int mouse_wheel = 0;
+
     void ResetTemporaryStates();
 
     void CheckEvents(SDL_Event& event);

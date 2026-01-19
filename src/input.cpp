@@ -48,15 +48,22 @@ void Mouse::CheckEvents(SDL_Event& event){
         }
 
     }
-    if(event.type = SDL_EVENT_MOUSE_MOTION){
+    if(event.type == SDL_EVENT_MOUSE_MOTION){
 
         position = Vector2f(event.motion.x, event.motion.y);
         //Console::PrintLine(position);
     }
 
-    //position = GetPosition();
+    if(event.type == SDL_EVENT_MOUSE_WHEEL){
 
-    //delta_position = GetDeltaPosition();
+        mouse_wheel = event.wheel.y;
+        Console::PrintLine("SDL EVENT MOUSE WHEEL", mouse_wheel);
+
+    }
+    else{
+        mouse_wheel = 0;
+    }
+
 }
 
 Vector2f Mouse::GetDeltaPosition(){

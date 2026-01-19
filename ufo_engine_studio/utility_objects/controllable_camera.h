@@ -3,6 +3,7 @@
 #include <control_settings.h>
 #include <level.h>
 #include <engine.h>
+#include <input.h>
 
 class ControllableCamera : public Camera{
 public:
@@ -30,7 +31,18 @@ public:
         if(engine->mouse.is_middle_button_held){
             Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
 
-            local_position += delta_mouse;
+            local_position += delta_mouse / scale;
+        }
+
+        //scale += (float)engine->mouse.mouse_wheel*0.25f;
+        //if(scale < 1.0f) scale = 1.0f;
+
+        if(engine->keyboard.GetKey(SDLK_PLUS).is_pressed){
+            scale += (0.25f);
+        }
+        if(engine->keyboard.GetKey(SDLK_MINUS).is_pressed){
+            scale -= (0.25f);
+            if(scale < 1.0f) scale = 1.0f;
         }
 
         /*if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;

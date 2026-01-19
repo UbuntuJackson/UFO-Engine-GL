@@ -7,6 +7,8 @@
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_garbage_collector/gc_json.h"
 
+class TileMap;
+
 namespace UFOEngineStudio{
     class Editor;
     class LevelEditorTab;
@@ -204,6 +206,8 @@ public:
     void UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable);
 
     bool adding_new_actor = false;
+
+    TileMap* IsInTileMap();
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, int _index);
 

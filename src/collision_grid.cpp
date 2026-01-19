@@ -1,4 +1,5 @@
 #include <vector>
+#include <set>
 #include "actor.h"
 #include "level.h"
 #include "../ufo_maths/ufo_maths.h"
@@ -12,55 +13,59 @@ CollisionGrid::CollisionGrid(Vector2f _) : Actor(_){
 
 }
 
-int CollisionGrid::GetDivisionFromPosition(Vector2f _position){
+int CollisionGrid::GetDivisionFromPosition(const Vector2f& _position){
     int index = ((int)_position.y/row_height)*number_of_columns+(int)_position.x/column_width;
+
+    if(!ufoMaths::RectangleVsPoint(ufo::Rectangle(Vector2f(0.0f, 0.0f), level->size), _position)) return Errors::OUT_OF_BOUNDS;
 
     return index;
 }
 
 void CollisionGrid::OnSpawn(){
-    number_of_columns = level->size.x / column_width;
-    number_of_rows = level->size.y / row_height;
+    number_of_columns = level->size.x / column_width +1;
+    number_of_rows = level->size.y / row_height +1;
     number_of_divisions = number_of_rows*number_of_columns;
     divisions.reserve(number_of_divisions);
 
     for(int i = 0; i < number_of_divisions; i++){
         divisions.push_back(std::vector<Actor*>{});
-        divisions.back().reserve(25);
     }
 
-    for(const auto& actor : actors){
-        divisions[GetDivisionFromPosition(actor->local_position)].push_back(actor.get());
+    for(auto&& actor : actors){
+        int index = GetDivisionFromPosition(actor->local_position);
+
+        if(index != Errors::OUT_OF_BOUNDS) divisions[index].push_back(actor.get());
     }
 }
 
 void CollisionGrid::OnUpdate(float _delta_time){
 
     std::vector<Actor*> actors_to_relocate;
-    actors_to_relocate.reserve(20);
 
-    for(auto& actor : actors){
-        int new_division = GetDivisionFromPosition(actor->local_position);
-        int former_division = GetDivisionFromPosition(actor->former_local_position);
+    std::set<int> divisions_to_reset;
 
-        if(new_division != former_division || actor->is_dead){
+    for(const auto& u_actor : actors){
+
+        int new_division = GetDivisionFromPosition(u_actor->local_position);
+        int former_division = GetDivisionFromPosition(u_actor->former_local_position);
+
+        if(new_division == Errors::OUT_OF_BOUNDS || former_division == Errors::OUT_OF_BOUNDS) continue;
+
+        if(new_division != former_division || u_actor->is_dead){
             //Unnecessary if the new division is going to be reordered anyway. This could be solved
             // partly by keeping track of whether things are removed from the division or not.
-
-            for(const auto& actor : divisions[new_division]){
-                actors_to_relocate.push_back(actor);
-            }
-
-            for(const auto& actor : divisions[former_division]){
-                actors_to_relocate.push_back(actor);
-            }
-
-            divisions[new_division].clear();
-            divisions[former_division].clear();
+            divisions_to_reset.insert(former_division);
 
 
         }
 
+    }
+
+    for(int i : divisions_to_reset){
+        for(Actor* actor : divisions[i]){
+            actors_to_relocate.push_back(actor);
+        }
+        divisions[i].clear();
     }
 
     for(Actor* actor : actors_to_relocate){

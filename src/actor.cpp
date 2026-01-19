@@ -5,6 +5,7 @@
 #include "level.h"
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "../tilemap/tile_map.h"
 #include "../utils/console.h"
 #include "sprite.h"
 #include "../imgui/imgui.h"
@@ -768,10 +769,7 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
-    Console::PrintLine("rect", pos_min,pos_max,"cursor",mouse_position_over_screenspace);
-
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
-        Console::PrintLine("Overlapping");
         if(engine->mouse.is_left_button_held){
             focused = true;
 
@@ -787,13 +785,13 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
 
     if(engine->mouse.is_left_button_released && is_grabbed_by_cursor){
         is_grabbed_by_cursor = false;
-        if(parent->base_class_name == "TileMap"){
-            TileMap* tile_map = parent->DynamicCast<TileMap>();
-
+        TileMap* tile_map = IsInTileMap();
+        if(tile_map){
             local_position = Vector2f(
                 std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
                 std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
         }
+
     }
 
     if(is_grabbed_by_cursor){
@@ -803,6 +801,17 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     }
 
     return focused;
+}
+
+TileMap* Actor::IsInTileMap(){
+    if(parent == nullptr) return nullptr;
+    else{
+        if(parent->class_name == "TileMap") return parent->DynamicCast<TileMap>();
+        else{
+            return parent->IsInTileMap();
+        }
+    }
+    return nullptr;
 }
 
 void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
