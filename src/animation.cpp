@@ -81,6 +81,8 @@ void Animation::OnSpawn(){
 
 void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
+    Actor::OnViewProperties(_level_editor_tab, _index);
+
     std::string removed_costume_key;
     bool did_remove_costume = false;
 

@@ -650,7 +650,10 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
 
 void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
-    bool search_field_active = true;
+    bool search_field_active = false;
+
+    ImGui::Text("%s",std::string(editor_name+" "+"("+class_name+")").c_str());
+    ImGui::Separator();
 
     if(search_field_active){
         ImGui::InputText("FindActor...", &find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
@@ -702,13 +705,13 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
 
-    for(const auto& child : actors){
+    /*for(const auto& child : actors){
 
         Vector2f child_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(child->GetGlobalPosition());
 
         ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y), ImVec2(this_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
         ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, child_screen_pos.y), ImVec2(child_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
-    }
+        }*/
 
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
@@ -772,6 +775,9 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
         if(engine->mouse.is_left_button_held){
             focused = true;
+
+            should_open_properties = true;
+            _editor->set_all_actors_properties_open_to_false = true;
 
             is_grabbed_by_cursor = true;
 
