@@ -695,6 +695,15 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
+    if(properties_open){
+        auto local_tile_map = IsInTileMap();
+        if(local_tile_map){
+            _level_editor_tab->spawn_cursor->local_position = Vector2f(
+                std::floor(_level_editor_tab->spawn_cursor->local_position.x/local_tile_map->tile_width)*local_tile_map->tile_width,
+                std::floor(_level_editor_tab->spawn_cursor->local_position.y/local_tile_map->tile_height)*local_tile_map->tile_height);
+        }
+    }
+
     const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
     const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
 
@@ -778,8 +787,10 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
         if(engine->mouse.is_left_button_held && ImGui::IsItemHovered()){
             focused = true;
 
-            should_open_properties = true;
-            _editor->set_all_actors_properties_open_to_false = true;
+            if(ImGui::IsItemHovered() && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::SELECT){
+                should_open_properties = true;
+                _editor->set_all_actors_properties_open_to_false = true;
+            }
 
             is_grabbed_by_cursor = true;
 

@@ -24,14 +24,14 @@ bool TextEditorTab::DetermineIfEdited(){
 
 void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
 
-    ImGui::Begin(std::string(std::string("Text- and Code Editing###")+std::to_string(id)).c_str());
-    ImGui::InputTextMultiline((name+"###TextEditor"+std::to_string(id)).c_str(), &text, ImVec2(ImGui::GetWindowSize()), ImGuiInputTextFlags_CallbackCompletion, FilterTabs);
+    ImGui::Begin(std::string(std::string(name+"###Text- and Code Editing")+std::to_string(id)).c_str());
+    ImGui::InputTextMultiline((name+"###TextEditor"+std::to_string(id)).c_str(), &text, ImVec2(0.0f, 0.0f), ImGuiInputTextFlags_CallbackCompletion, FilterTabs);
 
     ImGui::End();
 }
 
 void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _editor){
-    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string(std::string("Text- and Code Editing###")+std::to_string(id)).c_str());
+    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string(std::string(name+"###Text- and Code Editing")+std::to_string(id)).c_str());
 }
 
 void TextEditorTab::OnSave(Editor* _editor){

@@ -365,6 +365,10 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(!properties_open) return;
 
+    _level_editor_tab->spawn_cursor->local_position = Vector2f(
+        std::floor(_level_editor_tab->spawn_cursor->local_position.x/tile_width)*tile_width,
+        std::floor(_level_editor_tab->spawn_cursor->local_position.y/tile_height)*tile_height);
+
     Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
     current_world_mouse_x = world_mouse.x;
