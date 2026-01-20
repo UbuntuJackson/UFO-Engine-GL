@@ -155,8 +155,11 @@ void Engine::Update(){
     level_handle->UpdatePhrase(fLastElapsed);
 
     if(pending_levels.size() > 0){
+        //Do everything needed to initialise a level.
         level = std::move(pending_levels.back());
         level_handle = level.get()->DynamicCast<Level>();
+        level_handle->actors.reserve(50);
+        level_handle->engine = this;
         level_handle->Load();
         level_handle->OnSpawn();
         pending_levels.pop_back();
