@@ -817,6 +817,15 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
         Vector2f dp = world_mouse - former_world_mouse;
 
         local_position += dp;
+
+        /*if(dp != Vector2f(0.0f, 0.0f)){
+            TileMap* tile_map = IsInTileMap();
+            if(tile_map){
+                local_position = Vector2f(
+                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
+            }
+            }*/
     }
 
     return focused;

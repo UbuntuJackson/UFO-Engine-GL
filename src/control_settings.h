@@ -6,6 +6,8 @@
 
 namespace ufo{
 
+class Engine;
+
 class Controls{
 public:
     std::unordered_map<std::string, unsigned int> controls;

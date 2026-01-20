@@ -12,6 +12,7 @@
 #include "file_dialogue.h"
 #include "editor.h"
 #include "imgui_utils.h"
+#include "utility_objects/spawn_cursor.h"
 
 namespace UFOEngineStudio{
 
@@ -31,7 +32,7 @@ void  LevelEditorTab::Initialise(){
     this_level->UpdateActorStructureFirstFrame(editor, false);
     this_level->unremovable = true;
 
-    spawn_cursor = this_level->AddActor<Actor>(Vector2f(0.0f, 0.0f));
+    spawn_cursor = this_level->AddActor<SpawnCursor>(Vector2f(0.0f, 0.0f));
     spawn_cursor->is_savable = false;
     spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
     spawn_cursor->unremovable = true;

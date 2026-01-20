@@ -1,18 +1,20 @@
 #pragma once
-#include "../src/actor.h"
-#include "../src/input.h"
-#include "../src/engine.h"
+#include "../../src/actor.h"
+#include "../../ufo_maths/ufo_maths.h"
 
 namespace UFOEngineStudio{
+
+class Editor;
+class LevelEditorTab;
 
 class SpawnCursor : public Actor{
 public:
 
-    SpawnCursor() : Actor(Vector2f(0.0f, 0.0f)){}
+    SpawnCursor(Vector2f _);
 
-    void OnUpdate(float _dt){
-        local_position = engine->mouse.position;
-    }
+    void OnUpdate(float _dt);
+
+    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
 };
 

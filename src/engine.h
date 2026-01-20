@@ -50,6 +50,7 @@ public:
 
     Level* level_handle = nullptr;
     std::unique_ptr<Actor> level = nullptr;
+    std::vector<std::unique_ptr<Actor>> pending_levels;
 
     //ufo::TextRenderer text_renderer;
 
@@ -65,6 +66,9 @@ public:
 
     Engine();
     void Init(Main* _main);
+
+    bool GoToLevel(const std::string& _path);
+
     void ResetUFOEngineStudio();
 
     virtual ~Engine();

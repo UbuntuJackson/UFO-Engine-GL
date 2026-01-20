@@ -208,7 +208,7 @@ void GenericGenerator::Initialise(){
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
-            auto instance = std::make_unique<ControllableCamera>(Vector2f(_x, _y));
+            auto instance = std::make_unique<UFOEngineStudio::ControllableCamera>(Vector2f(_x, _y));
             return std::move(instance);
         }
     );
