@@ -773,6 +773,7 @@ def analyse_compound_object(_compound_object):
             "ufo_enum",
             "ufo_comment",
             "ufo_int_slider",
+            "ufo_float_slider",
             "ufo_radio_button",
         ]:
             mode = AWAITING_UFO_MACRO

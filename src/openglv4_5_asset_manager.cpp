@@ -1,5 +1,6 @@
 #include <unordered_map>
 #include <string>
+#include <filesystem>
 #include "texture_2d.h"
 #include "../external/stb_image.h"
 #include "shader.h"
@@ -8,11 +9,13 @@
 #include "asset_json.h"
 #include "../src/engine.h"
 #include "../ufo_engine_studio/editor.h"
-#include <filesystem>
 
 //Todo: Different intialise function for the Editor would be a lot cleaner, eventhough this isn't as bad as it seems.
 // What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
 // you twist and turn it.
+
+//Additionally, to separate engine and editor, this class could be abstract and replaced with one less hostile to the UFO-Engine Studio Editor.
+
 void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
 

@@ -222,6 +222,8 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                         int x = tile_on_tile_selector%tileset.columns;
                         int y = tile_on_tile_selector/tileset.columns;
 
+                        Console::PrintLine(x,y);
+
                         currently_selected_tiles = ManyTiles{
                             {},
                             x,y,

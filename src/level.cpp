@@ -71,6 +71,7 @@ void Level::UpdatePhrase(float _delta_time){
     //Clean up handles before actually freeing the actor
     for(int i = active_camera_handles.size()-1; i != -1; i--){
         if(active_camera_handles[i]->is_dead){
+            //Here I have the chance to move the actor and store it somewhere if I so wish to
             active_camera_handles.erase(active_camera_handles.begin()+i);
         }
     }

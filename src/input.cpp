@@ -54,6 +54,8 @@ void Mouse::CheckEvents(SDL_Event& event){
         //Console::PrintLine(position);
     }
 
+    delta_position = position-former_position;
+
     if(event.type == SDL_EVENT_MOUSE_WHEEL){
 
         mouse_wheel = event.wheel.y;

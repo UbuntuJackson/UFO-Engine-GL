@@ -1,6 +1,6 @@
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
-#include "../utils/ufo_macros.h"
+#include "ufo_macros.h"
 #include "../utils/opengl_utils.h"
 #include "texture_2d.h"
 

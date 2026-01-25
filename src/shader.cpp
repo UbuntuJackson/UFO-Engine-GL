@@ -7,7 +7,7 @@
 #include "../file/file.h"
 #include "shader.h"
 #include "../utils/opengl_utils.h"
-#include "../utils/ufo_macros.h"
+#include "ufo_macros.h"
 
 namespace ufo{
 

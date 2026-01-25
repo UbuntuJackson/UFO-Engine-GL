@@ -5,6 +5,7 @@
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../src/actor.h"
 #include <vector>
+#include "../ufo_maths/ufo_maths.h"
 
 class Level;
 
@@ -40,7 +41,12 @@ public:
 
     bool reset_selection_status = false;
 
+    Vector2f rectangle_selection_tool_start_position = {0.0f, 0.0f};
+    ufo::Rectangle selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(0.0f, 0.0f));
+
     LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
+
+    ufo::Rectangle GetSelectionRectangle();
 
     Vector2f TranslateToEditorScreenSpace(Vector2f _position);
 

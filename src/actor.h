@@ -392,6 +392,40 @@ public:
         }
     };
 
+    class EditorPropertyFloatSlider : public EditorProperty{
+    public:
+        float value;
+
+        float min;
+        float max;
+        float step;
+
+        EditorPropertyFloatSlider(const std::string& _name,const std::string& _alias, float _value, float _min, float _max, float _step) : EditorProperty(_name,_alias),
+            value{_value},
+            min{_min},
+            max{_max},
+            step{_step}{
+
+            }
+
+        void Update(const std::string& _editor_name, int _index){
+            ImGui::SliderFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value, min, max);
+        }
+
+        ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+            auto m = _gc->New<ufo::gc::JsonMap>();
+            m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
+            m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
+            m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(value));
+            m->map.emplace("hint", _gc->New<ufo::gc::JsonString>("EditorPropertyFloatSlider"));
+            return m;
+        }
+
+        std::unique_ptr<EditorProperty> Copy(){
+            return std::make_unique<EditorPropertyFloatSlider>(variable_name,alias,value,min,max, step);
+        }
+    };
+
     class EditorPropertyCheckBox : public EditorProperty{
     public:
         bool value = false;
@@ -475,6 +509,16 @@ public:
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void OpenProperties();
+
+    void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+        if(ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())){
+            _selected_actors.push_back(this);
+        }
+
+        for(const auto& actor : actors){
+            actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
+        }
+    }
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

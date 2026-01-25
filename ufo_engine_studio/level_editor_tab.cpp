@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "level_editor_tab.h"
 #include "../ufo_engine_studio/tab.h"
 #include "../ufo_engine_studio/editor.h"
@@ -12,13 +13,29 @@
 #include "file_dialogue.h"
 #include "editor.h"
 #include "imgui_utils.h"
+#include "../ufo_maths/ufo_maths.h"
 #include "utility_objects/spawn_cursor.h"
+#include "im_vec.h"
 
 namespace UFOEngineStudio{
 
 LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
     this_level = _editor->AddActor<Level>();
     this_level->Load();
+}
+
+ufo::Rectangle LevelEditorTab::GetSelectionRectangle(){
+    float start_x = rectangle_selection_tool_start_position.x;
+    float start_y = rectangle_selection_tool_start_position.y;
+
+    float end_x = engine->mouse.position.x;
+    float end_y = engine->mouse.position.y;
+
+    if(start_y > end_y) std::swap(start_y, end_y);
+    if(start_x > end_x) std::swap(start_x, end_x);
+
+    return ufo::Rectangle(Vector2f(start_x,start_y), Vector2f(end_x-start_x, end_y-start_y));
+
 }
 
 Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
@@ -216,6 +233,45 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     this_level->UpdateEditorViewport(editor, this);
     this_level->UpdateEditorViewportFocus(editor, this);
+
+    if(engine->mouse.is_left_button_pressed){
+        rectangle_selection_tool_start_position = engine->mouse.position;
+    }
+
+    if(engine->mouse.delta_position != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
+
+        ufo::Rectangle selected_rectangle = GetSelectionRectangle();
+
+        ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+        ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+
+        Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
+
+        Vector2f world_selection_rectangle_start_editor_viewport = ((selected_rectangle.position)-editor_viewport_pos)*window_to_engine_ratio;
+        Vector2f world_selection_rectangle_end_editor_viewport = ((selected_rectangle.position+selected_rectangle.size)-editor_viewport_pos)*window_to_engine_ratio;
+
+        Vector2f world_selection_rectangle_start = this_level->active_camera_handles.back()->TransformScreenToWorld(world_selection_rectangle_start_editor_viewport);
+        Vector2f world_selection_rectangle_end = this_level->active_camera_handles.back()->TransformScreenToWorld((world_selection_rectangle_end_editor_viewport));
+
+        selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end-world_selection_rectangle_start);
+        Console::PrintLine(selection_rectangle_world_space.position, selection_rectangle_world_space.size);
+    }
+    if(engine->mouse.delta_position == Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_pressed){
+        selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
+        Console::PrintLine("Deselected everything");
+    }
+
+    if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f)){
+
+        ufo::Rectangle selected_rectangle = GetSelectionRectangle();
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            FromVector2fToImVec2((selected_rectangle.position+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))),
+            FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
+        std::vector<Actor*> actors_selected_this_frame;
+        this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
+        Console::PrintLine("Actors selected this frame",actors_selected_this_frame.size());
+    }
 
     ImGui::End();
 }

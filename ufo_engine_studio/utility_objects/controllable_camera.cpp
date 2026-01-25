@@ -55,6 +55,10 @@ void ControllableCamera::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera,
 
 }
 
+bool ControllableCamera::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    return false;
+}
+
 void ControllableCamera::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }

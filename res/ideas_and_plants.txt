@@ -57,3 +57,8 @@ Separating snapping behaviour from non-snapping behaviour? (Cursor doesn't overl
 ### ImGui Actor Tree and File Tree ###
 
 Make it so items are selectable, so that multiple actors can be drag-dropped. This could be done by specifying multiple actors in actor whereabouts.
+
+TilesetManager
+
+Quick note about a bug where if you resize a tileset and add tiles to it, the newly added tiles won't count in the number of tiles. Maybe this could be
+updated somehow by looking at each tileset and see how it has changed. Quite a complicated algorithm though.

@@ -3,7 +3,7 @@
 #include "shader.h"
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
-#include "../utils/ufo_macros.h"
+#include "ufo_macros.h"
 #include "openglv4_5_asset_manager.h"
 #include "../utils/opengl_utils.h"
 #include <glm/gtx/string_cast.hpp>

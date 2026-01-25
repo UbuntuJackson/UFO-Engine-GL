@@ -287,6 +287,8 @@ public:
                 std::string value = "<Faulty Value>";
                 std::string data_type = "<Faulty DataType>";
 
+                //This function is full of potential conversion errors due to faulty syntax. At least try handle them.
+
                 if(member->AsArray()[1]->AsMap().count("name")) name = member->AsArray()[1]->AsMap().at("name")->AsString();
                 else{
                     Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable name");
@@ -327,6 +329,26 @@ public:
                         }
                         catch(const std::out_of_range& _error){
                             Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_int_slider takes 2 args", _error.what());
+                        }
+                        catch(const std::exception& _error){
+                            Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
+                        }
+                    }
+
+                    if(macro_name == "ufo_float_slider"){
+
+                        try{
+                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyFloatSlider>(
+                                name,
+                                alias,
+                                std::stof(value),
+                                std::stof(args[0]->AsString()),
+                                std::stof(args[1]->AsString()),
+                                std::stof(args[2]->AsString())
+                            ));
+                        }
+                        catch(const std::out_of_range& _error){
+                            Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_float_slider takes 3 args", _error.what());
                         }
                         catch(const std::exception& _error){
                             Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
