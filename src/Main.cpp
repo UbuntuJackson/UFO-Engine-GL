@@ -351,8 +351,10 @@ void Main::Quit(){
     TTF_Quit();
 
     SDL_GL_DestroyContext(open_gl_context);
+    SDL_GL_UnloadLibrary();
     SDL_DestroyWindow(window);
     SDL_Quit();
+
 }
 
 void Main::Unused_ResetUFOEngineStudio(){

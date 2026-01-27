@@ -25,7 +25,7 @@ private:
 public:
     OpenGLv4_5_Graphics() = default;
     OpenGLv4_5_Graphics(Engine* _engine);
-    ~OpenGLv4_5_Graphics();
+    virtual ~OpenGLv4_5_Graphics();
 
     void SetProjection(float _left, float _right, float _bottom, float _top);
 

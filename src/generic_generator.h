@@ -11,16 +11,6 @@ class GenericGenerator{
 public:
     bool load_for_editor = false;
 
-    //Unused for the time being
-    std::vector<std::string> words_blacklisted_as_custom_properties = {
-        "x",
-        "y",
-        "key",
-        "name",
-        "type"
-
-    };
-
     std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;
 
     virtual void Initialise();

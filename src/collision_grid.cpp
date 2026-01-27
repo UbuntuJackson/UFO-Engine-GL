@@ -49,7 +49,8 @@ void CollisionGrid::OnUpdate(float _delta_time){
         int new_division = GetDivisionFromPosition(u_actor->local_position);
         int former_division = GetDivisionFromPosition(u_actor->former_local_position);
 
-        if(new_division == Errors::OUT_OF_BOUNDS || former_division == Errors::OUT_OF_BOUNDS) continue;
+        //if(new_division == Errors::OUT_OF_BOUNDS) continue;
+        //if(former_division == Errors::OUT_OF_BOUNDS) continue;
 
         if(new_division != former_division || u_actor->is_dead){
             //Unnecessary if the new division is going to be reordered anyway. This could be solved
@@ -63,7 +64,8 @@ void CollisionGrid::OnUpdate(float _delta_time){
 
     for(int i : divisions_to_reset){
         for(Actor* actor : divisions[i]){
-            actors_to_relocate.push_back(actor);
+            int division = GetDivisionFromPosition(actor->local_position);
+            if(division != Errors::OUT_OF_BOUNDS) actors_to_relocate.push_back(actor);
         }
         divisions[i].clear();
     }
