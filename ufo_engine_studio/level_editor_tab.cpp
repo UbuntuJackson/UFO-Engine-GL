@@ -211,17 +211,25 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         ImVec2(1,-1)
     );
 
+    //Establish some utility variables for managing positions used for translating, drawing and detecting
+
+    //The level viewport is slightly smaller than the real thing, so this ratio variable is pretty important.
     window_to_engine_ratio = engine->height / ImGui::GetWindowSize().y;
 
     {
+        //Relative to computer screen
         ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
 
+        //Relative to computer screen
         ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
 
+        //Relative to SDL window origo
         Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
 
+        //This is just im_viewport_pos as a Vector2f, this naming is urgently awful
         level_viewport_position = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
 
+        //Name suggestion: mouse_position_over_level_viewport_screenspace
         mouse_position_over_screenspace = ((engine->mouse.position)-editor_viewport_pos)*window_to_engine_ratio;
         former_mouse_position_over_screenspace = ((engine->mouse.former_position)-editor_viewport_pos)*window_to_engine_ratio;
 
@@ -234,10 +242,12 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     this_level->UpdateEditorViewport(editor, this);
     this_level->UpdateEditorViewportFocus(editor, this);
 
+    //Set initial start position for rectangle selection tool
     if(engine->mouse.is_left_button_pressed){
         rectangle_selection_tool_start_position = engine->mouse.position;
     }
 
+    //Resize selection rectangle if mouse is moving
     if(engine->mouse.delta_position != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
 
         ufo::Rectangle selected_rectangle = GetSelectionRectangle();
@@ -257,11 +267,13 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end-world_selection_rectangle_start);
         Console::PrintLine(selection_rectangle_world_space.position, selection_rectangle_world_space.size);
     }
+    //Set selection tool to inactive if user clicks but does not move the mouse
     if(engine->mouse.delta_position == Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_pressed){
         selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
         Console::PrintLine("Deselected everything");
     }
 
+    //If selection tool active
     if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f)){
 
         ufo::Rectangle selected_rectangle = GetSelectionRectangle();
@@ -270,7 +282,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
         std::vector<Actor*> actors_selected_this_frame;
         this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
-        Console::PrintLine("Actors selected this frame",actors_selected_this_frame.size());
     }
 
     ImGui::End();
