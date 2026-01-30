@@ -209,7 +209,7 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::InputInt("Window Width", &game_width);
         ImGui::InputInt("Window Height", &game_height);
 
-        ImGui::Text("Execution mode");
+        //ImGui::Text("Execution mode");
 
         if(ImGui::Button("Apply & Save")){
             if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
@@ -236,6 +236,13 @@ void Editor::OnUpdate(float _delta_time){
                 }
                 j_settings->Write(opened_directory_path+"/settings.json");
             }
+            project_settings_open = false;
+        }
+
+        ImGui::SameLine();
+
+        if(ImGui::Button("Cancel")){
+            project_settings_open = false;
         }
 
         ImGui::End();

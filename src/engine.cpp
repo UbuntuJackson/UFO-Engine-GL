@@ -15,6 +15,7 @@
 #include "Main.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/engine_memory.h"
+#include "level_loader.h"
 
 namespace ufo{
 
@@ -26,6 +27,9 @@ Engine::Engine()
 void
 Engine::Init(Main* _main){
     SDL_GetWindowSize(_main->window, &width, &height);
+
+    level = std::make_unique<Level>();
+    level_handle = level->DynamicCast<Level>();
 
     //text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
@@ -47,23 +51,18 @@ Engine::Init(Main* _main){
     m_tp1 = std::chrono::system_clock::now();
 }
 
-bool Engine::GoToLevel(const std::string& _path){
-    class LevelLoader : public ufo::gc::Root{
-    public:
-        LevelLoader() = default;
-         std::unique_ptr<Actor> LoadLevel(ufo::Engine* _engine, const std::string& _level){
-            auto level_json = ufo::gc::JsonRead(&gc, _level);
-            if(level_json->IsNull()){
-                throw std::runtime_error("[UFO-Engine] LevelLoader::LoadLevel: Could not load level "+ _level+".");
-            }
+void Engine::Start(){
 
-            auto level = _engine->actor_generator->JsonToActorTree(&gc,level_json);
-            return std::move(level);
-         }
-    };
+}
+
+void Engine::StartWithImGui(){
+
+}
+
+bool Engine::GoToLevel(const std::string& _path){
 
     try{
-        pending_levels.push_back(std::move(LevelLoader().LoadLevel(this, _path)));
+        pending_levels.push_back(std::move(ufo::LevelLoader().LoadLevel(this, _path)));
     }
     catch(const std::exception& _error){
         Console::Print("[UFO-Engine Studio] Engine::GoToLevel\n");

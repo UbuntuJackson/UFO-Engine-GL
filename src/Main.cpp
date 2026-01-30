@@ -314,24 +314,6 @@ void Main::Start(std::unique_ptr<Engine> _custom_engine){
 
         }
 
-        //Test start
-        /*if(app.keyboard.GetKey(SDLK_RIGHT).is_pressed){
-            Console::PrintLine("right key pressed");
-        }
-
-        if(app.keyboard.GetKey(SDLK_RIGHT).is_released){
-            Console::PrintLine("right key released");
-        }
-
-        if(app.keyboard.GetKey(SDLK_LEFT).is_held){
-            Console::PrintLine("left key held down, not to be confused with pressed");
-        }
-
-        if(app.mouse.is_left_button_pressed) Console::PrintLine("left mouse pressed");
-        if(app.mouse.is_left_button_released) Console::PrintLine("left mouse released");*/
-
-        //Test end
-
         engine->Update();
         engine->keyboard.ClearPressedAndReleased();
 

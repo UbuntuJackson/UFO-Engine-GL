@@ -69,6 +69,9 @@ public:
     Engine();
     void Init(Main* _main);
 
+    void Start();
+    void StartWithImGui();
+
     bool GoToLevel(const std::string& _path);
 
     void ResetUFOEngineStudio();
