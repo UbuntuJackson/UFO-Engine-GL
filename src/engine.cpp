@@ -152,7 +152,7 @@ void Engine::Update(){
     float fElapsedTime = elapsedTime.count();
     fLastElapsed = fElapsedTime;
 
-    level_handle->UpdatePhrase(fLastElapsed);
+    level_handle->UpdatePhase(fLastElapsed);
 
     if(pending_levels.size() > 0){
         //Do everything needed to initialise a level.
@@ -169,7 +169,7 @@ void Engine::Update(){
 
 void Engine::UpdatePixelGameEngine(float _delta_time){
 
-    level_handle->UpdatePhrase(_delta_time);
+    level_handle->UpdatePhase(_delta_time);
 
 }
 

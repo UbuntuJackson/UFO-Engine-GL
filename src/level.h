@@ -30,13 +30,14 @@ public:
 
     std::vector<Camera*> camera_handles;
     std::vector<Camera*> active_camera_handles;
-
+private:
     int clean_up_mode = CleanUpModes::EACH_FRAME;
-
+public:
     Level();
     void OnSpawn();
-
+private:
     int control_handout_counter = -1;
+public:
     ufo::Controls* GetControls();
 
     //If you want the bare minimum for a functioning level
@@ -60,7 +61,7 @@ public:
 
     void Update(float _delta_time);
 
-    void UpdatePhrase(float _delta_time);
+    void UpdatePhase(float _delta_time);
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 

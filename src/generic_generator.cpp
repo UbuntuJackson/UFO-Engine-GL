@@ -307,6 +307,9 @@ void GenericGenerator::JsonToActorTreeInGameComponentLoad(Actor* _actor, ufo::gc
 
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
+	    //float local_position_x = _json->map.at("x")->AsFloat();
+		//float local_position_y = _json->map.at("y")->AsFloat();
+
 	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
 
 		instance->class_name = _json->map.at("class_name")->AsString();
@@ -320,8 +323,6 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 		instance->OnLoadDefaultProperties(_json);
 
 		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
-
-		Console::PrintLine("Was able to load custom properties at least once");
 
 		for(const auto& [k,v] : custom_properties){
 		    //Iterate through custom properties
@@ -356,6 +357,19 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                 				instance->editor_name);
                 }
 			}
+			/*else if(hint == "EditorPropertyFloatSlider"){
+                try{
+     			    std::string name = v->AsMap().at("name")->AsString();
+    				int value = v->AsMap().at("value")->AsFloat();
+
+                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyFloatSlider>(name, name, value));
+                } catch(const std::exception& _error){
+                    Console::PrintLine(
+                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
+                				instance->class_name, "and name",
+                				instance->editor_name);
+                }
+                }*/
 			else if(hint == "EditorPropertyFloat"){
                 try{
      			    std::string name = v->AsMap().at("name")->AsString();

@@ -71,8 +71,6 @@ public:
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);
 
-    void LevelUpdatePhase(float _delta_time);
-
     void LevelDrawPhase(ufo::Graphics* _graphics);
 
     void OnSave(Editor* _editor);

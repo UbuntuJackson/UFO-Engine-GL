@@ -53,10 +53,13 @@ void  LevelEditorTab::Initialise(){
     spawn_cursor->is_savable = false;
     spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
     spawn_cursor->unremovable = true;
+
+    //this_level->UpdatePhase(0.016f);
 }
 
 void LevelEditorTab::Refresh(){
     Tab::Refresh();
+    Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::Refresh: Updating actor structure");
     this_level->UpdateActorStructure(editor, false);
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
@@ -197,7 +200,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     ImGui::Begin(std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str(), nullptr, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 
-    LevelUpdatePhase(_delta_time);
+    this_level->UpdatePhase(_delta_time);
     LevelDrawPhase(engine->graphics.get());
 
     float w_h_ratio = (float)engine->width/(float)engine->height;
@@ -294,10 +297,6 @@ void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _progr
         std::string(name_and_imgui_id.c_str()+std::to_string(id)),
         std::string("ContentBrowser###ContentBrowser"+std::to_string(id)),
         SplitDirections::HORIZONTAL);
-}
-
-void LevelEditorTab::LevelUpdatePhase(float _delta_time){
-    this_level->UpdatePhrase(_delta_time);
 }
 
 void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){

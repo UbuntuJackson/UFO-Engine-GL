@@ -245,7 +245,7 @@ void Actor::DeclareImportedRecursive(){
 
 void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
     if(import_mode == ImportModes::WRAPPED){
-        Console::PrintLine("UpdateActorStructure",editor_name);
+
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
         for(auto&& actor : act->new_actor_queue){
@@ -263,7 +263,7 @@ void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, boo
 
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
     if(import_mode == ImportModes::WRAPPED){
-        Console::PrintLine("UpdateActorStructure",editor_name);
+
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
         for(auto&& actor : act->new_actor_queue){
@@ -277,59 +277,6 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             actor->UpdateActorStructure(_editor, false);
         }
     }
-
-    /*if(import_mode == ImportModes::MODIFIABLE || _parent_is_modifiable){
-        if(new_actor_queue.size() != 0) return;
-        Console::PrintLine("Saw",editor_name, actors.size(), new_actor_queue.size());
-
-        for(int a = 0; a < actors.size(); a++){
-
-            //This part is good, usavable objects aren't supposed to be modified
-            if(!actors[a]->is_savable) continue;
-
-            actors[a]->UpdateActorStructure(_editor, true);
-
-            auto act = _editor->spawnable_actor_map.at(actors[a]->class_name)->Spawn(_editor);
-            act->class_name = actors[a]->class_name;
-
-            std::unordered_map<std::string, std::unique_ptr<Actor>> old_actors;
-
-            for(int i = actors[a]->actors.size()-1; i != -1; i--){
-                if(actors[a]->actors[i]->is_imported){
-                    old_actors.emplace(actors[a]->actors[i]->editor_name, std::move(actors[a]->actors[i]));
-                    actors[a]->actors.erase(actors[a]->actors.begin()+i);
-                }
-                else{
-
-                }
-            }
-
-            for(int b = 0; b < act->new_actor_queue.size(); b++){
-                if(old_actors.count(act->new_actor_queue[b]->editor_name)){
-
-                    act->new_actor_queue[b] = std::move(old_actors.at(act->new_actor_queue[b]->editor_name));
-
-                    old_actors.erase(act->new_actor_queue[b]->editor_name);
-
-                }
-
-            }
-
-            for(auto&& actor : act->new_actor_queue){
-                actors[a]->AddActorUniquePtr(std::move(actor));
-            }
-
-        }
-    }
-    else if(ImportModes::UNWRAPPED || _parent_is_modifiable){
-        is_imported = false;
-        for(auto&& actor : actors){
-            actor->UpdateActorStructure(_editor, true);
-        }
-    }
-    else if(ImportModes::WRAPPED){
-
-    }*/
 
 }
 
@@ -401,9 +348,9 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         ImGui::EndDragDropTarget();
     }
 
-    std::string imported_or_not_str = GetImportStatus();
+    std::string imported_or_not_str = (import_mode != ImportModes::WRAPPED) ? "" : "(.ason)";
 
-    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+"("+base_class_name+")"+")"+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
+    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
 
     bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
 
@@ -655,6 +602,8 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
     bool search_field_active = false;
 
     ImGui::Text("%s",std::string(editor_name+" "+"("+class_name+")").c_str());
+    ImGui::Text("%s", std::string("Base-class: "+base_class_name).c_str());
+    if(import_mode == ImportModes::WRAPPED) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
     ImGui::Separator();
 
     if(search_field_active){

@@ -40,6 +40,8 @@ public:
     //The engine utilises the relative path to the executable location
     std::string engine_path = "../UFO-Engine";
 
+    bool multi_player = false;
+
     //Width and height of window
     int width;
     int height;

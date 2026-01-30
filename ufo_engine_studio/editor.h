@@ -35,17 +35,22 @@ public:
     bool will_run_game = false;
     bool v_sync = true;
 
+    int game_width = 1600;
+    int game_height = 900;
+
+    bool multi_player = false;
+
     bool project_settings_open = false;
 
     //The path to the UFO-Engine Header Tool & Boilerplate generator
-    std::string header_tool_parser = "parse_ufo_macros_v_alpha.py";
+    std::string header_tool_parser = "ufo_engine_header_tool.py";
 
     //The current working directory for the projekt. Not for this program.
     std::string opened_directory_path = "";
 
     std::string currently_selected_actor_type = "";
 
-    bool refresh_entire_project = true;
+    bool refresh_entire_project = false;
 
     std::unique_ptr<FileNode> opened_directory = nullptr;
 
@@ -361,11 +366,9 @@ public:
                         if(data_type == "float") act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyFloat>(name,alias,std::stoi(value)));
                         if(data_type == "bool"){
                             act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
-                            Console::PrintLine("Checkbox with alias", alias);
                         }
                         if(data_type == "std::string"){
                             act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyString>(name,alias,value));
-                            Console::PrintLine("Checkbox with alias", alias);
                         }
                     }
                 }

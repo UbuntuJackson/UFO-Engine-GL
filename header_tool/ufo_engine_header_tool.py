@@ -14,7 +14,7 @@ def make_generated_file(_path, _classes):
     header_files = []
 
     for cl in _classes:
-        if not cl["class"]["header_file"] in header_files:
+        if cl["class"]["header_file"] not in header_files:
             header_files.append(cl["class"]["header_file"])
 
     for i in header_files:
@@ -147,9 +147,11 @@ def search_folders_for_ufo_classes(
     _grand_class_list, _working_directory, _local_path, _grand_header_tool_log
 ):
     for directory in os.listdir(_working_directory + _local_path):
-        if directory in ["UFO-Engine", "build"]:
+        # Don't go into the engine or build folder, that could be nasty
+        if directory in ["UFO-Engine", "UFO-Engine-GL", "build"]:
             continue
 
+        # If directory, recurse further
         if os.path.isdir(_working_directory + "/" + _local_path + "/" + directory):
             search_folders_for_ufo_classes(
                 _grand_class_list,
@@ -157,6 +159,7 @@ def search_folders_for_ufo_classes(
                 _local_path + "/" + directory,
                 _grand_header_tool_log,
             )
+
         if os.path.isfile(_working_directory + "/" + _local_path + "/" + directory):
             extension = directory[directory.find(".") : len(directory)]
 
@@ -176,42 +179,49 @@ def search_folders_for_ufo_classes(
 
 
 def search_file(_path, _local_path, _file_name):
-    print("[UFO-Header Tool] local path", _local_path)
-
     f = open(_path)
 
     file_contents = f.read()
 
+    # Divide code with separators to make it a bit easier to parse
     segmented_file_contents = separate_with_separators(file_contents)
 
+    # Some colons are supposed to be attached to eachother, like std::string or ufo::PlatformerCollision
     semented_file_contents_cleaned = clean_up_colons(segmented_file_contents)
 
+    # Since comments can be confused for separators, the comment syntax // and /* */ should be made into their dedicated strings
     segmented_file_contents_cleaned_up_multi_line_comments = (
         clean_up_multi_line_comments(semented_file_contents_cleaned)
     )
 
+    # Since comments can be confused for separators, the comment syntax // and /* */ should be made into their dedicated strings
     segmented_file_contents_cleaned_up_single_line_comments = (
         clean_up_single_line_comments(
             segmented_file_contents_cleaned_up_multi_line_comments
         )
     )
 
+    #
     segmented_file_contents_single_line_comments_processed = (
-        process_single_line_comments(
+        get_contents_without_single_line_comments(
             segmented_file_contents_cleaned_up_single_line_comments
         )
     )
 
-    segmented_file_contents_multi_line_comments_processed = process_multi_line_comments(
-        segmented_file_contents_single_line_comments_processed
+    segmented_file_contents_multi_line_comments_processed = (
+        get_contents_without_multi_line_comments(
+            segmented_file_contents_single_line_comments_processed
+        )
     )
 
+    # Since floating point numbers contain separators, these need to be concatenated into dedicated strings
     segmented_file_contents_cleaned_up_floating_point_numbers = (
         clean_up_floating_point_numbers(
             segmented_file_contents_multi_line_comments_processed
         )
     )
 
+    # We don't need spaces anymore, remove them.
     space_less_file_contents = remove_spaces(
         segmented_file_contents_cleaned_up_floating_point_numbers
     )
@@ -224,7 +234,7 @@ def search_file(_path, _local_path, _file_name):
 
     global_scope = GlobalScope()
 
-    analyse_scopes(scopes, global_scope)
+    analyse_scopes(scopes, global_scope, 1)
 
     # global_scope.print_tree()
 
@@ -242,7 +252,7 @@ def search_file(_path, _local_path, _file_name):
     return (dictionary, header_tool_file_log)
 
 
-def process_multi_line_comments(_file_contents_as_list):
+def get_contents_without_multi_line_comments(_file_contents_as_list):
     contents_without_comments = []
 
     inside_multi_line_comment = False
@@ -263,7 +273,7 @@ def process_multi_line_comments(_file_contents_as_list):
     return contents_without_comments
 
 
-def process_single_line_comments(_file_contents_as_list):
+def get_contents_without_single_line_comments(_file_contents_as_list):
     contents_without_comments = []
 
     inside_single_line_comment = False
@@ -389,6 +399,23 @@ class ClassObject:
         for i in self.scopes:
             i.print_tree(_depth + 1)
 
+    def __repr__(self):
+        macros_as_string = ""
+        for i in self.macros:
+            macros_as_string += i.name + " ("
+            for j in i.args:
+                macros_as_string += j + " "
+            macros_as_string += ") "
+
+        return (
+            "class "
+            + self.name
+            + " extends "
+            + self.extends[0]
+            + " with macros "
+            + macros_as_string
+        )
+
     def to_dictionary(self, _classes, _parent_namespace):
         class_ = {"macros": [], "class": {}}
 
@@ -428,6 +455,25 @@ class VariableObject:
             print(_depth * "    " + "variable", self.data_type, self.name, self.value)
         for i in self.macros:
             print(_depth * "    " + "  " + i.name, i.args)
+
+    def __repr__(self) -> str:
+        macros_as_string = ""
+        for i in self.macros:
+            macros_as_string += i.name + " ("
+            for j in i.args:
+                macros_as_string += j + " "
+            macros_as_string += ") "
+
+        return (
+            "Variable "
+            + self.data_type
+            + " "
+            + self.name
+            + " "
+            + self.value
+            + " "
+            + macros_as_string
+        )
 
     def to_dictionary(self):
         variable_array = [[], {}]
@@ -574,7 +620,6 @@ def analyse_class_or_variable(_object):
         return "0"
 
     def extract_bool(_list):
-        print("extract_bool", _list)
         if len(_list) == 1:
             if _list[0] == "true":
                 return "1"
@@ -744,7 +789,7 @@ def analyse_class_or_variable(_object):
     return None
 
 
-def analyse_compound_object(_compound_object):
+def analyse_compound_object(_compound_object, _line_number):
     AWAITING_NONE = -1
     AWAITING_UFO_MACRO = 1
     AWAITING_CLASS_NAMESPACE_OR_VARIABLE = 0
@@ -802,10 +847,18 @@ def analyse_compound_object(_compound_object):
     for i in macro_part:
         class_or_variable.macros.append(extract_macro_arguments(i))
 
+    print(
+        "[UFO Header Tool]",
+        "Found ufo-macro at line",
+        _line_number,
+        ":",
+        class_or_variable,
+    )
+
     return class_or_variable
 
 
-def analyse_scopes(_file_contents_as_list, _scope):
+def analyse_scopes(_file_contents_as_list, _scope, _line_number):
     separators = [";"]
     gibberish = ["\n", ";"]
 
@@ -815,23 +868,26 @@ def analyse_scopes(_file_contents_as_list, _scope):
         item = _file_contents_as_list[index]
 
         if item in separators:
-            declared_scope = analyse_compound_object(compound_object)
+            declared_scope = analyse_compound_object(compound_object, _line_number)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
 
             compound_object.clear()
 
         if isinstance(item, list):
-            declared_scope = analyse_compound_object(compound_object)
+            declared_scope = analyse_compound_object(compound_object, _line_number)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
 
-                analyse_scopes(item, declared_scope)
+                analyse_scopes(item, declared_scope, _line_number)
 
             compound_object.clear()
         else:
             if item not in gibberish:
                 compound_object.append(item)
+
+        if item == "\n":
+            _line_number += 1
 
 
 def detect_namespaces():
@@ -901,6 +957,7 @@ def clean_up_floating_point_numbers(_file_contents_as_list):
     return clean_list
 
 
+# Since comments can be confused for separators, the comment syntax // and /* */ should be made into their dedicated strings
 def clean_up_multi_line_comments(_file_contents):
     former_item = None
     for index in range(len(_file_contents)):
@@ -925,6 +982,7 @@ def clean_up_multi_line_comments(_file_contents):
     return clean_list
 
 
+# Since comments can be confused for separators, the comment syntax // and /* */ should be made into their dedicated strings
 def clean_up_single_line_comments(_file_contents):
     former_item = None
     for index in range(len(_file_contents)):
@@ -945,6 +1003,8 @@ def clean_up_single_line_comments(_file_contents):
     return clean_list
 
 
+# Some colons are supposed to be attached, for example std::string.
+# Making them one string makes it a bit easier to parse
 def clean_up_colons(_file_contents):
     former_item = None
     for index in range(len(_file_contents)):
@@ -1012,5 +1072,7 @@ def separate_with_separators(_file_contents: str) -> list:
     return words
 
 
-print("[Running UFO-Engine Header Tool] (parse_ufo_macros_v_alpha.py)")
+print(
+    "[Running UFO-Engine Header Tool] (UFO-Engine/header_tool/ufo_engine_header_tool.py)"
+)
 main()

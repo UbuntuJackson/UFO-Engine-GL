@@ -40,6 +40,9 @@ void Editor::OpenFolder(std::string _path){
         auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
         try{
              v_sync = (bool)j_settings->map["vsync"]->AsFloat();
+             multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
+             game_width = (int)j_settings->map["game_width"]->AsFloat();
+             game_height = (int)j_settings->map["game_height"]->AsFloat();
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -49,6 +52,9 @@ void Editor::OpenFolder(std::string _path){
         auto j_settings = gc.New<ufo::gc::JsonMap>();
         try{
             j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+            j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
+            j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
+            j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -70,14 +76,6 @@ Editor::Load(){
     OpenFolder("/home/uj/Documents/C++/sta_replica");
 
     engine->asset_manager.LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
-
-    Level::Load();
-
-    std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
-
-    PopulateSpawnableActorMapWithBaseObjects();
-
-    ReloadSpawnableActorMap();
 
 }
 
@@ -184,27 +182,6 @@ void Editor::OnUpdate(float _delta_time){
                 project_settings_open = true;
             }
 
-            if(ImGui::Checkbox("Vsync###EditorVsync On", &v_sync)){
-                if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
-                    auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
-                    try{
-                        j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
-                    }catch(const std::exception& _error){
-                        Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
-                    }
-                    j_settings->Write(opened_directory_path+"/settings.json");
-                }
-                else{
-                    auto j_settings = gc.New<ufo::gc::JsonMap>();
-                    try{
-                        j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
-                    }catch(const std::exception& _error){
-                        Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
-                    }
-                    j_settings->Write(opened_directory_path+"/settings.json");
-                }
-            }
-
             ImGui::EndMenu();
         }
 
@@ -226,11 +203,22 @@ void Editor::OnUpdate(float _delta_time){
     if(project_settings_open){
         ImGui::Begin("Game Settings", &project_settings_open);
 
-        if(ImGui::Checkbox("Vsync###EditorVsync On", &v_sync)){
+        ImGui::Checkbox("Vsync###EditorVsync On", &v_sync);
+        ImGui::Checkbox("MultiPlayer###Multiplayer On", &multi_player);
+
+        ImGui::InputInt("Window Width", &game_width);
+        ImGui::InputInt("Window Height", &game_height);
+
+        ImGui::Text("Execution mode");
+
+        if(ImGui::Button("Apply & Save")){
             if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
                 auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
                 try{
                     j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                    j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
+                    j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
+                    j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }
@@ -240,20 +228,15 @@ void Editor::OnUpdate(float _delta_time){
                 auto j_settings = gc.New<ufo::gc::JsonMap>();
                 try{
                     j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
+                    j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
+                    j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
+                    j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }
                 j_settings->Write(opened_directory_path+"/settings.json");
             }
         }
-
-        int w = 0;
-        int h = 0;
-
-        ImGui::InputInt("Window Width", &w);
-        ImGui::InputInt("Window Height", &h);
-
-        ImGui::Text("Execution mode");
 
         ImGui::End();
     }
@@ -263,6 +246,7 @@ void Editor::OnUpdate(float _delta_time){
     if(refresh_entire_project){
         spawnable_actor_map.clear();
         std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+
         PopulateSpawnableActorMapWithBaseObjects();
         ReloadSpawnableActorMap();
         for(const auto& tab : tabs){
@@ -289,9 +273,9 @@ void Editor::OnUpdate(float _delta_time){
 
 void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path){
     try{
-        std::string cmake_file_path = _opened_directory_path+"/CMakeLists.txt";
+        const std::string cmake_file_path = _opened_directory_path+"/CMakeLists.txt";
         if(!ufo::FileSystem::FileExists(cmake_file_path)){
-            std::string cmake_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/CMakeLists.txt");
+            const std::string cmake_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/CMakeLists.txt");
             ufo::FileSystem::Write(cmake_file_path, cmake_file);
         }
     } catch(const std::exception& _error){
@@ -299,7 +283,7 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     }
 
     try{
-        std::string main_file_path= _opened_directory_path+"/main.cpp";
+        const std::string main_file_path = _opened_directory_path+"/main.cpp";
 
         if(!ufo::FileSystem::FileExists(main_file_path)){
             std::string main_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/main.cpp");

@@ -31,19 +31,25 @@ namespace ufo{
 Main::Main(unsigned int _width, unsigned int _height, const std::string& _window_title){
 
     bool vsync_on = true;
+    bool multi_player = false;
+    unsigned int game_width = _width;
+    unsigned int game_height = _height;
 
     if(ufo::FileSystem::FileExists("../settings.json")){
 
         class SettingsReader : public ufo::gc::Root{
             public:
-            void Read(const std::string& _path, bool& _v_sync){
+            void Read(const std::string& _path, bool& _v_sync, bool& _multi_player, unsigned int& _game_width, unsigned int& _game_height){
                 auto j_settings = gc::JsonRead(&gc, _path);
                 _v_sync = (bool)j_settings->map["vsync"]->AsFloat();
+                _multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
+                _game_width = (int)j_settings->map["game_width"]->AsFloat();
+                _game_height = (int)j_settings->map["game_height"]->AsFloat();
             }
         };
 
         SettingsReader r;
-        r.Read("../settings.json", vsync_on);
+        r.Read("../settings.json", vsync_on, multi_player, game_width, game_height);
 
     }
 
@@ -72,7 +78,7 @@ Main::Main(unsigned int _width, unsigned int _height, const std::string& _window
 
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    window = SDL_CreateWindow(_window_title.c_str(), _width, _height, SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow(_window_title.c_str(), game_width, game_width, SDL_WINDOW_OPENGL);
 
     if(window == nullptr){
         Console::PrintLine("Window is null");

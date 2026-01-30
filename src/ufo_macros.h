@@ -20,7 +20,7 @@
 //Specify a component tree representing the actor. Ex: ufo_actor_config(src/player.ason)
 #define ufo_actor_config(_path)
 // ?
-#define permanent_class_identifier(_identifier)
+#define ufo_permanent_class_identifier(_identifier)
 
 //These macros are for member variables of an actor exposed to UFO-Engine Studio.
 //ufo_variable just exposes the variable with no modifications.
@@ -61,12 +61,17 @@
 #define begin_parsing()
 #define end_parsing()
 
+#define ufo_inherit_variables()
+
 //Allcaps versions of the above macros. Not valid yet.
 #define UFO_CLASS()
 #define UFO_CATEGORY(_category)
+#define UFO_ACTOR_CONFIG(_path)
+#define UFO_PERMANENT_CLASS_IDENTIFIER(_identifier)
 
 #define UFO_VARIABLE()
 
+//The range ones might be completely useless actually
 #define UFO_INT_RANGE(_min, _max)
 #define UFO_INT_SLIDER(_min,_max)
 
