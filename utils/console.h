@@ -45,7 +45,7 @@ public:
         std::cout << arg;
         ((std::cout << " " << args), ...);
     }
-    
+
     template<typename T>
     static void Out(std::vector<T> _vec){
         for(int i = 0; i < _vec.size(); i++){
@@ -55,7 +55,7 @@ public:
         std::cout << std::endl;
     }
     static
-    std::string In(std::string _s){
+    std::string In(const std::string& _s){
         std::cout << _s;
 
         std::string v_in;
