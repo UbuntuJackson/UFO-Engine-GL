@@ -38,6 +38,8 @@ public:
     int game_width = 1600;
     int game_height = 900;
 
+    std::string game_window_title;
+
     bool multi_player = false;
 
     bool project_settings_open = false;

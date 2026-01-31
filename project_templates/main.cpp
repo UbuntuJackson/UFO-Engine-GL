@@ -1,4 +1,3 @@
-#include <Main.h>
 #include <engine.h>
 #include <exception>
 #include <memory>
@@ -10,15 +9,14 @@
 
 int main(){
 
-    auto main = ufo::Main(1600,900,"Blit Bloot");
-
     auto engine = std::make_unique<ufo::Engine>();
+    engine->InitIndependant();
     engine->actor_generator = std::make_unique<Generated::ActorGenerator>();
     engine->actor_generator->Initialise();
     try{
         engine->GoToLevel("../path_to_my_level.ason");
 
-        main.Start(std::move(engine));
+        engine->Start();
     } catch(const std::exception& _error){
         Console::PrintLine(_error.what());
     }

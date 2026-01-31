@@ -72,12 +72,20 @@ void Engine::InitIndependant(){
 
         class SettingsReader : public ufo::gc::Root{
             public:
-            void Read(const std::string& _path, const std::string& _window_title, bool& _v_sync, bool& _multi_player, unsigned int& _game_width, unsigned int& _game_height){
+            void Read(const std::string& _path, std::string& _window_title, bool& _v_sync, bool& _multi_player, unsigned int& _game_width, unsigned int& _game_height){
                 auto j_settings = gc::JsonRead(&gc, _path);
+
+                if(!j_settings->map.count("vsync")) j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+                if(!j_settings->map.count("multi_player")) j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+                if(!j_settings->map.count("game_width")) j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(1600.0f);
+                if(!j_settings->map.count("game_height")) j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(900.0f);
+                if(!j_settings->map.count("game_window_title")) j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>("");
+
                 _v_sync = (bool)j_settings->map["vsync"]->AsFloat();
                 _multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
                 _game_width = (int)j_settings->map["game_width"]->AsFloat();
                 _game_height = (int)j_settings->map["game_height"]->AsFloat();
+                _window_title = j_settings->map["game_window_title"]->AsString();
             }
         };
 

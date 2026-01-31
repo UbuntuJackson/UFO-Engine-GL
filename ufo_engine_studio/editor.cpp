@@ -39,10 +39,17 @@ void Editor::OpenFolder(std::string _path){
     if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
         auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
         try{
+            if(!j_settings->map.count("vsync")) j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+            if(!j_settings->map.count("multi_player")) j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+            if(!j_settings->map.count("game_width")) j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(1600.0f);
+            if(!j_settings->map.count("game_height")) j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(900.0f);
+            if(!j_settings->map.count("game_window_title")) j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>("");
+
              v_sync = (bool)j_settings->map["vsync"]->AsFloat();
              multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
              game_width = (int)j_settings->map["game_width"]->AsFloat();
              game_height = (int)j_settings->map["game_height"]->AsFloat();
+             game_window_title = j_settings->map["game_window_title"]->AsString();
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -55,6 +62,7 @@ void Editor::OpenFolder(std::string _path){
             j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
             j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
             j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
+            j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(game_window_title);
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -209,16 +217,23 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::InputInt("Window Width", &game_width);
         ImGui::InputInt("Window Height", &game_height);
 
-        //ImGui::Text("Execution mode");
+        ImGui::InputText("Game Window Title:", &game_window_title);
 
         if(ImGui::Button("Apply & Save")){
             if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
                 auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
                 try{
+                    if(!j_settings->map.count("vsync")) j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+                    if(!j_settings->map.count("multi_player")) j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(0.0f);
+                    if(!j_settings->map.count("game_width")) j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(1600.0f);
+                    if(!j_settings->map.count("game_height")) j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(900.0f);
+                    if(!j_settings->map.count("game_window_title")) j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>("");
+
                     j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(v_sync));
                     j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
                     j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
                     j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
+                    j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(game_window_title);
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }
@@ -231,6 +246,7 @@ void Editor::OnUpdate(float _delta_time){
                     j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(game_width));
                     j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(game_height));
                     j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(multi_player));
+                    j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(game_window_title);
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }
