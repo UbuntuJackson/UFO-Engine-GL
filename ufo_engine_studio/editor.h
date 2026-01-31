@@ -61,6 +61,7 @@ public:
 
     bool set_all_actors_properties_open_to_false = false;
     Editor();
+    void ResetUFOEngineStudio();
     void OpenFolder(std::string _path);
     void RefreshFolder();
     void Load();

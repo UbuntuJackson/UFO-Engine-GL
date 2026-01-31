@@ -8,6 +8,7 @@
 
 namespace UFOEngineStudio{
     class LevelEditorTab;
+    class Editor;
 
 }
 
@@ -21,6 +22,7 @@ public:
 
     OpenGLv4_5_AssetManager() = default;
     void Initialise(ufo::Engine* _engine);
+    void Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine);
     ~OpenGLv4_5_AssetManager();
     OpenGLv4_5_AssetManager(OpenGLv4_5_AssetManager&&) = delete;
     OpenGLv4_5_AssetManager(OpenGLv4_5_AssetManager&) = delete;

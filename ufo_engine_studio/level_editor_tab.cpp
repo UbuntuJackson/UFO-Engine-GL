@@ -46,7 +46,6 @@ Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
 void  LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
-    this_level->UpdateActorStructureFirstFrame(editor, false);
     this_level->unremovable = true;
 
     spawn_cursor = this_level->AddActor<SpawnCursor>(Vector2f(0.0f, 0.0f));
@@ -54,7 +53,6 @@ void  LevelEditorTab::Initialise(){
     spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
     spawn_cursor->unremovable = true;
 
-    //this_level->UpdatePhase(0.016f);
 }
 
 void LevelEditorTab::Refresh(){
@@ -300,6 +298,7 @@ void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _progr
 }
 
 void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){
+    //Binding custom buffer to draw stuff in editor level viewport
     _graphics->BindFrameBuffer();
 
     glViewport(0, 0, this_level->size.x, this_level->size.y);

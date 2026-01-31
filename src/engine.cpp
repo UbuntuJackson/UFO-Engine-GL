@@ -252,8 +252,7 @@ void Engine::StartWithImGui(){
 
     graphics->CreateFrameBuffer();
 
-    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
-
+    //Should this be uncommented?
     //engine->asset_manager.Initialise(engine.get());
 
     level_handle->Load();
@@ -417,14 +416,6 @@ bool Engine::GoToLevel(const std::string& _path){
 
     return true;
 
-}
-
-void Engine::ResetUFOEngineStudio(){
-    asset_manager.SaveAssets();
-    asset_manager.shaders.clear();
-    asset_manager.textures.clear();
-
-    asset_manager.Initialise(this);
 }
 
 Engine::~Engine(){

@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <unordered_map>
 #include <string>
 #include "texture_2d.h"
@@ -14,23 +15,31 @@
 // What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
 // you twist and turn it.
 void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
+    if(_engine->in_editor) throw std::runtime_error(
+        "[UFO-Engine] OpenGLv4_5_AssetManager::Initialise: Called when in editor. Use Initialise_UFOEngineStudio instead."
+    );
+
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
 
-    if(!_engine->in_editor){
-        Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
-        AssetJson j;
-        save_path = "../loaded_assets.json";
-        if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
-        j.Read(save_path, "", this);
-    }
-    else{
-        save_path = _engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path+"/loaded_assets.json";
-        if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+    Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
+    AssetJson j;
+    save_path = "../loaded_assets.json";
+    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+    j.Read(save_path, "", this);
 
-        Console::PrintLine(save_path);
-        AssetJson j;
-        j.ReadEditor(save_path,_engine->level->DynamicCast<UFOEngineStudio::Editor>()->opened_directory_path, this);
-    }
+}
+
+void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
+    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+
+
+    save_path = _editor->opened_directory_path+"/loaded_assets.json";
+    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+
+    Console::PrintLine(save_path);
+    AssetJson j;
+    j.ReadEditor(save_path,_editor->opened_directory_path, this);
+
 }
 
 OpenGLv4_5_AssetManager::~OpenGLv4_5_AssetManager(){

@@ -23,6 +23,14 @@ Editor::Editor(){
 
 }
 
+void Editor::ResetUFOEngineStudio(){
+    engine->asset_manager.SaveAssets();
+    engine->asset_manager.shaders.clear();
+    engine->asset_manager.textures.clear();
+
+    engine->asset_manager.Initialise_UFOEngineStudio(this,engine);
+}
+
 void Editor::OpenFolder(std::string _path){
     spawnable_actor_map.clear();
 
@@ -31,7 +39,7 @@ void Editor::OpenFolder(std::string _path){
 
     opened_directory_path = _path;
 
-    engine->ResetUFOEngineStudio();
+    ResetUFOEngineStudio();
 
     tabs.clear();
     active_tab = nullptr;

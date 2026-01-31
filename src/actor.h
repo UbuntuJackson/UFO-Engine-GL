@@ -203,8 +203,6 @@ public:
 
     bool is_imported = false; void DeclareImportedRecursive(); void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
 
-    void UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable);
-
     bool adding_new_actor = false;
 
     TileMap* IsInTileMap();
@@ -452,45 +450,6 @@ public:
             return std::make_unique<EditorPropertyCheckBox>(variable_name,alias,value);
         }
     };
-
-    /*class EditorPropertyIntSlider : public EditorProperty{
-
-    };
-
-    class EditorPropertyIntRange : public EditorProperty{
-
-    };
-
-    class EditorPropertyOptionStringDropDownMenu : public EditorProperty{
-
-    };
-
-    class EditorPropertyOptionStringRadioButton : public EditorProperty{
-
-    };
-
-    class EditorPropertyFloat : public EditorProperty{
-
-    };
-
-    class EditorPropertyFloatSlider : public EditorProperty{
-
-    };
-
-    class EditorPropertyFloatRange : public EditorProperty{
-
-    };
-
-    class EditorPropertyVector2f : public EditorProperty{
-    public:
-        Vector2f v;
-
-        EditorPropertyVector2f(Vector2f _v) : v{_v}{}
-
-    };
-
-    EditorPropertyVector2f* editor_attribute_local_position = nullptr;*/
-
 
     ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
 

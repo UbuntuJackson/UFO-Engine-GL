@@ -74,16 +74,17 @@ public:
     TTF_Font *font = nullptr;
 
     Engine();
+
+    //Old init method for when this was inside of class Main
     void Init(Main* _main);
 
+    //New methods to get rid of Main class.
     void InitIndependant();
     void Start();
     void StartWithImGui();
     void Quit();
 
     bool GoToLevel(const std::string& _path);
-
-    void ResetUFOEngineStudio();
 
     virtual ~Engine();
 

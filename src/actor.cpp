@@ -243,24 +243,6 @@ void Actor::DeclareImportedRecursive(){
     }
 }
 
-void Actor::UpdateActorStructureFirstFrame(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
-    if(import_mode == ImportModes::WRAPPED){
-
-        actors.clear();
-        auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
-        for(auto&& actor : act->new_actor_queue){
-            AddActorUniquePtr(std::move(actor));
-        }
-        for(auto&& actor : new_actor_queue){
-            actor->UpdateActorStructure(_editor, false);
-        }
-    } else if(import_mode == ImportModes::UNWRAPPED) {
-        for(const auto& actor : new_actor_queue){
-            actor->UpdateActorStructureFirstFrame(_editor, false);
-        }
-    }
-}
-
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
     if(import_mode == ImportModes::WRAPPED){
 
