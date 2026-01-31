@@ -1,7 +1,15 @@
 #include <exception>
 #include <memory>
+#include <unordered_map>
 #include "../glad/include/glad/glad.h"
+#include <SDL3/SDL_opengl.h>
+#include <SDL3/SDL_video.h>
+#include <SDL3/SDL_pixels.h>
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_events.h>
+#include <SDL3_ttf/SDL_ttf.h>
+#include "opengl_debug_output.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
@@ -10,12 +18,15 @@
 #include "openglv4_5_graphics.h"
 #include "engine.h"
 #include "input.h"
-#include "../file/file.h"
-#include "../json/json_variant.h"
 #include "Main.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/engine_memory.h"
 #include "level_loader.h"
+
+//Imgui
+#include "../imgui/imgui.h"
+#include "../imgui/backends/imgui_impl_opengl3.h"
+#include "../imgui/backends/imgui_impl_sdl3.h"
 
 namespace ufo{
 
@@ -51,11 +62,338 @@ Engine::Init(Main* _main){
     m_tp1 = std::chrono::system_clock::now();
 }
 
+void Engine::InitIndependant(){
+    bool vsync_on = true;
+    unsigned int game_width = 1600;
+    unsigned int game_height = 800;
+    std::string window_title = "";
+
+    if(ufo::FileSystem::FileExists("../settings.json")){
+
+        class SettingsReader : public ufo::gc::Root{
+            public:
+            void Read(const std::string& _path, const std::string& _window_title, bool& _v_sync, bool& _multi_player, unsigned int& _game_width, unsigned int& _game_height){
+                auto j_settings = gc::JsonRead(&gc, _path);
+                _v_sync = (bool)j_settings->map["vsync"]->AsFloat();
+                _multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
+                _game_width = (int)j_settings->map["game_width"]->AsFloat();
+                _game_height = (int)j_settings->map["game_height"]->AsFloat();
+            }
+        };
+
+        SettingsReader r;
+        r.Read("../settings.json", window_title, vsync_on, multi_player, game_width, game_height);
+
+    }
+
+    width = game_width;
+    height = game_height;
+
+    window = nullptr;
+    //SDL_GL_Context is unassigned here
+
+    if(SDL_Init(SDL_INIT_VIDEO) < 0){
+        Console::PrintLine("Couldn't initialise SDL", SDL_GetError());
+        exit(2);
+    }
+
+    //Tutorial says "Default OpenGL is fine."
+    //That makes NO sense to me as they JUST said they were going to
+    // show how to use OpenGL 4.5
+    SDL_GL_LoadLibrary(nullptr);
+
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+
+    //Request a depth buffer
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+
+    window = SDL_CreateWindow(window_title.c_str(), game_width, game_height, SDL_WINDOW_OPENGL);
+
+    if(window == nullptr){
+        Console::PrintLine("Window is null");
+        exit(2);
+    }
+
+    SDL_SetWindowResizable(window, true);
+
+    open_gl_context = SDL_GL_CreateContext(window);
+    if(open_gl_context == nullptr){
+        Console::PrintLine("Failed to create context");
+        exit(2);
+    }
+
+    gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+    Console::PrintLine("Vendor", glGetString(GL_VENDOR));
+    Console::PrintLine("Renderer", glGetString(GL_RENDERER));
+    Console::PrintLine("Version", glGetString(GL_VERSION));
+
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if(flags & GL_CONTEXT_FLAG_DEBUG_BIT){
+        Console::PrintLine("initialise debug output...");
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glDebugOutput, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+
+    //vsync
+    SDL_GL_SetSwapInterval(int(vsync_on));
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+
+    glViewport(0,0,game_width,game_height);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //Everything to do with SDL_ttf
+
+    if(!TTF_Init()){
+        Console::PrintLine("Failed to initialise SDL_ttf", SDL_GetError());
+    }
+
+    font = TTF_OpenFont("../UFO-Engine/res/fonts-japanese-gothic.ttf",30);
+    if(!font){
+        Console::PrintLine("Failed to load font", SDL_GetError());
+    }
+}
+
 void Engine::Start(){
 
+    Console::PrintLine("level memory address",level.get());
+
+
+    level = std::make_unique<Level>();
+    level_handle = level->DynamicCast<Level>();
+
+    //text_renderer.Init(this);
+    //Reserve space for a few dozens of actors or so
+    level->actors.reserve(50);
+    level->engine = this;
+
+    actor_generator->Initialise();
+
+    m_tp1 = std::chrono::system_clock::now();
+
+    graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(this);
+    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
+
+    asset_manager.Initialise(this);
+
+    level_handle->Load();
+    level->OnSpawn();
+
+
+    while(!quit){
+        SDL_Event event;
+
+        mouse.ResetTemporaryStates();
+
+        while(SDL_PollEvent(&event)){
+
+            if(event.type == SDL_EVENT_QUIT){
+                quit = true;
+            }
+
+            keyboard.CheckEvents(event);
+
+            mouse.CheckEvents(event);
+
+        }
+
+        Update();
+        keyboard.ClearPressedAndReleased();
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        Render();
+
+        GarbageCollect();
+
+        SDL_GL_SwapWindow(window);
+
+    }
+
+    Quit();
 }
 
 void Engine::StartWithImGui(){
+
+    level = std::make_unique<Level>();
+    level_handle = level->DynamicCast<Level>();
+
+    //text_renderer.Init(this);
+    //Reserve space for a few dozens of actors or so
+    level->actors.reserve(50);
+    level->engine = this;
+
+    actor_generator->Initialise();
+
+    m_tp1 = std::chrono::system_clock::now();
+
+    in_editor = true;
+    graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(this);
+
+    graphics->CreateFrameBuffer();
+
+    //if(_custom_engine.get() != nullptr) engine = std::move(_custom_engine);
+
+    //engine->asset_manager.Initialise(engine.get());
+
+    level_handle->Load();
+
+    /*ForImGUI*/
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    //Imgui stuff
+
+    float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
+
+    // Setup Dear ImGui context
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+    //io.ConfigViewportsNoAutoMerge = true;
+    //io.ConfigViewportsNoTaskBarIcon = true;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup scaling
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+    style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
+    io.ConfigDpiScaleFonts = true;          // [Experimental] Automatically overwrite style.FontScaleDpi in Begin() when Monitor DPI changes. This will scale fonts but _NOT_ scale sizes/padding for now.
+    io.ConfigDpiScaleViewports = true;      // [Experimental] Scale Dear ImGui and Platform Windows when Monitor DPI changes.
+
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+    {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL3_InitForOpenGL(window, open_gl_context);
+    const char* glsl_version = "#version 450";
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Load Fonts
+    // - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
+    // - AddFontFromFileTTF() will return the ImFont* so you can store it if you need to select the font among multiple.
+    // - If the file cannot be loaded, the function will return a nullptr. Please handle those errors in your application (e.g. use an assertion, or display an error and quit).
+    // - Use '#define IMGUI_ENABLE_FREETYPE' in your imconfig file to use Freetype for higher quality font rendering.
+    // - Read 'docs/FONTS.md' for more instructions and details. If you like the default font but want it to scale better, consider using the 'ProggyVector' from the same author!
+    // - Remember that in C/C++ if you want to include a backslash \ in a string literal you need to write a double backslash \\ !
+    // - Our Emscripten build process allows embedding fonts to be accessible at runtime from the "fonts/" folder. See Makefile.emscripten for details.
+
+    //style.FontSizeBase = 20.0f;
+    //io.Fonts->AddFontDefault();
+    //io.Fonts->AddFontFromFileTTF("/etc/alternatives/fonts-japanese-mincho.ttf");
+
+    //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");
+    //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf");
+    //ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf");
+    //IM_ASSERT(font != nullptr);
+
+    // Our state
+    bool show_demo_window = false;
+    bool show_another_window = false;
+
+    /*ForIMGUI END*/
+
+    while(!quit){
+        SDL_Event event;
+
+        mouse.ResetTemporaryStates();
+
+        while(SDL_PollEvent(&event)){
+
+            /*ForImGUi*/
+
+            ImGui_ImplSDL3_ProcessEvent(&event);
+            if (event.type == SDL_EVENT_QUIT)
+                quit = true;
+            if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
+                quit = true;
+
+            /*ForImGUI END*/
+
+            if(event.type == SDL_EVENT_QUIT){
+                quit = true;
+            }
+
+            keyboard.CheckEvents(event);
+
+            mouse.CheckEvents(event);
+
+        }
+
+        /*ForImGUI*/
+
+        // Start the Dear ImGui frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+
+        Update();
+        keyboard.ClearPressedAndReleased();
+
+        // Rendering
+        ImGui::Render();
+
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        Render();
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Update and Render additional Platform Windows
+        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+        //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
+            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        }
+
+        SDL_GL_SwapWindow(window);
+
+    }
+
+    asset_manager.SaveAssets();
+    Quit();
+}
+
+void Engine::Quit(){
+    asset_manager.Clear();
+
+    TTF_CloseFont(font);
+    TTF_Quit();
+
+    SDL_GL_DestroyContext(open_gl_context);
+    SDL_GL_UnloadLibrary();
+    SDL_DestroyWindow(window);
+    SDL_Quit();
 
 }
 

@@ -2,7 +2,7 @@
 #include "../utils/console.h"
 #include "../glad/include/glad/glad.h"
 
-void APIENTRY glDebugOutput(
+static void APIENTRY glDebugOutput(
     GLenum _source,
     GLenum _type,
     unsigned int _id,
@@ -38,7 +38,7 @@ void APIENTRY glDebugOutput(
         case GL_DEBUG_TYPE_PUSH_GROUP: Console::Print("Type: Push Group"); break;
         case GL_DEBUG_TYPE_POP_GROUP: Console::Print("Type: Pop Group"); break;
         case GL_DEBUG_TYPE_OTHER: Console::Print("Type: Other"); break;
-    
+
     }
 
     Console::PrintLine("");

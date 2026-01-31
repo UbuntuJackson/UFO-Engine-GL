@@ -9,7 +9,10 @@
 #include "control_settings.h"
 //#include "text_rendering.h"
 #include "generic_generator.h"
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_opengl.h>
+
+struct TTF_Font;
+struct SDL_Texture;
 
 namespace ufo{
 
@@ -64,13 +67,19 @@ public:
     ControlSettings control_settings;
     Mouse mouse;
 
+    //An attempt to move away from that pesky Main class
+
     SDL_Window* window = nullptr;
+    SDL_GLContext open_gl_context;
+    TTF_Font *font = nullptr;
 
     Engine();
     void Init(Main* _main);
 
+    void InitIndependant();
     void Start();
     void StartWithImGui();
+    void Quit();
 
     bool GoToLevel(const std::string& _path);
 
