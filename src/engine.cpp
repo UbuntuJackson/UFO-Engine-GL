@@ -35,6 +35,24 @@ Engine::Engine()
 
 }
 
+Engine::~Engine(){
+    asset_manager.Clear();
+
+    //Null some resources to make sure for example SDL font resources aren't freed later than the SDL ttf libraries themseleves.
+    level = nullptr;
+    level_handle = nullptr;
+
+    TTF_CloseFont(font);
+    TTF_Quit();
+
+    SDL_GL_DestroyContext(open_gl_context);
+    SDL_GL_UnloadLibrary();
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+
+    Console::PrintLine("[UFO-Engine] ufo::Application::~Application()");
+}
+
 void
 Engine::Init(Main* _main){
     SDL_GetWindowSize(_main->window, &width, &height);
@@ -230,7 +248,7 @@ void Engine::Start(){
 
     }
 
-    Quit();
+    //Quit();
 }
 
 void Engine::StartWithImGui(){
@@ -388,7 +406,7 @@ void Engine::StartWithImGui(){
     }
 
     asset_manager.SaveAssets();
-    Quit();
+    //Quit();
 }
 
 void Engine::Quit(){
@@ -416,10 +434,6 @@ bool Engine::GoToLevel(const std::string& _path){
 
     return true;
 
-}
-
-Engine::~Engine(){
-    Console::PrintLine("[UFO-Engine] ufo::Application::~Application()");
 }
 
 struct BrushRectangle{
@@ -493,7 +507,7 @@ void Engine::Update(){
     if(pending_levels.size() > 0){
         //Do everything needed to initialise a level.
         level = std::move(pending_levels.back());
-        level_handle = level.get()->DynamicCast<Level>();
+        level_handle = level->DynamicCast<Level>();
         level_handle->actors.reserve(50);
         level_handle->engine = this;
         level_handle->Load();

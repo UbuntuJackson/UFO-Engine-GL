@@ -31,6 +31,9 @@ namespace UFOEngineStudio{
 class Editor : public Level, public ufo::gc::Root{
 public:
 
+    bool view_calculator = false;
+    std::string calculator_expression;
+
     bool will_compile_game = false;
     bool will_run_game = false;
     bool v_sync = true;

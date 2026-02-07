@@ -16,6 +16,8 @@ namespace ufoMaths{
 //#define SIN(a) std::sin(a)
 //#define COS(a) std::cos(a)
 
+ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle);
+
 CollisionData RayVsRay(Ray2 _v, Ray2 _w);
 
 //RayVsCircleCollisionData RayVsCircle(Ray2 my_ray, Shape<Circle>* circle);
@@ -28,7 +30,7 @@ tNumber Sign(tNumber _number){
     if(std::abs(_number) < 0.001f) return 0.0f;
     else if(_number > 0.0f) return 1.0f;
     return -1.0f;
-    
+
 }
 
 float SignFloat(float _number);

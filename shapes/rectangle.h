@@ -19,6 +19,11 @@ public:
     //void Draw(Camera *_camera);
 };
 
+class RectangleInt{
+    olc::vi2d size;
+    RectangleInt(olc::vi2d _position, olc::vi2d _size);
+};
+
 }
 
 #endif

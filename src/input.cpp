@@ -59,7 +59,7 @@ void Mouse::CheckEvents(SDL_Event& event){
     if(event.type == SDL_EVENT_MOUSE_WHEEL){
 
         mouse_wheel = event.wheel.y;
-        Console::PrintLine("SDL EVENT MOUSE WHEEL", mouse_wheel);
+
 
     }
     else{

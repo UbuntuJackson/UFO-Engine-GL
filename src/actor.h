@@ -50,6 +50,7 @@ public:
 
     std::vector<std::unique_ptr<Actor>> new_actor_queue;
 
+    //Adding actors that are added by AddActor and queued in new_actor_queue
     void AddNewActors();
 
     template <typename tActor, typename ...tArgs>
@@ -156,6 +157,9 @@ public:
         std::unique_ptr<Actor> actor;
     };
 
+    bool is_selected_in_viewport = false;
+
+    //Rename this is_selected_in_actor_tree ?
     bool is_selected = false;
 
     void AddToLevelEditorTabIfSelected(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
@@ -470,6 +474,8 @@ public:
     void OpenProperties();
 
     void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+        if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
+
         if(ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())){
             _selected_actors.push_back(this);
         }
@@ -483,6 +489,8 @@ public:
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    virtual void OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

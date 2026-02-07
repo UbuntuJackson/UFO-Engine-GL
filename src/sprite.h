@@ -3,6 +3,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "graphics.h"
+#include "shader.h"
 
 class Camera;
 
@@ -21,6 +22,9 @@ public:
     float number_of_frames = 1.0f;
     bool visible = true;
     ufo::Colour tint = olc::WHITE;
+
+    //Custom shader can either use std::string, raw int or the shader class instance.
+    ufo::Shader shader;
 
     Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index);
 

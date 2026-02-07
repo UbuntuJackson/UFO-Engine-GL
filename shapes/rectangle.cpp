@@ -23,4 +23,6 @@ bool Rectangle::IsOverlappingOther(RawShapeBase* _other){
     DrawingSystem::Draw(*this,_camera, colour);
 }*/
 
+RectangleInt::RectangleInt(olc::vi2d _position, olc::vi2d _size): size{_size}{}
+
 }

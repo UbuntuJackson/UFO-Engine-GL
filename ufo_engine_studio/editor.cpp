@@ -16,6 +16,7 @@
 #include "file_dialogue.h"
 #include "../file/file_utils.h"
 #include "../imgui/imgui_internal.h"
+#include "../ufo_maths/math_parser.h"
 
 namespace UFOEngineStudio{
 
@@ -200,6 +201,24 @@ void Editor::OnUpdate(float _delta_time){
 
             ImGui::EndMenu();
         }
+        if(ImGui::BeginMenu("Tools")){
+            if(ImGui::MenuItem("Calculator")){
+                view_calculator = true;
+            }
+            ImGui::EndMenu();
+        }
+        /*if(ImGui::MenuItem("Undo")){
+            if(active_tab){
+                LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
+                tab->Undo();
+            }
+        }
+        if(ImGui::MenuItem("Redo")){
+            if(active_tab){
+                LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
+                tab->Redo();
+            }
+            }*/
 
         ImGui::EndMainMenuBar();
     }
@@ -215,6 +234,17 @@ void Editor::OnUpdate(float _delta_time){
     ImGui::EndTabBar();
 
     ImGui::End();
+
+    if(view_calculator){
+        ImGui::Begin("Calculator", &view_calculator);
+
+        if(ImGui::InputText("Expression:", &calculator_expression, ImGuiInputTextFlags_EnterReturnsTrue)){
+            float result = ufoMaths::ParseExpression(calculator_expression);
+            Console::PrintLine("Result:",result);
+        }
+
+        ImGui::End();
+    }
 
     if(project_settings_open){
         ImGui::Begin("Game Settings", &project_settings_open);

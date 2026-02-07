@@ -17,6 +17,30 @@ namespace ufo{
 
 class TileMap : public Actor{
 public:
+    struct TileMapChange{
+        int left_bound_tile;  // x0
+        int lower_bound_tile; // y0
+        int right_bound_tile; // x1
+        int upper_bound_tile; // y1
+        std::vector<int> tiles;
+    };
+
+    std::vector<TileMapChange> changes;
+    std::vector<int> tilemap_data_before_change;
+
+    int current_change = -1;
+
+    void Do();
+
+    void Undo();
+
+    void Redo();
+
+    int lower_bound_tile;
+    int upper_bound_tile;
+    int left_bound_tile;
+    int right_bound_tile;
+
     bool visible = true;
 
     std::vector<int> tilemap_data;

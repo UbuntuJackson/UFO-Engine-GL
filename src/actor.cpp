@@ -16,6 +16,7 @@
 #include <engine_memory.h>
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/im_vec.h"
 #include <sstream>
 #include <unordered_map>
 
@@ -23,7 +24,6 @@ Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
-    //InitEditorProperties();
 }
 
 Vector2f Actor::GetGlobalPosition(){
@@ -536,8 +536,11 @@ void Actor::OpenProperties(){
 
 }
 
+//Compare with .ason if there is one for the class-name and update the components
 void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _editor){
     if(_editor->spawnable_actor_map.count(class_name)){
+
+        //Basically, get the actor that would be spawned in the editor, and update according to that
         UFOEngineStudio::Editor::AdvancedActorSpawner* advanced_spawner_of_this_class = _editor->spawnable_actor_map.at(class_name).get();
 
         std::map<std::string, std::unique_ptr<UFOEngineStudio::Editor::EditorProperty>> properties_template;
@@ -553,16 +556,20 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
         }
 
         for(const auto& [k,v] : properties_template){
+
+            //Does custom property exist in this actor? If not, then add it
             if(!properties_of_this.count(k)){
                 editor_properties.push_back(v->Copy());
             }
             else{
+                //Update alias. This is a bit weird since I remember making it so alias is updated anyway.
+                // could try remove this and see what happens
                 properties_of_this.at(k)->alias = properties_template.at(k)->alias;
             }
         }
 
         for(const auto& [k,v] : properties_of_this){
-            if(!properties_template.count(k) && k != "x" && k != "y"){
+            if(!properties_template.count(k)){
                 v->to_be_removed = true;
             }
         }
@@ -609,9 +616,7 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
     for(int i = 0; i < editor_properties.size(); i++){
         editor_properties[i]->Update(editor_name, i);
     }
-    //ImGui::Text("local_position");
-    //ImGui::InputFloat(std::string("x###Propertyx"+std::to_string(editor_id)).c_str(), &local_position.x);
-    //ImGui::InputFloat(std::string("y###Propertyy"+std::to_string(editor_id)).c_str(), &local_position.y);
+
 }
 
 void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -625,6 +630,13 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 }
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    if(is_selected_in_viewport){
+        const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position;
+        const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
+
+        ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
+    }
 
     if(properties_open){
         auto local_tile_map = IsInTileMap();
@@ -679,11 +691,16 @@ void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStud
     if(import_mode != ImportModes::WRAPPED){
         for(const auto& actor : actors){
             actor->UpdateEditorViewport(_editor, _level_editor_tab);
-            //if(focused) return true;
+
         }
     }
 
     OnUpdateEditorViewport(_editor, _level_editor_tab);
+}
+
+//Might not use
+void Actor::OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
 }
 
 bool Actor::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -715,18 +732,28 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
-        if(engine->mouse.is_left_button_held && ImGui::IsItemHovered()){
-            focused = true;
+        if(ImGui::IsItemHovered()){
 
-            if(ImGui::IsItemHovered() && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::SELECT){
-                should_open_properties = true;
-                _editor->set_all_actors_properties_open_to_false = true;
+            //Basically grab on click, ungrab on release. This does not make sense if you want to
+            // be able to spawn multiple actors in a row by holding the mouse button
+            if(engine->mouse.is_left_button_pressed){
+                focused = true;
+
+                if(ImGui::IsItemHovered() && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::SELECT){
+                    should_open_properties = true;
+                    _editor->set_all_actors_properties_open_to_false = true;
+                }
+
+                is_grabbed_by_cursor = true;
+
             }
 
-            is_grabbed_by_cursor = true;
-
-            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
-                is_dead = true;
+            //For now I want the eraser to easily delete multiple objects, therefore it would make sense to
+            // activate it when the mouse is held, not just on the first down event
+            if(engine->mouse.is_left_button_held){
+                if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
+                    is_dead = true;
+                }
             }
 
         }
@@ -748,15 +775,6 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
         Vector2f dp = world_mouse - former_world_mouse;
 
         local_position += dp;
-
-        /*if(dp != Vector2f(0.0f, 0.0f)){
-            TileMap* tile_map = IsInTileMap();
-            if(tile_map){
-                local_position = Vector2f(
-                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
-                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
-            }
-            }*/
     }
 
     return focused;

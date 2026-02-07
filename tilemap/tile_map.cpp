@@ -26,6 +26,66 @@ TileMap::TileMap(Vector2f _) : Actor(_){
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
 }
 
+void TileMap::Do(){
+    //change the course of changes
+    while((int)changes.size()-1 > current_change){
+        Console::PrintLine("loop change stack",current_change, changes.size());
+        changes.pop_back();
+    }
+
+    Console::PrintLine("Popped change stack",current_change, changes.size());
+
+    changes.push_back(TileMapChange{
+        left_bound_tile,
+        lower_bound_tile,
+        right_bound_tile,
+        upper_bound_tile}
+    );
+
+    //
+    for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
+        for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
+
+            changes.back().tiles.push_back(tilemap_data_before_change[yy*number_of_columns+xx]);
+        }
+    }
+
+    current_change++;
+
+    //Output: accurate
+    Console::PrintLine("Doing:",current_change);
+    Console::PrintLine("OnDo",left_bound_tile,lower_bound_tile,right_bound_tile,upper_bound_tile);
+
+}
+
+void TileMap::Undo(){
+    if(current_change < 0) return;
+
+    int xx = changes[current_change].left_bound_tile;
+    int yy = changes[current_change].lower_bound_tile;
+    int c = changes[current_change].right_bound_tile - changes[current_change].left_bound_tile;
+
+    Console::PrintLine("Undoing:",current_change, changes.size());
+
+    for(int i = 0; i < (int)changes[current_change].tiles.size(); i++){
+
+        //Console::Print(t, " ");
+
+        int tm_x = xx + i%c;
+        int tm_y = yy + i/c;
+
+        tilemap_data[tm_x+tm_y*number_of_columns] = changes[current_change].tiles[i];
+    }
+
+    Console::Print("\n");
+
+    current_change--;
+}
+
+void TileMap::Redo(){
+
+}
+
 std::unique_ptr<TileMap>
 TileMap::Load(ufo::gc::JsonMap* _layer){
     std::unique_ptr<TileMap> u_tilemap = std::make_unique<TileMap>(Vector2f(0.0f,0.0f));
@@ -263,6 +323,13 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Actor::OnViewProperties(_level_editor_tab, _index);
 
+    if(ImGui::Button("Undo")){
+        Undo();
+    }
+    if(ImGui::Button("Redo")){
+        Redo();
+    }
+
     ImGui::Separator();
 
     ImGui::Checkbox(std::string("Visible###"+std::to_string(editor_id)).c_str(), &visible);
@@ -387,7 +454,25 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     currently_hovered_tile_x = hovered_tile_x;
     currently_hovered_tile_y = hovered_tile_y;
 
+    if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+        tilemap_data_before_change = tilemap_data;
+        left_bound_tile = hovered_tile_x;
+        lower_bound_tile = hovered_tile_y;
+        upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
+        right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
+    }
+
+    if(ImGui::IsItemHovered(0) && ImGui::IsMouseReleased(0)){
+
+        Do();
+    }
+
     if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
+        if(hovered_tile_x < left_bound_tile) left_bound_tile = hovered_tile_x;
+        if(hovered_tile_y < lower_bound_tile) lower_bound_tile = hovered_tile_y;
+        if((int)hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows > upper_bound_tile) upper_bound_tile = hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
+        if((int)hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
+
         if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
             int xx = 0;
             int yy = 0;

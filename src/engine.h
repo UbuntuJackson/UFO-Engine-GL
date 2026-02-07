@@ -74,6 +74,7 @@ public:
     TTF_Font *font = nullptr;
 
     Engine();
+    virtual ~Engine();
 
     //Old init method for when this was inside of class Main
     void Init(Main* _main);
@@ -82,14 +83,19 @@ public:
     void InitIndependant();
     void Start();
     void StartWithImGui();
+
+    //It might be better to use the destructor, but that's a pending investigation
     void Quit();
 
+    //returns false on fail
     bool GoToLevel(const std::string& _path);
 
-    virtual ~Engine();
-
     void Update();
+
+    //Only for UFO-Engine Studio
     void EditorUpdate();
+
+    //For potential backwards compatability with UFO-Engine 1.0
     void UpdatePixelGameEngine(float _delta_time);
 
     void BrushTest();

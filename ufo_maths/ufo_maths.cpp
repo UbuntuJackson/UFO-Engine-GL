@@ -14,6 +14,19 @@
 
 namespace ufoMaths{
 
+ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle){
+    ufo::Rectangle r = _rectangle;
+    if(_rectangle.size.x < 0.0f){
+        r.position.x -= std::abs(_rectangle.size.x);
+        r.size.x = std::abs(_rectangle.size.x);
+    }
+    if(_rectangle.size.y < 0.0f){
+        r.position.y -= std::abs(_rectangle.size.y);
+        r.size.y = std::abs(_rectangle.size.y);
+    }
+    return r;
+}
+
 CollisionData RayVsRay(Ray2 _v, Ray2 _w){
     //Credits to egomoose for referring me to the 2d cross product.
     //The 2d crossproduct is actually just the z-value of the 3d cross product.
@@ -33,9 +46,9 @@ CollisionData RayVsRay(Ray2 _v, Ray2 _w){
     //if(std::isnan(collision_time_other)) Console::Out("collision time other is positive nan");
 
     olc::vf2d intersection_point = _v.Start() + _v.Size() * collision_time;
-    
+
     bool hit_succeed = false;
-    
+
     if((0.0f <= collision_time && collision_time <= 1.0f) && (0.0f <= collision_time_other && collision_time_other <= 1.0f)){
         hit_succeed = true;
     }
@@ -82,7 +95,7 @@ RayVsCircleCollisionData RayVsCircle(Ray2 my_ray, Circle* circle){
     float other_intersection_time = std::max(x1, x2);
 
     if(x1 >= 0.0f && x1 <= 1.0f || x2 >= 0.0f && x2 <= 1.0f){
-        
+
         hit = true;
     }
 
@@ -129,13 +142,13 @@ float PreciseSignFloat(float _number){
     //_v.p0.y + _v.size().y * s = _w.p0.y + _w.size().y * t
 
     //solve for t
-    //t = (_v.p0.x + _v.Size().x * s - _w.p0.x) / _w.Size().x    
+    //t = (_v.p0.x + _v.Size().x * s - _w.p0.x) / _w.Size().x
 
     //solve for s
 
     //_v.y + _v.Size().y * s = _w.y + _w.Size().y * ((_v.x + _v.Size().x * s - _w.x) / _w.Size().x)
 
-    //_v.y + _v.Size().y * s = _w.y + (_w.Size().y / _w.Size().x) * (_v.x + _v.Size().x * s - _w.x)        
+    //_v.y + _v.Size().y * s = _w.y + (_w.Size().y / _w.Size().x) * (_v.x + _v.Size().x * s - _w.x)
 
     //(_w.Size().y / _w.Size().x) = [w.(h/w)]
 
@@ -173,13 +186,13 @@ float PreciseSignFloat(float _number){
     //(_v.p0.y + _v.size().y - (_w.size().y / _w.size().x) * _v.size().x) * s = _w.p0.y + (_w.size().y / _w.size().x) * _v.p0.x - (_w.size().y / _w.size().x) * _w.p0.x
 
     //float collision_time = (_w.p0.y + (_w.Size().y / _w.Size().x) * _v.p0.x - (_w.Size().y / _w.Size().x) * _w.p0.x) / (_v.p0.y + _v.Size().y - (_w.Size().y / _w.Size().x) * _v.Size().x);
-    
+
     //float collision_time_other = (_v.p0.y + (_v.Size().y / _v.Size().x) * _w.p0.x - (_v.Size().y / _v.Size().x) * _v.p0.x) / (_w.p0.y + _w.Size().y - (_v.Size().y / _v.Size().x) * _w.Size().x);
-    
+
     olc::vf2d intersection_point = _v.Start() + _v.Size() * collision_time;
-    
+
     bool hit_succeed = false;
-    
+
     if((0.0f <= collision_time && collision_time <= 1.0f) && (0.0f <= collision_time_other && collision_time_other <= 1.0f)){
         hit_succeed = true;
     }
@@ -190,7 +203,7 @@ float PreciseSignFloat(float _number){
         intersection_point,
         hit_succeed
     };
-}*/    
+}*/
 
 /*
 float RayVsPlane(Ray3 _ray, Triangle3 _triangle){
@@ -291,7 +304,7 @@ CircleVsRectangle(const Circle& _circle, const ufo::Rectangle& _rectangle){
     ){
         return true;
     }
-    
+
     return false;
 }
 
@@ -358,11 +371,11 @@ bool IsOverlapping(const Circle& _circle, const Pill& _pill){
 int Wrapi(int _value, int _min, int _max){
     assert(_min < _max);
     if(_value < 0) _value = std::abs(_max+_value%(_max-_min));
-    
+
     int range = _max - _min; //1
-    
+
     return _min + _value % range;
-    
+
 }
 
 float DotProduct(olc::vf2d _v0, olc::vf2d _v1){
@@ -398,7 +411,7 @@ float WIPSin(float _radians){
     ret += x*_radians/362880.0f;
 
     //float x_pow_4 = x_pow_2*x_pow_2;
-    //float x_pow_6 
+    //float x_pow_6
 
     return ret;
 }
@@ -406,7 +419,7 @@ float WIPSin(float _radians){
 //Work in progress. Do not use.
 float WIPCos(float _radians){
     _radians = Wrap(_radians-PI*0.5f, -PI*0.5f, PI*1.5f);
-    
+
     if(_radians < -PI*0.5f) _radians+=2.0f*(std::abs(_radians)-PI*0.5f);
     if(_radians > PI*0.5f) _radians-=2.0f*(_radians-PI*0.5f);
 
