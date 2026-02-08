@@ -17,15 +17,130 @@ namespace ufo{
 
 class TileMap : public Actor{
 public:
-    struct TileMapChange{
+    class TileMapChange{
+    public:
+
+        virtual void Do(TileMap* _tile_map){
+
+        }
+
+        virtual void Undo(TileMap* _tile_map){
+
+        }
+
+        virtual void Redo(TileMap* _tile_map){
+
+        }
+    };
+
+    class TileMapChange_TileMapSize : public TileMapChange{
+    public:
+        int top;
+        int bottom;
+        int left;
+        int right;
+        TileMapChange_TileMapSize(int _left, int _right, int _bottom, int _top)
+        :
+        left{_left},
+        right{_right},
+        bottom{_bottom},
+        top{_top}
+        {
+
+        }
+
+        void Do(TileMap* _tile_map){
+            //The size change is already done in TileMap, probably no need to move it here.
+
+        }
+
+        void Undo(TileMap* _tile_map){
+            _tile_map->ResizeBottom(-bottom);
+            _tile_map->ResizeRight(-right);
+            _tile_map->ResizeLeft(-left);
+            _tile_map->ResizeTop(-top);
+
+        }
+
+        void Redo(TileMap* _tile_map){
+            _tile_map->ResizeBottom(bottom);
+            _tile_map->ResizeRight(right);
+            _tile_map->ResizeLeft(left);
+            _tile_map->ResizeTop(top);
+        }
+
+    };
+
+    class TileMapChange_Paint : public TileMapChange{
+    public:
         int left_bound_tile;  // x0
         int lower_bound_tile; // y0
         int right_bound_tile; // x1
         int upper_bound_tile; // y1
-        std::vector<int> tiles;
+        std::vector<int> tiles_before;
+        std::vector<int> tiles_after;
+
+        TileMapChange_Paint(int _left_bound_tile, int _lower_bound_tile, int _right_bound_tile, int _upper_bound_tile):
+        left_bound_tile{_left_bound_tile},
+        lower_bound_tile{_lower_bound_tile},
+        right_bound_tile{_right_bound_tile},
+        upper_bound_tile{_upper_bound_tile}
+        {
+
+        }
+
+        void Do(TileMap* _tile_map){
+            for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
+                for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
+
+                    tiles_before.push_back(_tile_map->tilemap_data_before_change[yy*_tile_map->number_of_columns+xx]);
+                    tiles_after.push_back(_tile_map->tilemap_data[yy*_tile_map->number_of_columns+xx]);
+                }
+            }
+        }
+
+        void Undo(TileMap* _tile_map){
+            int xx = left_bound_tile;
+            int yy = lower_bound_tile;
+            int c = right_bound_tile - left_bound_tile;
+
+            Console::PrintLine("Undoing:",_tile_map->current_change, _tile_map->changes.size(), c);
+
+            for(int i = 0; i < (int)tiles_before.size(); i++){
+
+                int tm_x = xx + i%c;
+                int tm_y = yy + i/c;
+
+                _tile_map->tilemap_data[tm_x+tm_y*_tile_map->number_of_columns] = tiles_before[i];
+            }
+        }
+
+        void Redo(TileMap* _tile_map){
+
+            int xx = left_bound_tile;
+            int yy = lower_bound_tile;
+            int c = right_bound_tile - left_bound_tile;
+
+            Console::PrintLine("Redoing:",_tile_map->current_change, _tile_map->changes.size());
+
+            for(int i = 0; i < (int)tiles_after.size(); i++){
+
+                int tm_x = xx + i%c;
+                int tm_y = yy + i/c;
+
+                _tile_map->tilemap_data[tm_x+tm_y*_tile_map->number_of_columns] = tiles_after[i];
+            }
+
+            for(const auto& i : tiles_after){
+                Console::Print(i,"");
+            }
+            Console::PrintLine("\n");
+        }
     };
 
-    std::vector<TileMapChange> changes;
+
+
+    std::vector<std::unique_ptr<TileMapChange>> changes;
     std::vector<int> tilemap_data_before_change;
 
     int current_change = -1;
@@ -70,10 +185,10 @@ public:
 
     ufo::Rectangle GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
-    void ResizeRight();
-    void ResizeLeft();
-    void ResizeTop();
-    void ResizeBottom();
+    void ResizeRight(int _number_of_tiles_to_insert);
+    void ResizeLeft(int _number_of_tiles_to_insert);
+    void ResizeTop(int _number_of_tiles_to_insert);
+    void ResizeBottom(int _number_of_tiles_to_insert);
     void CancelAllResizeDialogues();
 
     struct TileData{
@@ -103,17 +218,19 @@ public:
 
     }
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
+    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    void OnAdditionalButtonsForTreeItem() override;
+
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 };

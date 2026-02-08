@@ -35,54 +35,38 @@ void TileMap::Do(){
 
     Console::PrintLine("Popped change stack",current_change, changes.size());
 
-    changes.push_back(TileMapChange{
+    changes.push_back(std::make_unique<TileMapChange_Paint>(
         left_bound_tile,
         lower_bound_tile,
         right_bound_tile,
-        upper_bound_tile}
+        upper_bound_tile)
     );
 
-    //
-    for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
-        for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
-
-            changes.back().tiles.push_back(tilemap_data_before_change[yy*number_of_columns+xx]);
-        }
-    }
+    changes.back()->Do(this);
 
     current_change++;
 
     //Output: accurate
-    Console::PrintLine("Doing:",current_change);
-    Console::PrintLine("OnDo",left_bound_tile,lower_bound_tile,right_bound_tile,upper_bound_tile);
+    Console::PrintLine("Doing:",current_change,right_bound_tile-left_bound_tile);
 
 }
 
 void TileMap::Undo(){
     if(current_change < 0) return;
 
-    int xx = changes[current_change].left_bound_tile;
-    int yy = changes[current_change].lower_bound_tile;
-    int c = changes[current_change].right_bound_tile - changes[current_change].left_bound_tile;
-
-    Console::PrintLine("Undoing:",current_change, changes.size());
-
-    for(int i = 0; i < (int)changes[current_change].tiles.size(); i++){
-
-        //Console::Print(t, " ");
-
-        int tm_x = xx + i%c;
-        int tm_y = yy + i/c;
-
-        tilemap_data[tm_x+tm_y*number_of_columns] = changes[current_change].tiles[i];
-    }
-
-    Console::Print("\n");
+    changes[current_change]->Undo(this);
 
     current_change--;
+
 }
 
 void TileMap::Redo(){
+
+    if((int)changes.size()-1 <= current_change) return;
+
+    current_change++;
+
+    changes[current_change]->Redo(this);
 
 }
 
@@ -123,80 +107,80 @@ TileMap::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _
         _frame_size); //1 can only give y = 1
 }
 
-void TileMap::ResizeRight(){
-    if(number_of_tiles_to_insert+number_of_columns < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize right");
+void TileMap::ResizeRight(int _number_of_tiles_to_insert){
+    if(_number_of_tiles_to_insert+number_of_columns < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize right");
 
-    if(number_of_tiles_to_insert > 0){
+    if(_number_of_tiles_to_insert > 0){
         int start_index = number_of_columns;
         for(int i = 0; i < number_of_rows; i++){
-            for(int j = 0; j < number_of_tiles_to_insert; j++) tilemap_data.insert(tilemap_data.begin()+start_index, 0);
-            start_index+=(number_of_tiles_to_insert+number_of_columns);
+            for(int j = 0; j < _number_of_tiles_to_insert; j++) tilemap_data.insert(tilemap_data.begin()+start_index, 0);
+            start_index+=(_number_of_tiles_to_insert+number_of_columns);
         }
     }
     else{
-        int start_index = number_of_columns+number_of_tiles_to_insert;
+        int start_index = number_of_columns+_number_of_tiles_to_insert;
         for(int i = 0; i < number_of_rows; i++){
-            for(int j = 0; j < number_of_tiles_to_insert*-1; j++) tilemap_data.erase(tilemap_data.begin()+start_index);
-            start_index+=(number_of_tiles_to_insert+number_of_columns);
+            for(int j = 0; j < _number_of_tiles_to_insert*-1; j++) tilemap_data.erase(tilemap_data.begin()+start_index);
+            start_index+=(_number_of_tiles_to_insert+number_of_columns);
         }
     }
 
-    number_of_columns += number_of_tiles_to_insert;
+    number_of_columns += _number_of_tiles_to_insert;
 }
 
-void TileMap::ResizeLeft(){
-    if(number_of_tiles_to_insert+number_of_columns < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize left");
+void TileMap::ResizeLeft(int _number_of_tiles_to_insert){
+    if(_number_of_tiles_to_insert+number_of_columns < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize left");
 
-    if(number_of_tiles_to_insert > 0){
+    if(_number_of_tiles_to_insert > 0){
         int start_index = 0;
         for(int i = 0; i < number_of_rows; i++){
-            for(int j = 0; j < number_of_tiles_to_insert; j++) tilemap_data.insert(tilemap_data.begin()+start_index, 0);
-            start_index+=(number_of_tiles_to_insert+number_of_columns);
+            for(int j = 0; j < _number_of_tiles_to_insert; j++) tilemap_data.insert(tilemap_data.begin()+start_index, 0);
+            start_index+=(_number_of_tiles_to_insert+number_of_columns);
         }
     }
     else{
-        int start_index = number_of_tiles_to_insert;
+        int start_index = _number_of_tiles_to_insert;
         for(int i = 0; i < number_of_rows; i++){
-            for(int j = 0; j < number_of_tiles_to_insert*-1; j++) tilemap_data.erase(tilemap_data.begin()+start_index);
-            start_index+=(number_of_tiles_to_insert+number_of_columns);
+            for(int j = 0; j < _number_of_tiles_to_insert*-1; j++) tilemap_data.erase(tilemap_data.begin()+start_index);
+            start_index+=(_number_of_tiles_to_insert+number_of_columns);
         }
     }
 
-    number_of_columns += number_of_tiles_to_insert;
+    number_of_columns += _number_of_tiles_to_insert;
 }
 
-void TileMap::ResizeBottom(){
-    if(number_of_tiles_to_insert+number_of_rows < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize bottom");
+void TileMap::ResizeBottom(int _number_of_tiles_to_insert){
+    if(_number_of_tiles_to_insert+number_of_rows < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize bottom");
 
-    if(number_of_tiles_to_insert > 0){
+    if(_number_of_tiles_to_insert > 0){
         int add_at_index = number_of_columns*number_of_rows;
-        for(int i = 0; i < number_of_columns*number_of_tiles_to_insert; i++){
+        for(int i = 0; i < number_of_columns*_number_of_tiles_to_insert; i++){
             tilemap_data.insert(tilemap_data.begin()+add_at_index, 0);
         }
     }
     else{
-        int remove_at_index = number_of_columns*number_of_rows - number_of_columns*number_of_tiles_to_insert;
-        for(int i = 0; i < number_of_columns*number_of_tiles_to_insert*-1; i++) tilemap_data.erase(tilemap_data.begin()+remove_at_index);
+        int remove_at_index = number_of_columns*number_of_rows - number_of_columns*_number_of_tiles_to_insert;
+        for(int i = 0; i < number_of_columns*_number_of_tiles_to_insert*-1; i++) tilemap_data.erase(tilemap_data.begin()+remove_at_index);
     }
 
-    number_of_rows += number_of_tiles_to_insert;
+    number_of_rows += _number_of_tiles_to_insert;
 }
 
-void TileMap::ResizeTop(){
-    if(number_of_tiles_to_insert+number_of_rows < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize top");
+void TileMap::ResizeTop(int _number_of_tiles_to_insert){
+    if(_number_of_tiles_to_insert+number_of_rows < 1) throw std::runtime_error("[UFO-Engine] TileMap: Could not resize top");
 
-    if(number_of_tiles_to_insert > 0){
+    if(_number_of_tiles_to_insert > 0){
         int add_at_index = 0;
-        for(int i = 0; i < number_of_columns*number_of_tiles_to_insert; i++){
+        for(int i = 0; i < number_of_columns*_number_of_tiles_to_insert; i++){
             tilemap_data.insert(tilemap_data.begin()+add_at_index, 0);
         }
     }
     else{
         int remove_at_index = 0;
-        for(int i = 0; i < number_of_columns*number_of_tiles_to_insert*-1; i++) tilemap_data.erase(tilemap_data.begin()+remove_at_index);
+        for(int i = 0; i < number_of_columns*_number_of_tiles_to_insert*-1; i++) tilemap_data.erase(tilemap_data.begin()+remove_at_index);
     }
 
-    number_of_rows += number_of_tiles_to_insert;
+    number_of_rows += _number_of_tiles_to_insert;
 }
 
 void TileMap::CancelAllResizeDialogues(){
@@ -355,7 +339,13 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeRight();
+            ResizeRight(number_of_tiles_to_insert);
+
+            changes.push_back(
+                std::make_unique<TileMapChange_TileMapSize>(0,number_of_tiles_to_insert,0,0)
+            );
+            current_change++;
+
 
             resize_right = false;
         }
@@ -373,7 +363,12 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeLeft();
+            ResizeLeft(number_of_tiles_to_insert);
+
+            changes.push_back(
+                std::make_unique<TileMapChange_TileMapSize>(number_of_tiles_to_insert,0,0,0)
+            );
+            current_change++;
 
             resize_left = false;
         }
@@ -391,7 +386,12 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeBottom();
+            ResizeBottom(number_of_tiles_to_insert);
+
+            changes.push_back(
+                std::make_unique<TileMapChange_TileMapSize>(0,0,number_of_tiles_to_insert,0)
+            );
+            current_change++;
 
             resize_bottom = false;
         }
@@ -409,7 +409,12 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeTop();
+            ResizeTop(number_of_tiles_to_insert);
+
+            changes.push_back(
+                std::make_unique<TileMapChange_TileMapSize>(0,0,0,number_of_tiles_to_insert)
+            );
+            current_change++;
 
             resize_top = false;
         }
@@ -586,6 +591,14 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
 bool TileMap::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     return false;
+}
+
+void TileMap::OnAdditionalButtonsForTreeItem(){
+    ImGui::SameLine();
+    std::string visible_or_not_string = visible ? "<o>###" : "</>###";
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str())){
+        visible = !visible;
+    }
 }
 
 ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){

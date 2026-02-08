@@ -135,6 +135,14 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
 
 }
 
+void Sprite::OnAdditionalButtonsForTreeItem(){
+    ImGui::SameLine();
+    std::string visible_or_not_string = visible ? "<o>###" : "</>###";
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str())){
+        visible = !visible;
+    }
+}
+
 ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     Console::PrintLine("Does this even run?");
 

@@ -485,6 +485,8 @@ public:
         }
     }
 
+    virtual void OnAdditionalButtonsForTreeItem();
+
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

@@ -36,14 +36,16 @@ public:
     ufo::Rectangle
     GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
-    void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
+    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
     ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    void OnAdditionalButtonsForTreeItem() override;
 
-    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 };

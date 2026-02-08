@@ -283,6 +283,10 @@ std::string Actor::GetImportStatus(){
 
 }
 
+void Actor::OnAdditionalButtonsForTreeItem(){
+
+}
+
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
     //if(ImGui::GetMousePos().y > _index * ImGui::GetStyle().ItemSpacing.y * )
 
@@ -347,7 +351,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }
     }
     else{
-        if(ImGui::Selectable(unique_id_actor.c_str(),&is_selected)){
+        bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None);
+
+        if(selectable_text){
+
             if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
                 if(_editor->active_tab){
                     UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
@@ -361,6 +368,8 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             _editor->set_all_actors_properties_open_to_false = true;
             should_open_properties = true;
         }
+
+        OnAdditionalButtonsForTreeItem();
 
         /*if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
             _editor->set_all_actors_properties_open_to_false = true;
