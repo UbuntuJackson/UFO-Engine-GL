@@ -14,6 +14,7 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "tileset_manager.h"
 #include "../ufo_engine_studio/editor.h"
+#include "../src/actor_undo_and_redo.h"
 
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
@@ -28,45 +29,59 @@ TileMap::TileMap(Vector2f _) : Actor(_){
 
 void TileMap::Do(){
     //change the course of changes
-    while((int)changes.size()-1 > current_change){
-        Console::PrintLine("loop change stack",current_change, changes.size());
-        changes.pop_back();
+    while((int)level->level_changes.size()-1 > level->current_level_change){
+        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
+        level->level_changes.pop_back();
     }
 
-    Console::PrintLine("Popped change stack",current_change, changes.size());
+}
 
-    changes.push_back(std::make_unique<TileMapChange_Paint>(
+void TileMap::DoPaint(){
+    Do();
+
+    Console::PrintLine("Popped change stack",level->current_level_change, level->level_changes.size());
+
+    level->level_changes.push_back(std::make_unique<TileMapChange_Paint>(
+        this,
         left_bound_tile,
         lower_bound_tile,
         right_bound_tile,
         upper_bound_tile)
     );
 
-    changes.back()->Do(this);
+    level->level_changes.back()->Do();
 
-    current_change++;
+    level->current_level_change++;
 
     //Output: accurate
-    Console::PrintLine("Doing:",current_change,right_bound_tile-left_bound_tile);
+    Console::PrintLine("Doing:",level->current_level_change,right_bound_tile-left_bound_tile);
+}
 
+void TileMap::DoResize(int _left, int _right, int _bottom, int _top){
+    Do();
+
+    level->level_changes.push_back(
+        std::make_unique<TileMapChange_TileMapSize>(this, _left, _right, _bottom, _top)
+    );
+    level->current_level_change++;
 }
 
 void TileMap::Undo(){
-    if(current_change < 0) return;
+    if(level->current_level_change < 0) return;
 
-    changes[current_change]->Undo(this);
+    level->level_changes[level->current_level_change]->Undo();
 
-    current_change--;
+    level->current_level_change--;
 
 }
 
 void TileMap::Redo(){
 
-    if((int)changes.size()-1 <= current_change) return;
+    if((int)level->level_changes.size()-1 <= level->current_level_change) return;
 
-    current_change++;
+    level->current_level_change++;
 
-    changes[current_change]->Redo(this);
+    level->level_changes[level->current_level_change]->Redo();
 
 }
 
@@ -341,10 +356,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeRight(number_of_tiles_to_insert);
 
-            changes.push_back(
-                std::make_unique<TileMapChange_TileMapSize>(0,number_of_tiles_to_insert,0,0)
-            );
-            current_change++;
+            DoResize(0,number_of_tiles_to_insert,0,0);
 
 
             resize_right = false;
@@ -365,10 +377,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeLeft(number_of_tiles_to_insert);
 
-            changes.push_back(
-                std::make_unique<TileMapChange_TileMapSize>(number_of_tiles_to_insert,0,0,0)
-            );
-            current_change++;
+            DoResize(number_of_tiles_to_insert,0,0,0);
 
             resize_left = false;
         }
@@ -388,10 +397,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeBottom(number_of_tiles_to_insert);
 
-            changes.push_back(
-                std::make_unique<TileMapChange_TileMapSize>(0,0,number_of_tiles_to_insert,0)
-            );
-            current_change++;
+            DoResize(0,0,number_of_tiles_to_insert,0);
 
             resize_bottom = false;
         }
@@ -411,10 +417,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeTop(number_of_tiles_to_insert);
 
-            changes.push_back(
-                std::make_unique<TileMapChange_TileMapSize>(0,0,0,number_of_tiles_to_insert)
-            );
-            current_change++;
+            DoResize(0,0,0,number_of_tiles_to_insert);
 
             resize_top = false;
         }
@@ -469,7 +472,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     if(ImGui::IsItemHovered(0) && ImGui::IsMouseReleased(0)){
 
-        Do();
+        DoPaint();
     }
 
     if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
@@ -581,7 +584,20 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
                     inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
 
+                    //Undo&redo
+
+                    while((int)level->level_changes.size()-1 > level->current_level_change){
+                        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
+                        level->level_changes.pop_back();
+                    }
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+
+                    level->current_level_change++;
+                    Console::PrintLine("Actor current change",level->current_level_change);
+
                     AddActorUniquePtr(std::move(inst));
+
                 }
             }
         }

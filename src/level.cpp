@@ -12,6 +12,7 @@
 #include "text.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
+#include "actor_undo_and_redo.h"
 
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "Level";
@@ -77,6 +78,7 @@ void Level::UpdatePhase(float _delta_time){
     }
 
     CleanUpDeadActors();
+    StashActors();
 
     //widget->Update();
 }
@@ -97,6 +99,17 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
                     auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
 
                     inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+
+                    //Undo&redo
+
+                    while((int)level_changes.size()-1 > current_level_change){
+                        level_changes.pop_back();
+                    }
+
+                    level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+
+                    current_level_change++;
+                    Console::PrintLine("Actor current change",current_level_change);
 
                     AddActorUniquePtr(std::move(inst));
                 }
@@ -187,6 +200,23 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
         actor->WidgetDraw(_graphics);
     }
 
+}
+
+void Level::Undo(){
+    if(!(current_level_change < 0)){
+
+        level_changes[current_level_change]->Undo();
+        current_level_change--;
+    }
+}
+
+void Level::Redo(){
+    if(!(current_level_change >= (int)level_changes.size()-1)){
+
+        current_level_change++;
+        level_changes[current_level_change]->Redo();
+
+    }
 }
 
 void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){

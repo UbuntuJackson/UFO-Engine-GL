@@ -1,3 +1,5 @@
+#include <sstream>
+#include <unordered_map>
 #include <map>
 #include <memory>
 #include <stdexcept>
@@ -17,8 +19,7 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/im_vec.h"
-#include <sstream>
-#include <unordered_map>
+#include "actor_undo_and_redo.h"
 
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former_local_position(_local_position){
     editor_id = editor_id_counter++;
@@ -108,6 +109,21 @@ void Actor::CleanUpDeadActors(){
         }
         else{
             actors[i]->CleanUpDeadActors();
+        }
+    }
+
+}
+
+void Actor::StashActors(){
+
+    for(int i = actors.size()-1; i != -1; i--){
+        if(actors[i]->stash){
+            Console::PrintLine("Stashed", actors[i]->editing_name);
+            level->stashed_actors.push_back(std::move(actors[i]));
+            actors.erase(actors.begin()+i);
+        }
+        else{
+            actors[i]->StashActors();
         }
     }
 
@@ -229,6 +245,7 @@ void Actor::SortActors(){
         return _a->order_index < _b->order_index;
     });
 
+    //Not sure why I'm doing it like this. I don't remember
     for(int i = 0; i < actors.size(); i++){
         actors[i]->order_index = i;
     }
@@ -336,7 +353,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
     std::string imported_or_not_str = (import_mode != ImportModes::WRAPPED) ? "" : "(.ason)";
 
-    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
+    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" "+std::to_string(order_index)+ " ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
 
     bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
 
@@ -369,8 +386,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             should_open_properties = true;
         }
 
-        OnAdditionalButtonsForTreeItem();
-
         /*if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
             _editor->set_all_actors_properties_open_to_false = true;
             should_open_properties = true;
@@ -384,7 +399,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }
         if(!is_top_actor_in_editor && !unremovable){
             if(ImGui::MenuItem("Delete")){
-                is_dead = true;
+                stash = true;
 
             }
         }
@@ -513,6 +528,9 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
         ImGui::EndDragDropTarget();
     }
+
+
+    OnAdditionalButtonsForTreeItem();
 
     /*if(ImGui::IsItemHovered()){
         Console::PrintLine("ImGui::GetItemRectMin.y", ImGui::GetItemRectMin().y);
@@ -687,6 +705,18 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
                     inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
 
+                    //Undo&redo
+
+                    while((int)level->level_changes.size()-1 > level->current_level_change){
+                        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
+                        level->level_changes.pop_back();
+                    }
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+
+                    level->current_level_change++;
+                    Console::PrintLine("Actor current change",level->current_level_change);
+
                     AddActorUniquePtr(std::move(inst));
                 }
             }
@@ -761,7 +791,17 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
             // activate it when the mouse is held, not just on the first down event
             if(engine->mouse.is_left_button_held){
                 if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
-                    is_dead = true;
+                    while((int)level->level_changes.size()-1 > level->current_level_change){
+                        level->level_changes.pop_back();
+                    }
+
+                    Console::PrintLine("Do", level->current_level_change, class_name,"in level",level->editor_name);
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(this));
+
+                    level->current_level_change++;
+
+                    stash = true;
                 }
             }
 

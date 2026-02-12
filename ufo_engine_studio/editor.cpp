@@ -207,18 +207,18 @@ void Editor::OnUpdate(float _delta_time){
             }
             ImGui::EndMenu();
         }
-        /*if(ImGui::MenuItem("Undo")){
+        if(ImGui::MenuItem("Undo")){
             if(active_tab){
                 LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
-                tab->Undo();
+                tab->this_level->Undo();
             }
         }
         if(ImGui::MenuItem("Redo")){
             if(active_tab){
                 LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
-                tab->Redo();
+                tab->this_level->Redo();
             }
-            }*/
+        }
 
         ImGui::EndMainMenuBar();
     }

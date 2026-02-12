@@ -4,6 +4,7 @@
 #include <memory>
 #include "actor.h"
 #include "../tilemap/tileset_manager.h"
+#include "actor_undo_and_redo.h"
 #include "widget.h"
 
 class Camera;
@@ -63,6 +64,11 @@ public:
 
     void UpdatePhase(float _delta_time);
 
+    std::vector<std::unique_ptr<Actor>> stashed_actors;
+
+    void Undo();
+    void Redo();
+
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
@@ -109,5 +115,9 @@ public:
     }
 
     void DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    int current_level_change = -1;
+
+    std::vector<std::unique_ptr<ufo::ActorChange>> level_changes;
 
 };

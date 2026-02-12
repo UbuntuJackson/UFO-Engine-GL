@@ -4,6 +4,8 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
 #include "../json/json_variant.h"
+#include "../src/actor_undo_and_redo.h"
+#include "../src/level.h"
 
 class Camera;
 class Level;
@@ -17,30 +19,17 @@ namespace ufo{
 
 class TileMap : public Actor{
 public:
-    class TileMapChange{
+
+    class TileMapChange_TileMapSize : public ufo::ActorChange{
     public:
-
-        virtual void Do(TileMap* _tile_map){
-
-        }
-
-        virtual void Undo(TileMap* _tile_map){
-
-        }
-
-        virtual void Redo(TileMap* _tile_map){
-
-        }
-    };
-
-    class TileMapChange_TileMapSize : public TileMapChange{
-    public:
+        TileMap* tile_map = nullptr;
         int top;
         int bottom;
         int left;
         int right;
-        TileMapChange_TileMapSize(int _left, int _right, int _bottom, int _top)
+        TileMapChange_TileMapSize(TileMap* _tile_map,int _left, int _right, int _bottom, int _top)
         :
+        tile_map{_tile_map},
         left{_left},
         right{_right},
         bottom{_bottom},
@@ -49,30 +38,31 @@ public:
 
         }
 
-        void Do(TileMap* _tile_map){
+        void Do(){
             //The size change is already done in TileMap, probably no need to move it here.
 
         }
 
-        void Undo(TileMap* _tile_map){
-            _tile_map->ResizeBottom(-bottom);
-            _tile_map->ResizeRight(-right);
-            _tile_map->ResizeLeft(-left);
-            _tile_map->ResizeTop(-top);
+        void Undo(){
+            tile_map->ResizeBottom(-bottom);
+            tile_map->ResizeRight(-right);
+            tile_map->ResizeLeft(-left);
+            tile_map->ResizeTop(-top);
 
         }
 
-        void Redo(TileMap* _tile_map){
-            _tile_map->ResizeBottom(bottom);
-            _tile_map->ResizeRight(right);
-            _tile_map->ResizeLeft(left);
-            _tile_map->ResizeTop(top);
+        void Redo(){
+            tile_map->ResizeBottom(bottom);
+            tile_map->ResizeRight(right);
+            tile_map->ResizeLeft(left);
+            tile_map->ResizeTop(top);
         }
 
     };
 
-    class TileMapChange_Paint : public TileMapChange{
+    class TileMapChange_Paint : public ufo::ActorChange{
     public:
+        TileMap* tile_map = nullptr;
         int left_bound_tile;  // x0
         int lower_bound_tile; // y0
         int right_bound_tile; // x1
@@ -80,7 +70,8 @@ public:
         std::vector<int> tiles_before;
         std::vector<int> tiles_after;
 
-        TileMapChange_Paint(int _left_bound_tile, int _lower_bound_tile, int _right_bound_tile, int _upper_bound_tile):
+        TileMapChange_Paint(TileMap* _tile_map, int _left_bound_tile, int _lower_bound_tile, int _right_bound_tile, int _upper_bound_tile):
+        tile_map{_tile_map},
         left_bound_tile{_left_bound_tile},
         lower_bound_tile{_lower_bound_tile},
         right_bound_tile{_right_bound_tile},
@@ -89,46 +80,46 @@ public:
 
         }
 
-        void Do(TileMap* _tile_map){
+        void Do(){
             for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
                 for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
 
-                    tiles_before.push_back(_tile_map->tilemap_data_before_change[yy*_tile_map->number_of_columns+xx]);
-                    tiles_after.push_back(_tile_map->tilemap_data[yy*_tile_map->number_of_columns+xx]);
+                    tiles_before.push_back(tile_map->tilemap_data_before_change[yy*tile_map->number_of_columns+xx]);
+                    tiles_after.push_back(tile_map->tilemap_data[yy*tile_map->number_of_columns+xx]);
                 }
             }
         }
 
-        void Undo(TileMap* _tile_map){
+        void Undo(){
             int xx = left_bound_tile;
             int yy = lower_bound_tile;
             int c = right_bound_tile - left_bound_tile;
 
-            Console::PrintLine("Undoing:",_tile_map->current_change, _tile_map->changes.size(), c);
+            Console::PrintLine("Undoing:",tile_map->level->current_level_change, tile_map->level->level_changes.size(), c);
 
             for(int i = 0; i < (int)tiles_before.size(); i++){
 
                 int tm_x = xx + i%c;
                 int tm_y = yy + i/c;
 
-                _tile_map->tilemap_data[tm_x+tm_y*_tile_map->number_of_columns] = tiles_before[i];
+                tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_before[i];
             }
         }
 
-        void Redo(TileMap* _tile_map){
+        void Redo(){
 
             int xx = left_bound_tile;
             int yy = lower_bound_tile;
             int c = right_bound_tile - left_bound_tile;
 
-            Console::PrintLine("Redoing:",_tile_map->current_change, _tile_map->changes.size());
+            Console::PrintLine("Redoing:",tile_map->level->current_level_change, tile_map->level->level_changes.size());
 
             for(int i = 0; i < (int)tiles_after.size(); i++){
 
                 int tm_x = xx + i%c;
                 int tm_y = yy + i/c;
 
-                _tile_map->tilemap_data[tm_x+tm_y*_tile_map->number_of_columns] = tiles_after[i];
+                tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_after[i];
             }
 
             for(const auto& i : tiles_after){
@@ -140,12 +131,16 @@ public:
 
 
 
-    std::vector<std::unique_ptr<TileMapChange>> changes;
+    //std::vector<std::unique_ptr<TileMapChange>> changes;
     std::vector<int> tilemap_data_before_change;
 
-    int current_change = -1;
+    //int current_change = -1;
 
     void Do();
+
+    void DoPaint();
+
+    void DoResize(int _left, int _right, int _bottom, int _top);
 
     void Undo();
 

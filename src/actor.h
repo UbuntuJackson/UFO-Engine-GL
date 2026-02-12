@@ -6,6 +6,7 @@
 #include "../imgui/imgui.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "actor_undo_and_redo.h"
 
 class TileMap;
 
@@ -93,6 +94,7 @@ public:
     //Actor(Actor&&) = delete;
 
     void CleanUpDeadActors();
+    void StashActors();
 
     void MarkAllDead();
 
@@ -505,6 +507,10 @@ public:
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
     virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
+
+    //stashing the actor means you basically get the actor out of the tree but keeping it in memory
+    bool stash = false;
+
 protected:
 //To determine whether actor is the container node for all other actors
     bool is_top_actor_in_editor = false;
