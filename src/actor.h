@@ -174,6 +174,8 @@ public:
 
     void InsertActors();
 
+    void InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index);
+
     int order_index = 0;
     bool should_be_sorted = false;
 

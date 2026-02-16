@@ -1,8 +1,8 @@
 Actor trees:
 
-Make actor trees so that imported actors have their child actors hidden and you can make them individual instances if you want to. Basically unpack them saving each component explicitly. This would save diskspace.
+[DONE] Make actor trees so that imported actors have their child actors hidden and you can make them individual instances if you want to. Basically unpack them saving each component explicitly. This would save diskspace.
 
-An issue, actors should only be wrapped if they come with a .ason file. Right now it just makes it wrapped indiscriminately. Wrapped basically means
+[DONE] An issue, actors should only be wrapped if they come with a .ason file. Right now it just makes it wrapped indiscriminately. Wrapped basically means
 that everything under it is bundled WITH it. Logical.
 
 Levels:
@@ -31,7 +31,7 @@ Should add more consistency and controll over how sprites are scaled and rotated
 
 [DONE] generated.h
 
-Fix so that relative paths are used for custom actors. The relative path can easily be extracted since generated.h is in the top of the folder hierarchy.
+[DONE] Fix so that relative paths are used for custom actors. The relative path can easily be extracted since generated.h is in the top of the folder hierarchy.
 
 Actor:
 Renaming your Actor-derived classes is a crucial game-development feature. I suggest having something like this:
@@ -50,15 +50,28 @@ Copying, pasting and moving groups of tiles
 
 Copying, pasting and moving Actors
 
-Can an actor live inside a grid instance without issues?
+[DONE] Can an actor live inside a grid instance without issues?
 
 Separating snapping behaviour from non-snapping behaviour? (Cursor doesn't overlap properly with target item)
 
 ### ImGui Actor Tree and File Tree ###
 
-Make it so items are selectable, so that multiple actors can be drag-dropped. This could be done by specifying multiple actors in actor whereabouts.
+[DONE with actor-tree] Make it so items are selectable, so that multiple actors can be drag-dropped. This could be done by specifying multiple actors in actor whereabouts.
 
 TilesetManager
 
 Quick note about a bug where if you resize a tileset and add tiles to it, the newly added tiles won't count in the number of tiles. Maybe this could be
 updated somehow by looking at each tileset and see how it has changed. Quite a complicated algorithm though.
+
+### Redo & Undo ###
+
+There's a problem arising in the following scenario:
+1.) You move an actor from InstanceTileMap1 to InstanceTileMap2.
+    this action keeps track of two of the following variables:
+    -Actor* parent
+    -int ordering_index
+2.) You delete InstanceTileMap1, or in other words 'stash' it, since it's still alive in the action-stack.
+3.) You make changes until you start reaching the max size of the stack, making the change removing InstanceTileMap1
+    un-undoable. In other words, InstanceTileMap1 is permanently free'd when this happens.
+
+Question: Can I ensure that a move-action like this does not refer to an object that is free'd, like InstanceTileMap1?

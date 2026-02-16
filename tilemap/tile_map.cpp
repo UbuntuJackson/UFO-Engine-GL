@@ -582,7 +582,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
                 if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
                     auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
 
-                    inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
+                    inst->local_position = _level_editor_tab->spawn_cursor->GetGlobalPosition() - GetGlobalPosition();
 
                     //Undo&redo
 

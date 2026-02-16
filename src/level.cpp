@@ -29,6 +29,8 @@ void Level::OnSpawn(){
     ut2->SetText("すばらしい");
     widget->AddWidgetUniquePtr(std::move(ut2));*/
 
+    level = this;
+
     tileset_manager.engine = engine;
 
     tileset_manager.InitialiseTextures();
@@ -217,6 +219,15 @@ void Level::Redo(){
         level_changes[current_level_change]->Redo();
 
     }
+}
+
+void Level::RemoveFutureChanges(){
+    while((int)level_changes.size()-1 > current_level_change){
+        Console::PrintLine("loop change stack",current_level_change, level_changes.size());
+        level->level_changes.pop_back();
+    }
+
+    current_level_change++;
 }
 
 void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){

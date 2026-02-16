@@ -228,11 +228,23 @@ void Actor::InsertActors(){
         actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
     }
 
+    for(int i = 0; i < actors.size(); i++){
+        actors[i]->order_index = i;
+    }
+
     inserted_actor_queue.clear();
 
     for(const auto& actor : actors){
         actor->InsertActors();
     }
+}
+
+void Actor::InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index){
+    _ptr->parent = this;
+
+    //_ptr->order_index = _index;
+
+    inserted_actor_queue.push_back(InsertedActor{_index,std::move(_ptr)});
 }
 
 void Actor::SetOrderIndex(int _index){
@@ -311,17 +323,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
     if(ImGui::BeginDragDropTarget()){
 
-        /*const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
-        if(payload_data){
-            DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
-
-            dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]->parent = parent;
-
-            parent->inserted_actor_queue.push_back(InsertedActor{_index,std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index])});
-
-            dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
-
-        }*/
+        //This code supports drag-dropping multiple actors
 
         const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
         if(payload_data && !parent->is_selected){
@@ -330,9 +332,20 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
                 for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
 
-                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = parent;
+                    Actor* drag_dropped_actor = dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index].get();
+
+                    while((int)level->level_changes.size()-1 > level->current_level_change){
+
+                        level->level_changes.pop_back();
+                    }
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_Move>(drag_dropped_actor, drag_dropped_actor->parent, drag_dropped_actor->order_index, parent, dragged_actor_where_abouts_.index));
+                    level->current_level_change++;
+
+                    drag_dropped_actor->parent = parent;
 
                     parent->inserted_actor_queue.push_back(InsertedActor{_index,std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index])});
+
 
                 }
 
@@ -353,7 +366,9 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
     std::string imported_or_not_str = (import_mode != ImportModes::WRAPPED) ? "" : "(.ason)";
 
-    std::string unique_id_actor = editing_name ? std::string("###Actor"+std::to_string(editor_id)).c_str() : std::string(editor_name+" "+std::to_string(order_index)+ " ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
+    std::string unique_id_actor = editing_name ?
+        std::string("###Actor"+std::to_string(editor_id)).c_str() :
+        std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
 
     bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
 
@@ -399,6 +414,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
         }
         if(!is_top_actor_in_editor && !unremovable){
             if(ImGui::MenuItem("Delete")){
+                level->RemoveFutureChanges();
+
+                level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(this));
+
                 stash = true;
 
             }
@@ -447,6 +466,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
             for(const auto& s : v){
                 if(ImGui::Button(std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str())){
                     auto inst = s->Spawn(_editor);
+
+                    level->RemoveFutureChanges();
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
 
                     AddActorUniquePtr(std::move(inst));
                     adding_new_actor = false;
@@ -506,7 +529,18 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
 
                 for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
-                    dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]->parent = this;
+
+                    Actor* drag_dropped_actor = dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index].get();
+
+                    while((int)level->level_changes.size()-1 > level->current_level_change){
+
+                        level->level_changes.pop_back();
+                    }
+
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_Move>(drag_dropped_actor, drag_dropped_actor->parent, drag_dropped_actor->order_index, this, dragged_actor_where_abouts_.index));
+                    level->current_level_change++;
+
+                    drag_dropped_actor->parent = this;
 
                     new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
                 }
@@ -665,6 +699,7 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
     }
 
+    //Adjusting the spawn-cursor to not make usage too disorienting
     if(properties_open){
         auto local_tile_map = IsInTileMap();
         if(local_tile_map){
@@ -703,19 +738,14 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
                 if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
                     auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
 
-                    inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
+                    if(!IsInTileMap()) inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
+                    else inst->local_position = _level_editor_tab->spawn_cursor->GetGlobalPosition() - GetGlobalPosition();
 
                     //Undo&redo
 
-                    while((int)level->level_changes.size()-1 > level->current_level_change){
-                        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
-                        level->level_changes.pop_back();
-                    }
+                    level->RemoveFutureChanges();
 
                     level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
-
-                    level->current_level_change++;
-                    Console::PrintLine("Actor current change",level->current_level_change);
 
                     AddActorUniquePtr(std::move(inst));
                 }
@@ -791,15 +821,9 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
             // activate it when the mouse is held, not just on the first down event
             if(engine->mouse.is_left_button_held){
                 if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
-                    while((int)level->level_changes.size()-1 > level->current_level_change){
-                        level->level_changes.pop_back();
-                    }
-
-                    Console::PrintLine("Do", level->current_level_change, class_name,"in level",level->editor_name);
+                    level->RemoveFutureChanges();
 
                     level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(this));
-
-                    level->current_level_change++;
 
                     stash = true;
                 }

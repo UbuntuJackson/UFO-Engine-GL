@@ -68,6 +68,7 @@ public:
 
     void Undo();
     void Redo();
+    void RemoveFutureChanges();
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
