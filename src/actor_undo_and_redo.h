@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
+#include "../ufo_garbage_collector/gc_json.h"
 
 class Actor;
 
@@ -59,5 +60,23 @@ public:
     void Do() override{}
 
 };
+
+/*class ActorChange_EditorPropertyChange : public ActorChange, public ufo::gc::Root{
+public:
+    Actor* actor = nullptr;
+
+    gc::JsonMap* property_snap_shot_as_json = nullptr;
+
+    ActorChange_EditorPropertyChange(Actor* _actor) : actor{_actor}{
+
+        //Make
+
+    }
+
+    void Undo(){}
+    void Redo(){}
+    void Do(){}
+
+    };*/
 
 }

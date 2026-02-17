@@ -142,10 +142,6 @@ public:
 
     void DoResize(int _left, int _right, int _bottom, int _top);
 
-    void Undo();
-
-    void Redo();
-
     int lower_bound_tile;
     int upper_bound_tile;
     int left_bound_tile;
