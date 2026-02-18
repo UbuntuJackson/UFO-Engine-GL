@@ -11,7 +11,7 @@
 #include <engine.h>
 #include <map>
 #include <functional>
-#include "../ufo_garbage_collector/engine_memory.h"
+#include "../ufo_garbage_collector/object.h"
 #include "../src/actor.h"
 #include <gc_json.h>
 #include "../src/actor.h"
@@ -25,6 +25,7 @@
 #include "../src/button.h"
 #include "../src/platformer_rectangle_collision.h"
 #include "../src/collision_grid.h"
+#include "../src/editor_property.h"
 
 namespace UFOEngineStudio{
 
@@ -93,7 +94,7 @@ public:
         std::string base;
         std::string class_name = "";
         std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> spawner_function;
-        std::vector<std::unique_ptr<Actor::EditorProperty>> properties;
+        std::vector<std::unique_ptr<ufo::EditorProperty>> properties;
 
         AdvancedActorSpawner(
             std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
@@ -330,7 +331,7 @@ public:
                     if(macro_name == "ufo_int_slider"){
 
                         try{
-                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyIntSlider>(
+                            act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyIntSlider>(
                                 name,
                                 alias,
                                 std::stoi(value),
@@ -349,7 +350,7 @@ public:
                     if(macro_name == "ufo_float_slider"){
 
                         try{
-                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyFloatSlider>(
+                            act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyFloatSlider>(
                                 name,
                                 alias,
                                 std::stof(value),
@@ -368,13 +369,13 @@ public:
 
                     if(macro_name == "ufo_variable"){
 
-                        if(data_type == "int") act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyInt>(name,alias,std::stoi(value)));
-                        if(data_type == "float") act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyFloat>(name,alias,std::stoi(value)));
+                        if(data_type == "int") act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name,alias,std::stoi(value)));
+                        if(data_type == "float") act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name,alias,std::stoi(value)));
                         if(data_type == "bool"){
-                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
+                            act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
                         }
                         if(data_type == "std::string"){
-                            act_spawner->properties.push_back(std::make_unique<Actor::EditorPropertyString>(name,alias,value));
+                            act_spawner->properties.push_back(std::make_unique<ufo::EditorPropertyString>(name,alias,value));
                         }
                     }
                 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "../ufo_garbage_collector/engine_memory.h"
+#include "../ufo_garbage_collector/object.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include <memory>
 #include "generic_generator.h"

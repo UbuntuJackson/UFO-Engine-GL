@@ -1,5 +1,6 @@
 #pragma once
-#include "engine_memory.h"
+#include "garbage_collector.h"
+#include "object.h"
 #include <map>
 #include <stdexcept>
 #include <string>

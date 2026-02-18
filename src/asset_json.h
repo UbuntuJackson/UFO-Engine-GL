@@ -1,5 +1,5 @@
 #pragma once
-#include "../ufo_garbage_collector/engine_memory.h"
+#include "../ufo_garbage_collector/object.h"
 
 class OpenGLv4_5_AssetManager;
 

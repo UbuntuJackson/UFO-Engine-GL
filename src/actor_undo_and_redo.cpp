@@ -4,6 +4,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "actor_undo_and_redo.h"
+#include "editor_property.h"
 #include "level.h"
 
 namespace ufo{
@@ -93,5 +94,61 @@ void ActorChange_RemoveActor::Undo(){
 void ActorChange_RemoveActor::Redo(){
     actor->stash = true;
 }
+
+ActorChange_CustomVariableInt::ActorChange_CustomVariableInt(Actor* _actor, std::string _variable_name, int _former_value, int _current_value) :
+    actor{_actor},
+    variable_name{_variable_name},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableInt::Undo() {
+    for(const auto& property : actor->editor_properties){
+        ufo::EditorPropertyInt* converted_property = dynamic_cast<ufo::EditorPropertyInt*>(property.get());
+
+        if(converted_property && converted_property->variable_name == variable_name){
+            converted_property->value = former_value;
+        }
+    }
+}
+void ActorChange_CustomVariableInt::Redo() {
+    for(const auto& property : actor->editor_properties){
+        ufo::EditorPropertyInt* converted_property = dynamic_cast<ufo::EditorPropertyInt*>(property.get());
+
+        if(converted_property && converted_property->variable_name == variable_name){
+            converted_property->value = current_value;
+        }
+    }
+}
+void ActorChange_CustomVariableInt::Do() {}
+
+
+ActorChange_CustomVariableFloat::ActorChange_CustomVariableFloat(Actor* _actor, std::string _variable_name, float _former_value, float _current_value) :
+    actor{_actor},
+    variable_name{_variable_name},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableFloat::Undo() {
+    for(const auto& property : actor->editor_properties){
+        ufo::EditorPropertyFloat* converted_property = dynamic_cast<ufo::EditorPropertyFloat*>(property.get());
+
+        if(converted_property && converted_property->variable_name == variable_name){
+            converted_property->value = former_value;
+            break;
+        }
+    }
+
+    Console::PrintLine("[UFO-Engine Studio] ActorChange_CustomVariableFloat::Undo: Could not find field", variable_name,"; Perhaps it was removed.");
+}
+void ActorChange_CustomVariableFloat::Redo() {
+    for(const auto& property : actor->editor_properties){
+        ufo::EditorPropertyFloat* converted_property = dynamic_cast<ufo::EditorPropertyFloat*>(property.get());
+
+        if(converted_property && converted_property->variable_name == variable_name){
+            converted_property->value = current_value;
+        }
+    }
+}
+void ActorChange_CustomVariableFloat::Do() {}
 
 }

@@ -45,6 +45,7 @@ set(
     src/input.cpp
     src/actor.cpp
     src/actor_undo_and_redo.cpp
+    src/editor_property.cpp
     src/camera.cpp
     src/shader.cpp
     src/openglv4_5_graphics.cpp

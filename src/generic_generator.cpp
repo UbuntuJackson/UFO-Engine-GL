@@ -17,6 +17,7 @@
 #include "actor_component_loader.h"
 #include "platformer_rectangle_collision.h"
 #include "collision_grid.h"
+#include "../src/editor_property.h"
 
 namespace ufo{
 
@@ -336,7 +337,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
     			    std::string name = v->AsMap().at("name")->AsString();
     				bool value = (bool)v->AsMap().at("value")->AsFloat();
 
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyCheckBox>(name, name, value));
+                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name, name, value));
 				} catch(const std::exception& _error){
 				    Console::PrintLine(
 								"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyCheckBox of type",
@@ -349,7 +350,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
      			    std::string name = v->AsMap().at("name")->AsString();
     				int value = v->AsMap().at("value")->AsFloat();
 
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyInt>(name, name, value));
+                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name, name, value));
                 } catch(const std::exception& _error){
                     Console::PrintLine(
                 				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
@@ -375,7 +376,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
      			    std::string name = v->AsMap().at("name")->AsString();
     				float value = v->AsMap().at("value")->AsFloat();
 
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyFloat>(name, name, value));
+                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name, name, value));
                 } catch(const std::exception& _error){
                     Console::PrintLine(
                 				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
@@ -388,7 +389,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
      			    std::string name = v->AsMap().at("name")->AsString();
     				std::string value = v->AsMap().at("value")->AsString();
 
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyString>(name, name, value));
+                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyString>(name, name, value));
                 } catch(const std::exception& _error){
                     Console::PrintLine(
                 				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",

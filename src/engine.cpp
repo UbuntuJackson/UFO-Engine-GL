@@ -20,7 +20,7 @@
 #include "input.h"
 #include "Main.h"
 #include "../ufo_garbage_collector/gc_json.h"
-#include "../ufo_garbage_collector/engine_memory.h"
+#include "../ufo_garbage_collector/object.h"
 #include "level_loader.h"
 
 //Imgui

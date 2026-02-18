@@ -4,7 +4,7 @@
 #include <sstream>
 #include "../imgui/imgui.h"
 #include <graphics.h>
-#include <engine_memory.h>
+#include "../ufo_garbage_collector/object.h"
 
 namespace UFOEngineStudio{
 

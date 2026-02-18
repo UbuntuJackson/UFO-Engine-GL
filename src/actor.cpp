@@ -15,11 +15,12 @@
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include <garbage_collector.h>
 #include <gc_json.h>
-#include <engine_memory.h>
+#include "../ufo_garbage_collector/object.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/im_vec.h"
 #include "actor_undo_and_redo.h"
+#include "editor_property.h"
 
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former_local_position(_local_position){
     editor_id = editor_id_counter++;
@@ -604,9 +605,9 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
         //Basically, get the actor that would be spawned in the editor, and update according to that
         UFOEngineStudio::Editor::AdvancedActorSpawner* advanced_spawner_of_this_class = _editor->spawnable_actor_map.at(class_name).get();
 
-        std::map<std::string, std::unique_ptr<UFOEngineStudio::Editor::EditorProperty>> properties_template;
+        std::map<std::string, std::unique_ptr<ufo::EditorProperty>> properties_template;
 
-        std::map<std::string, UFOEngineStudio::Editor::EditorProperty*> properties_of_this;
+        std::map<std::string, ufo::EditorProperty*> properties_of_this;
 
         for(const auto& property : advanced_spawner_of_this_class->properties){
              properties_template.emplace(property->variable_name,property->Copy());
@@ -671,11 +672,21 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
         }
     }
 
-    ImGui::InputFloat(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x);
+    if(ImGui::InputFloat(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x)){
+        level->RemoveFutureChanges();
+
+        //
+
+        std::unique_ptr<ufo::ActorChange_EditorPropertyChange> local_position_x_json = std::make_unique<ufo::ActorChange_EditorPropertyChange>(this);
+
+        local_position_x_json->gc.New<ufo::gc::JsonNumber>(local_position.x);
+
+        level->level_changes.push_back(std::move(local_position_x_json));
+    }
     ImGui::InputFloat(std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), &local_position.y);
 
     for(int i = 0; i < editor_properties.size(); i++){
-        editor_properties[i]->Update(editor_name, i);
+        editor_properties[i]->Update(this, editor_name, i);
     }
 
 }
