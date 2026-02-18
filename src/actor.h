@@ -230,6 +230,14 @@ public:
 
     std::string find_actor_search_field = "";
 
+    bool InputFloatWithUndoAndRedo(const std::string& _id, float* _ptr);
+
+    //This function is currently untested
+    bool InputIntWithUndoAndRedo(const std::string& _id, int* _ptr);
+
+    //This function is currently untested
+    bool InputTextWithUndoAndRedo(const std::string& _id, std::string* _ptr);
+
     virtual void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);

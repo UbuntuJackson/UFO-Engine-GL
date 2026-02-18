@@ -62,30 +62,6 @@ public:
 
 };
 
-class ActorChange_EditorPropertyChange : public ActorChange, public ufo::gc::Root{
-private:
-
-    //Actor that this object points to should be alive all throughout this object's lifetime anyway.
-    Actor* actor = nullptr;
-
-    gc::JsonMap* property_snap_shot_as_json = nullptr;
-
-public:
-    ActorChange_EditorPropertyChange(Actor* _actor) :
-        actor{_actor}
-    {
-        name = "GC_ActorChange_EditorPropertyChange";
-
-        MakeMarkable(&property_snap_shot_as_json);
-
-    }
-
-    void Undo() override{}
-    void Redo() override{}
-    void Do() override{}
-
-};
-
 class ActorChange_CustomVariableInt : public ufo::ActorChange{
 private:
     Actor* actor = nullptr;
@@ -112,6 +88,56 @@ private:
 
 public:
     ActorChange_CustomVariableFloat(Actor* _actor, std::string _variable_name, float _former_value, float _current_value);
+
+    void Undo() override;
+    void Redo() override;
+    void Do() override;
+};
+
+class ActorChange_CustomVariableFloatHandle : public ufo::ActorChange{
+private:
+
+    float* ptr;
+
+    float former_value = 0;
+    float current_value = 0;
+
+public:
+    ActorChange_CustomVariableFloatHandle(float* _ptr, float _former_value, float _current_value);
+
+    void Undo() override;
+    void Redo() override;
+    void Do() override;
+};
+
+class ActorChange_CustomVariableIntHandle : public ufo::ActorChange{
+private:
+
+    int* ptr;
+
+    int former_value = 0;
+    int current_value = 0;
+
+public:
+    ActorChange_CustomVariableIntHandle(int* _ptr, int _former_value, int _current_value);
+
+    void Undo() override;
+    void Redo() override;
+    void Do() override;
+};
+
+// ...
+
+class ActorChange_CustomVariableStringHandle : public ufo::ActorChange{
+private:
+
+    std::string* ptr;
+
+    std::string former_value = 0;
+    std::string current_value = 0;
+
+public:
+    ActorChange_CustomVariableStringHandle(std::string* _ptr, const std::string& _former_value, const std::string& _current_value);
 
     void Undo() override;
     void Redo() override;

@@ -151,4 +151,58 @@ void ActorChange_CustomVariableFloat::Redo() {
 }
 void ActorChange_CustomVariableFloat::Do() {}
 
+// ...
+
+ActorChange_CustomVariableFloatHandle::ActorChange_CustomVariableFloatHandle(float* _ptr, float _former_value, float _current_value) :
+    ptr{_ptr},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableFloatHandle::Undo() {
+
+    *ptr = former_value;
+
+}
+void ActorChange_CustomVariableFloatHandle::Redo() {
+    *ptr = current_value;
+
+}
+void ActorChange_CustomVariableFloatHandle::Do() {}
+
+// ...
+
+ActorChange_CustomVariableIntHandle::ActorChange_CustomVariableIntHandle(int* _ptr, int _former_value, int _current_value) :
+    ptr{_ptr},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableIntHandle::Undo() {
+
+    *ptr = former_value;
+
+}
+void ActorChange_CustomVariableIntHandle::Redo() {
+    *ptr = current_value;
+
+}
+void ActorChange_CustomVariableIntHandle::Do() {}
+
+// ...
+
+ActorChange_CustomVariableStringHandle::ActorChange_CustomVariableStringHandle(std::string* _ptr, const std::string& _former_value, const std::string& _current_value) :
+    ptr{_ptr},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableStringHandle::Undo() {
+
+    *ptr = former_value;
+
+}
+void ActorChange_CustomVariableStringHandle::Redo() {
+    *ptr = current_value;
+
+}
+void ActorChange_CustomVariableStringHandle::Do() {}
+
 }

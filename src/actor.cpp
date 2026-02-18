@@ -648,6 +648,50 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
     }
 }
 
+bool Actor::InputFloatWithUndoAndRedo(const std::string& _id, float* _ptr){
+    float value_before_edit = *_ptr;
+    if(ImGui::InputFloat(_id.c_str(), _ptr)){
+
+        level->RemoveFutureChanges();
+
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableFloatHandle>(_ptr, value_before_edit, *_ptr));
+
+        return true;
+    }
+
+    return false;
+}
+
+//This function is currently untested
+bool Actor::InputIntWithUndoAndRedo(const std::string& _id, int* _ptr){
+    int value_before_edit = *_ptr;
+    if(ImGui::InputInt(_id.c_str(), _ptr)){
+
+        level->RemoveFutureChanges();
+
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableIntHandle>(_ptr, value_before_edit, *_ptr));
+
+        return true;
+    }
+
+    return false;
+}
+
+//This function is currently untested
+bool Actor::InputTextWithUndoAndRedo(const std::string& _id, std::string* _ptr){
+    std::string value_before_edit = *_ptr;
+    if(ImGui::InputText(_id.c_str(), _ptr)){
+
+        level->RemoveFutureChanges();
+
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableStringHandle>(_ptr, value_before_edit, *_ptr));
+
+        return true;
+    }
+
+    return false;
+}
+
 void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
     bool search_field_active = false;
@@ -672,18 +716,8 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
         }
     }
 
-    if(ImGui::InputFloat(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x)){
-        level->RemoveFutureChanges();
-
-        //
-
-        std::unique_ptr<ufo::ActorChange_EditorPropertyChange> local_position_x_json = std::make_unique<ufo::ActorChange_EditorPropertyChange>(this);
-
-        local_position_x_json->gc.New<ufo::gc::JsonNumber>(local_position.x);
-
-        level->level_changes.push_back(std::move(local_position_x_json));
-    }
-    ImGui::InputFloat(std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), &local_position.y);
+    InputFloatWithUndoAndRedo(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x);
+    InputFloatWithUndoAndRedo(std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), &local_position.y);
 
     for(int i = 0; i < editor_properties.size(); i++){
         editor_properties[i]->Update(this, editor_name, i);
