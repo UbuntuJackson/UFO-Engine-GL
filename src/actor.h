@@ -142,6 +142,8 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
+    void SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value);
+
     enum ImportModes{
         WRAPPED,
         MODIFIABLE,

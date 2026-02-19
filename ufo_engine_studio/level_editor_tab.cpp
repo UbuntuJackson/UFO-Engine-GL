@@ -241,56 +241,57 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
 
     this_level->UpdateEditorViewport(editor, this);
-    this_level->UpdateEditorViewportFocus(editor, this);
-
-    //Set initial start position for rectangle selection tool
-    if(engine->mouse.is_left_button_pressed){
-        rectangle_selection_tool_start_position = engine->mouse.position;
-        std::vector<Actor*> actors_selected_this_frame;
-        this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
-    }
-
-    //Resize selection rectangle if mouse is moving
-    if(engine->mouse.delta_position != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
-
-        ufo::Rectangle selected_rectangle = GetSelectionRectangle();
-
-        ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
-
-        ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
-
-        Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
-
-        Vector2f world_selection_rectangle_start_editor_viewport = ((selected_rectangle.position)-editor_viewport_pos)*window_to_engine_ratio;
-        Vector2f world_selection_rectangle_end_editor_viewport = ((selected_rectangle.position+selected_rectangle.size)-editor_viewport_pos)*window_to_engine_ratio;
-
-        Vector2f world_selection_rectangle_start = this_level->active_camera_handles.back()->TransformScreenToWorld(world_selection_rectangle_start_editor_viewport);
-        Vector2f world_selection_rectangle_end = this_level->active_camera_handles.back()->TransformScreenToWorld((world_selection_rectangle_end_editor_viewport));
-
-        selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end-world_selection_rectangle_start);
-
-    }
-    //Set selection tool to inactive if user clicks but does not move the mouse
-    if(engine->mouse.delta_position == Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_pressed){
-        selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
-
-    }
-
-    //If selection tool active
-    if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
-
-        ufo::Rectangle selected_rectangle = GetSelectionRectangle();
-        ImGui::GetWindowDrawList()->AddRectFilled(
-            FromVector2fToImVec2((selected_rectangle.position+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))),
-            FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
-        std::vector<Actor*> actors_selected_this_frame;
-        this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
-        for(const auto& actor : actors_selected_this_frame){
-            //actor->OnSelectedInViewport(this);
-            actor->is_selected_in_viewport = true;
+    bool focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
+    if(!focused_actor_found){
+        //Set initial start position for rectangle selection tool
+        if(engine->mouse.is_left_button_pressed){
+            rectangle_selection_tool_start_position = engine->mouse.position;
+            std::vector<Actor*> actors_selected_this_frame;
+            this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
         }
 
+        //Resize selection rectangle if mouse is moving
+        if(engine->mouse.delta_position != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
 
+            ufo::Rectangle selected_rectangle = GetSelectionRectangle();
+
+            ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
+
+            ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+
+            Vector2f editor_viewport_pos = Vector2f(im_viewport_pos.x-window_pos.x,im_viewport_pos.y-window_pos.y);
+
+            Vector2f world_selection_rectangle_start_editor_viewport = ((selected_rectangle.position)-editor_viewport_pos)*window_to_engine_ratio;
+            Vector2f world_selection_rectangle_end_editor_viewport = ((selected_rectangle.position+selected_rectangle.size)-editor_viewport_pos)*window_to_engine_ratio;
+
+            Vector2f world_selection_rectangle_start = this_level->active_camera_handles.back()->TransformScreenToWorld(world_selection_rectangle_start_editor_viewport);
+            Vector2f world_selection_rectangle_end = this_level->active_camera_handles.back()->TransformScreenToWorld((world_selection_rectangle_end_editor_viewport));
+
+            selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end-world_selection_rectangle_start);
+
+        }
+        //Set selection tool to inactive if user clicks but does not move the mouse
+        if(engine->mouse.delta_position == Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_pressed){
+            selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
+
+        }
+
+        //If selection tool active
+        if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_held){
+
+            ufo::Rectangle selected_rectangle = GetSelectionRectangle();
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                FromVector2fToImVec2((selected_rectangle.position+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))),
+                FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
+            std::vector<Actor*> actors_selected_this_frame;
+            this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
+            for(const auto& actor : actors_selected_this_frame){
+                //actor->OnSelectedInViewport(this);
+                actor->is_selected_in_viewport = true;
+            }
+
+
+        }
     }
 
     ImGui::End();

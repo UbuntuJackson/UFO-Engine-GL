@@ -205,4 +205,22 @@ void ActorChange_CustomVariableStringHandle::Redo() {
 }
 void ActorChange_CustomVariableStringHandle::Do() {}
 
+// ...
+
+ActorChange_CustomVariableVector2fHandle::ActorChange_CustomVariableVector2fHandle(Vector2f* _ptr, Vector2f _former_value, Vector2f _current_value) :
+    ptr{_ptr},
+    former_value{_former_value},
+    current_value{_current_value}{}
+
+void ActorChange_CustomVariableVector2fHandle::Undo() {
+
+    *ptr = former_value;
+
+}
+void ActorChange_CustomVariableVector2fHandle::Redo() {
+    *ptr = current_value;
+
+}
+void ActorChange_CustomVariableVector2fHandle::Do() {}
+
 }

@@ -205,6 +205,16 @@ void Actor::InvokeGarbageCollector(){
     }
 }
 
+// UFO-Engine Studio
+
+void Actor::SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value){
+    Vector2f former_value = *_ptr;
+
+    *_ptr = _value;
+
+    level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(_ptr, former_value, _value));
+}
+
 void Actor::AddToLevelEditorTabIfSelected(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     int index = 0;
 
@@ -860,6 +870,10 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
 
                 is_grabbed_by_cursor = true;
 
+                level->RemoveFutureChanges();
+
+                level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&local_position, local_position, Vector2f(0.0f, 0.0f)));
+
             }
 
             //For now I want the eraser to easily delete multiple objects, therefore it would make sense to
@@ -885,6 +899,18 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
             local_position = Vector2f(
                 std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
                 std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
+        }
+
+        //This looks extremely error prone.
+        ufo::ActorChange_CustomVariableVector2fHandle* position_change = dynamic_cast<ufo::ActorChange_CustomVariableVector2fHandle*>(level->level_changes.back().get());
+
+        if(position_change){
+            position_change->current_value = local_position;
+
+        }
+        else{
+            Console::PrintLine("[UFO-Engine Studio] Actor::OnUpdateEditorViewportFocus: Undo & Redo action was added while ufo::ActorChange_CustomVariableVector2fHandle* was handled");
+            throw;
         }
 
     }

@@ -84,6 +84,7 @@ public:
             for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
                 for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
 
+                    //Crash here, something seems out of range
                     tiles_before.push_back(tile_map->tilemap_data_before_change[yy*tile_map->number_of_columns+xx]);
                     tiles_after.push_back(tile_map->tilemap_data[yy*tile_map->number_of_columns+xx]);
                 }

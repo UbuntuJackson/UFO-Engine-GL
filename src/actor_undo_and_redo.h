@@ -144,4 +144,23 @@ public:
     void Do() override;
 };
 
+// ...
+
+class ActorChange_CustomVariableVector2fHandle : public ufo::ActorChange{
+private:
+
+    Vector2f* ptr;
+
+    Vector2f former_value;
+public:
+    Vector2f current_value;
+
+public:
+    ActorChange_CustomVariableVector2fHandle(Vector2f* _ptr, Vector2f _former_value, Vector2f _current_value);
+
+    void Undo() override;
+    void Redo() override;
+    void Do() override;
+};
+
 }
