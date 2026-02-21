@@ -109,6 +109,11 @@ public:
 
     }
 
+    virtual void Pause(float _delta_time);
+    virtual void OnPause(float _delta_time){
+
+    }
+
     void IrregularUpdate();
 
     virtual void OnIrregularUpdate();

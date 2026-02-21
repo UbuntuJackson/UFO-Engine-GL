@@ -58,8 +58,15 @@ void Level::UpdatePhase(float _delta_time){
     //Run local OnUpdate function on level too
     OnUpdate(_delta_time);
 
-    for(const auto& actor : actors){
-        actor->Update(_delta_time);
+    if(!is_paused){
+        for(const auto& actor : actors){
+            actor->Update(_delta_time);
+        }
+    }
+    else{
+        for(const auto& actor : actors){
+            actor->Pause(_delta_time);
+        }
     }
 
     if(should_be_sorted){
@@ -93,6 +100,10 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
     ImGui::GetWindowDrawList()->AddRect(
         ImVec2(min.x, min.y),
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
+
+    if(properties_open){
+        _level_editor_tab->MultiSelect(this);
+    }
 
     if(is_selected){
         if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){

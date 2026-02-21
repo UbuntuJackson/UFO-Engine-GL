@@ -491,7 +491,7 @@ void Engine::EditorUpdate(){
 }
 
 void Engine::Update(){
-    if(keyboard.GetKey(SDLK_ESCAPE).is_pressed) quit = true;
+    //if(keyboard.GetKey(SDLK_ESCAPE).is_pressed) quit = true;
 
     // Handle Timing
     m_tp2 = std::chrono::system_clock::now();

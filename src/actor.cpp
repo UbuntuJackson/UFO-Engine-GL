@@ -160,6 +160,20 @@ void Actor::Update(float _delta_time){
     }
 }
 
+void Actor::Pause(float _delta_time){
+
+    for(const auto& actor : actors){
+        actor->Pause(_delta_time);
+    }
+
+    OnPause(_delta_time);
+
+    if(should_be_sorted){
+        SortActors();
+        Console::PrintLine("Sorting Actors");
+    }
+}
+
 void Actor::IrregularUpdate(){
     for(const auto& actor : actors){
         actor->IrregularUpdate();
@@ -755,6 +769,8 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     //Adjusting the spawn-cursor to not make usage too disorienting
     if(properties_open){
+        _level_editor_tab->MultiSelect(this);
+
         auto local_tile_map = IsInTileMap();
         if(local_tile_map){
             _level_editor_tab->spawn_cursor->local_position = Vector2f(

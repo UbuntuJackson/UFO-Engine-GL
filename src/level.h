@@ -16,6 +16,8 @@ namespace ufo{
 
 class Level : public Actor{
 public:
+    bool is_paused = false;
+
     TilesetManager tileset_manager;
 
     Vector2f size = {20000.0f, 3000.0f};

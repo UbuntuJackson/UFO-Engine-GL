@@ -21,6 +21,9 @@ class LevelEditorTab : public Tab{
 public:
     enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER };
 
+    bool focused_actor_found = false;
+    bool show_multi_selection_right_click_pop_up_menu = false;
+
     Tools current_tool = Tools::SELECT;
 
     ufo::Engine* engine = nullptr;
@@ -68,6 +71,8 @@ public:
 
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
+
+    void MultiSelect(Actor* _actor);
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);
 

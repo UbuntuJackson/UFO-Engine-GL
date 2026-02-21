@@ -413,6 +413,11 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(!properties_open) return;
+
+
+    _level_editor_tab->MultiSelect(this);
+
+
     if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP){
         _level_editor_tab->spawn_cursor->local_position = Vector2f(
             std::floor(_level_editor_tab->spawn_cursor->local_position.x/tile_width)*tile_width,

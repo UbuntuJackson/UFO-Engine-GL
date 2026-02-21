@@ -11,6 +11,7 @@
 #include "../imgui/imgui.h"
 #include <gc_json.h>
 #include <vector>
+#include "console.h"
 #include "dock_utils.h"
 #include "file_dialogue.h"
 #include "editor.h"
@@ -244,6 +245,15 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     this_level->UpdateEditorViewport(editor, this);
 
+    focused_actor_found = false;
+
+    //This seems redundant, since I'm checking for these further down in UpdateEditorViewportFocus.
+    if((current_tool == Tools::SELECT || current_tool == Tools::ERASE || current_tool == Tools::PLACE) && selection_rectangle_world_space.size == Vector2f(0.0f, 0.0f)) focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
+
+    ImGui::End();
+}
+
+void LevelEditorTab::MultiSelect(Actor* _actor){
     std::vector<Actor*> actors_selected_this_frame;
 
     bool selected_actor_is_grabbed = false;
@@ -253,7 +263,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f) && current_tool == Tools::SELECT){
 
-        this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
+        _actor->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
 
         for(const auto& actor : actors_selected_this_frame){
             actor->is_selected_in_viewport = true;
@@ -275,11 +285,56 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         }
     }
 
+    {
+        std::vector<Actor*> previously_selected_actors;
+
+        _actor->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
+
+        bool selected_actor_is_overlapped = false;
+
+        for(const auto& actor : previously_selected_actors){
+            const Vector2f pos_min = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position;
+            const Vector2f pos_max = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position+actor->editor_hitbox.size;
+
+            if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+                selected_actor_is_overlapped = true;
+            }
+
+        }
+
+        if(selected_actor_is_overlapped && engine->mouse.is_right_button_pressed){
+            show_multi_selection_right_click_pop_up_menu = true;
+        }
+
+        if(show_multi_selection_right_click_pop_up_menu){
+
+            if(ImGui::BeginPopupContextItem("show_multi_selection_right_click_pop_up_menu")){
+
+                if(ImGui::MenuItem("Delete")){
+                    for(const auto& actor : previously_selected_actors){
+
+                        this_level->RemoveFutureChanges();
+
+                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(actor));
+
+                        actor->stash = true;
+
+                    }
+
+                    show_multi_selection_right_click_pop_up_menu = false;
+                }
+
+                ImGui::EndPopup();
+            }
+
+        }
+    }
+
     if(current_tool == Tools::MOVE_ACTOR_CLUSTER){
 
         std::vector<Actor*> previously_selected_actors;
 
-        this_level->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
+        _actor->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
 
         if(engine->mouse.is_left_button_pressed){
             this_level->RemoveFutureChanges();
@@ -325,15 +380,22 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 throw;
             }
 
+            for(const auto& actor : previously_selected_actors){
+                auto local_tile_map = actor->IsInTileMap();
+
+                if(local_tile_map){
+
+                    actor->local_position = Vector2f(
+                        std::floor(actor->local_position.x/local_tile_map->tile_width)*local_tile_map->tile_width,
+                        std::floor(actor->local_position.y/local_tile_map->tile_height)*local_tile_map->tile_height);
+                }
+            }
+
             Console::PrintLine("Set tool Tools::SELECT");
             current_tool = Tools::SELECT;
 
         }
     }
-
-    bool focused_actor_found = false;
-
-    if(current_tool == Tools::SELECT && selection_rectangle_world_space.size == Vector2f(0.0f, 0.0f)) focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
 
     if(!focused_actor_found && current_tool == Tools::SELECT){
 
@@ -386,8 +448,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     ImGui::GetWindowDrawList()->AddRectFilled(
         FromVector2fToImVec2(TranslateToEditorScreenSpace(selection_rectangle_world_space.position)),
         FromVector2fToImVec2(TranslateToEditorScreenSpace(selection_rectangle_world_space.position+selection_rectangle_world_space.size)), 0x55555555);
-
-    ImGui::End();
 }
 
 void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state){
