@@ -14,7 +14,7 @@ Button::Button(Vector2f _) : Text(_){
 bool Button::IsHovered(){
 
     //Actually should take GetGlobalPosition into account
-    return ufoMaths::RectangleVsPoint(rectangle, engine->mouse.position);
+    return ufoMaths::RectangleVsPoint(GetRectangle(), engine->mouse.position);
 
 }
 
