@@ -218,7 +218,7 @@ public:
 
     TileMap* IsInTileMap();
 
-    virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, int _index);
+    virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
 
@@ -249,12 +249,41 @@ public:
     void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
         if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
 
-        if(ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())){
+        if(
+            ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
+            && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
+        ){
+
             _selected_actors.push_back(this);
+            return;
+            //Console::PrintLine(editor_name,class_name);
         }
 
         for(const auto& actor : actors){
             actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
+        }
+    }
+    void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+
+        if(
+            ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
+            && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
+        ){
+            if(is_selected_in_viewport){
+                _selected_actors.push_back(this);
+                return;
+            }
+        }
+
+        for(const auto& actor : actors){
+            actor->GetPreviouslySelectedActors(_selected_actors, _selection_rectangle_world_space);
+        }
+    }
+    void SetActorsUnselectedInViewport(){
+        is_selected_in_viewport = false;
+
+        for(const auto& actor : actors){
+            actor->SetActorsUnselectedInViewport();
         }
     }
 

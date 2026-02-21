@@ -19,7 +19,7 @@ namespace UFOEngineStudio{
 
 class LevelEditorTab : public Tab{
 public:
-    enum Tools{ SELECT, PLACE, ERASE };
+    enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER };
 
     Tools current_tool = Tools::SELECT;
 

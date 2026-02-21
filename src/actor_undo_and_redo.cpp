@@ -223,4 +223,18 @@ void ActorChange_CustomVariableVector2fHandle::Redo() {
 }
 void ActorChange_CustomVariableVector2fHandle::Do() {}
 
+// ...
+
+ActorChange_MultipleActorChange::ActorChange_MultipleActorChange(){}
+
+void ActorChange_MultipleActorChange::Undo() {
+    for(const auto& change : changes) change->Undo();
+
+}
+void ActorChange_MultipleActorChange::Redo() {
+    for(const auto& change : changes) change->Redo();
+
+}
+void ActorChange_MultipleActorChange::Do() {}
+
 }

@@ -187,7 +187,7 @@ void TileMap::CancelAllResizeDialogues(){
 }
 
 void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    if(!visible || !properties_open) return;
+    if(!visible || !properties_open || _level_editor_tab->current_tool != UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP) return;
 
     float scale = _camera->scale;
 
@@ -413,170 +413,171 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(!properties_open) return;
+    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP){
+        _level_editor_tab->spawn_cursor->local_position = Vector2f(
+            std::floor(_level_editor_tab->spawn_cursor->local_position.x/tile_width)*tile_width,
+            std::floor(_level_editor_tab->spawn_cursor->local_position.y/tile_height)*tile_height);
 
-    _level_editor_tab->spawn_cursor->local_position = Vector2f(
-        std::floor(_level_editor_tab->spawn_cursor->local_position.x/tile_width)*tile_width,
-        std::floor(_level_editor_tab->spawn_cursor->local_position.y/tile_height)*tile_height);
+        Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
-    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+        current_world_mouse_x = world_mouse.x;
+        current_world_mouse_y = world_mouse.y;
 
-    current_world_mouse_x = world_mouse.x;
-    current_world_mouse_y = world_mouse.y;
+        //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
 
-    //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
+        int hovered_tile_x = int(world_mouse.x)/tile_width;
+        int hovered_tile_y = int(world_mouse.y)/tile_height;
 
-    int hovered_tile_x = int(world_mouse.x)/tile_width;
-    int hovered_tile_y = int(world_mouse.y)/tile_height;
+        if(hovered_tile_x < 0) hovered_tile_x = 0;
+        if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
+        if(hovered_tile_y < 0) hovered_tile_y = 0;
+        if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
 
-    if(hovered_tile_x < 0) hovered_tile_x = 0;
-    if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
-    if(hovered_tile_y < 0) hovered_tile_y = 0;
-    if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
+        currently_hovered_tile_x = hovered_tile_x;
+        currently_hovered_tile_y = hovered_tile_y;
 
-    currently_hovered_tile_x = hovered_tile_x;
-    currently_hovered_tile_y = hovered_tile_y;
-
-    if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
-        tilemap_data_before_change = tilemap_data;
-        left_bound_tile = hovered_tile_x;
-        lower_bound_tile = hovered_tile_y;
-        upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
-        right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
-    }
-
-    if(ImGui::IsItemHovered(0) && ImGui::IsMouseReleased(0)){
-
-        if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
-            DoPaint();
+        if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+            tilemap_data_before_change = tilemap_data;
+            left_bound_tile = hovered_tile_x;
+            lower_bound_tile = hovered_tile_y;
+            upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
+            right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
         }
-        else if(level->tileset_manager.tool == TilesetManager::Tools::FILL_BUCKET){
-            bool tiles_are_being_added = true;
 
-            std::vector<Vector2i> all_filled_tiles; //For undo&redo
+        if(ImGui::IsItemHovered(0) && ImGui::IsMouseReleased(0)){
 
-            std::vector<Vector2i> tiles_to_fill;
+            if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
+                DoPaint();
+            }
+            else if(level->tileset_manager.tool == TilesetManager::Tools::FILL_BUCKET){
+                bool tiles_are_being_added = true;
 
-            tiles_to_fill.push_back(Vector2i(hovered_tile_x, hovered_tile_y));
+                std::vector<Vector2i> all_filled_tiles; //For undo&redo
 
-            int max_number_of_tiles = 100;
+                std::vector<Vector2i> tiles_to_fill;
 
-            while(tiles_are_being_added && max_number_of_tiles > 0){
-                max_number_of_tiles--;
+                tiles_to_fill.push_back(Vector2i(hovered_tile_x, hovered_tile_y));
 
-                std::vector<Vector2i> additional_tiles;
+                int max_number_of_tiles = 100;
 
-                tiles_are_being_added = false;
-                for(Vector2i tile_position : tiles_to_fill){
+                while(tiles_are_being_added && max_number_of_tiles > 0){
+                    max_number_of_tiles--;
 
-                    std::vector<Vector2i> directions = {
-                        tile_position+Vector2i(1, 0),
-                        tile_position+Vector2i(-1, 0),
-                        tile_position+Vector2i(0, -1),
-                        tile_position+Vector2i(0, 1)
+                    std::vector<Vector2i> additional_tiles;
 
-                    };
+                    tiles_are_being_added = false;
+                    for(Vector2i tile_position : tiles_to_fill){
 
-                    for(Vector2i tile_direction : directions){
-                        if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
-                        if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
+                        std::vector<Vector2i> directions = {
+                            tile_position+Vector2i(1, 0),
+                            tile_position+Vector2i(-1, 0),
+                            tile_position+Vector2i(0, -1),
+                            tile_position+Vector2i(0, 1)
 
-                        int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
+                        };
 
-                        if(tile_index > -1 && tile_index < tilemap_data.size()){
-                            if(tilemap_data[tile_index] == 0){
+                        for(Vector2i tile_direction : directions){
+                            if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
+                            if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
 
-                                tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
+                            int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
 
-                                additional_tiles.push_back(tile_direction);
+                            if(tile_index > -1 && tile_index < tilemap_data.size()){
+                                if(tilemap_data[tile_index] == 0){
 
-                                all_filled_tiles.push_back(tile_direction);
+                                    tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
 
-                                tiles_are_being_added = true;
+                                    additional_tiles.push_back(tile_direction);
+
+                                    all_filled_tiles.push_back(tile_direction);
+
+                                    tiles_are_being_added = true;
+
+                                }
 
                             }
-
                         }
                     }
+
+                    tiles_to_fill = additional_tiles;
+
                 }
 
-                tiles_to_fill = additional_tiles;
+                if(max_number_of_tiles <= 0) Console::PrintLine("TileMap: Reached max tiles");
+
+                int lower_bound_tile_fill = hovered_tile_y;
+                int upper_bound_tile_fill = hovered_tile_y;
+                int left_bound_tile_fill = hovered_tile_x;
+                int right_bound_tile_fill = hovered_tile_x;
+
+                for(Vector2i tile : all_filled_tiles){
+                    Console::PrintLine(tile);
+                    if(lower_bound_tile_fill > tile.y) lower_bound_tile_fill = tile.y;
+                    if(upper_bound_tile_fill < tile.y) upper_bound_tile_fill = tile.y;
+                    if(left_bound_tile_fill > tile.x) left_bound_tile_fill = tile.x;
+                    if(right_bound_tile_fill < tile.x) right_bound_tile_fill = tile.x;
+                }
+
+                Console::PrintLine(left_bound_tile_fill, lower_bound_tile_fill, right_bound_tile_fill,upper_bound_tile_fill);
+
+                level->RemoveFutureChanges();
+
+                level->level_changes.push_back(std::make_unique<TileMapChange_Paint>(this,left_bound_tile_fill,lower_bound_tile_fill,right_bound_tile_fill+1,upper_bound_tile_fill+1));
+
+                level->level_changes.back()->Do();
 
             }
-
-            if(max_number_of_tiles <= 0) Console::PrintLine("TileMap: Reached max tiles");
-
-            int lower_bound_tile_fill = hovered_tile_y;
-            int upper_bound_tile_fill = hovered_tile_y;
-            int left_bound_tile_fill = hovered_tile_x;
-            int right_bound_tile_fill = hovered_tile_x;
-
-            for(Vector2i tile : all_filled_tiles){
-                Console::PrintLine(tile);
-                if(lower_bound_tile_fill > tile.y) lower_bound_tile_fill = tile.y;
-                if(upper_bound_tile_fill < tile.y) upper_bound_tile_fill = tile.y;
-                if(left_bound_tile_fill > tile.x) left_bound_tile_fill = tile.x;
-                if(right_bound_tile_fill < tile.x) right_bound_tile_fill = tile.x;
-            }
-
-            Console::PrintLine(left_bound_tile_fill, lower_bound_tile_fill, right_bound_tile_fill,upper_bound_tile_fill);
-
-            level->RemoveFutureChanges();
-
-            level->level_changes.push_back(std::make_unique<TileMapChange_Paint>(this,left_bound_tile_fill,lower_bound_tile_fill,right_bound_tile_fill+1,upper_bound_tile_fill+1));
-
-            level->level_changes.back()->Do();
 
         }
 
-    }
+        if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
+            if(hovered_tile_x < left_bound_tile) left_bound_tile = hovered_tile_x;
+            if(hovered_tile_y < lower_bound_tile) lower_bound_tile = hovered_tile_y;
+            if((int)hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows > upper_bound_tile) upper_bound_tile = hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
+            if((int)hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
-    if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
-        if(hovered_tile_x < left_bound_tile) left_bound_tile = hovered_tile_x;
-        if(hovered_tile_y < lower_bound_tile) lower_bound_tile = hovered_tile_y;
-        if((int)hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows > upper_bound_tile) upper_bound_tile = hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
-        if((int)hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
+            if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
+                int xx = 0;
+                int yy = 0;
+                for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
 
-        if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
-            int xx = 0;
-            int yy = 0;
-            for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
+                    int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
 
-                int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+                    if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
 
-                if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+                    xx++;
+                    if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                        xx = 0;
+                        yy++;
+                    }
 
-                xx++;
-                if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
-                    xx = 0;
-                    yy++;
                 }
-
             }
+
         }
 
+        Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+        Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
+
+        ImU32 colour = 0x66777755;
+
+        for(int rr = 0; rr < number_of_rows; rr++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
+
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        for(int cc = 0; cc < number_of_columns; cc++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
+
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
+
     }
-
-    Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-    Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
-
-    ImU32 colour = 0x66777755;
-
-    for(int rr = 0; rr < number_of_rows; rr++){
-        Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
-        Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
-
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
-    }
-
-    for(int cc = 0; cc < number_of_columns; cc++){
-        Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
-        Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
-
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
-    }
-
-    ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
-
     //Placing actors
 
     if(is_selected){

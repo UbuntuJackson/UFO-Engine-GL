@@ -28,6 +28,8 @@ void ControllableCamera::OnSpawn(){
 void ControllableCamera::OnUpdate(float _delta_time){
     Camera::OnUpdate(_delta_time);
 
+    //Console::PrintLine("Controllable camera", local_position);
+
     if(engine->mouse.is_middle_button_held){
         Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
 

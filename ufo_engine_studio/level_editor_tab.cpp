@@ -3,12 +3,14 @@
 #include "../ufo_engine_studio/tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include <engine.h>
+#include <memory>
 #include <openglv4_5_graphics.h>
-#include <level.h>
+#include "../src/level.h"
 #include <SDL3/SDL.h>
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"
 #include "../imgui/imgui.h"
 #include <gc_json.h>
+#include <vector>
 #include "dock_utils.h"
 #include "file_dialogue.h"
 #include "editor.h"
@@ -188,7 +190,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     //I don't want a class to necessarily require a .ason, so for how you don't specity the header file in the .ason, but the .ason in the header file
     //ImGui::Button("HeaderFile"); ImGui::SameLine(); ImGui::Text("%s", header_file.c_str());
 
-    this_level->UpdateEditorTree(_editor, 0);
+    this_level->UpdateEditorTree(_editor, this, 0);
 
     ImGui::End();
 
@@ -241,13 +243,103 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
 
     this_level->UpdateEditorViewport(editor, this);
-    bool focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
-    if(!focused_actor_found){
+
+    std::vector<Actor*> actors_selected_this_frame;
+
+    bool selected_actor_is_grabbed = false;
+
+    //if(current_tool == Tools::SELECT) Console::PrintLine("current state", "Tools::SELECT");
+    //if(current_tool == Tools::MOVE_ACTOR_CLUSTER) Console::PrintLine("current state", "Tools::MOVE_ACTOR_CLUSTER");
+
+    if(selection_rectangle_world_space.size != Vector2f(0.0f, 0.0f) && current_tool == Tools::SELECT){
+
+        this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
+
+        for(const auto& actor : actors_selected_this_frame){
+            actor->is_selected_in_viewport = true;
+
+            const Vector2f pos_min = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position;
+            const Vector2f pos_max = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position+actor->editor_hitbox.size;
+
+            if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+                selected_actor_is_grabbed = true;
+            }
+        }
+
+        if(selected_actor_is_grabbed && engine->mouse.is_left_button_pressed){
+            current_tool = Tools::MOVE_ACTOR_CLUSTER;
+            Console::PrintLine("Set tool, Tools::MOVE_ACTOR_CLUSTER");
+            /*for(const auto& actor : actors_selected_this_frame){
+                Console::PrintLine(actor->editor_name);
+                }*/
+        }
+    }
+
+    if(current_tool == Tools::MOVE_ACTOR_CLUSTER){
+
+        std::vector<Actor*> previously_selected_actors;
+
+        this_level->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
+
+        if(engine->mouse.is_left_button_pressed){
+            this_level->RemoveFutureChanges();
+
+            std::unique_ptr<ufo::ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+
+            for(const auto& actor : previously_selected_actors){
+
+                multiple_actor_change->changes.push_back(
+                    std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&actor->local_position,actor->local_position,Vector2f(0.0f, 0.0f))
+                );
+            }
+
+            this_level->level_changes.push_back(std::move(multiple_actor_change));
+
+        }
+
+        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
+
+        for(const auto& actor : previously_selected_actors){
+
+            actor->local_position += dp;
+
+        }
+
+        selection_rectangle_world_space.position += dp;
+
+        if(engine->mouse.is_left_button_released){
+            ufo::ActorChange_MultipleActorChange* movement_change = dynamic_cast<ufo::ActorChange_MultipleActorChange*>(this_level->level_changes.back().get());
+            if(movement_change){
+                for(int a = 0; a < movement_change->changes.size(); a++){
+                    ufo::ActorChange_CustomVariableVector2fHandle* local_position_change = dynamic_cast<ufo::ActorChange_CustomVariableVector2fHandle*>(movement_change->changes[a].get());
+
+                    if(!local_position_change){
+                        Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::OnActive: Error converting from ufo::ActorChange to ActorChange_CustomVariableVector2fHandle");
+                        throw;
+                    }
+
+                    local_position_change->current_value = previously_selected_actors[a]->local_position;
+                }
+            }else{
+                Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::OnActive: Error converting from ufo::ActorChange to ActorChange_MultipleActorChange");
+                throw;
+            }
+
+            Console::PrintLine("Set tool Tools::SELECT");
+            current_tool = Tools::SELECT;
+
+        }
+    }
+
+    bool focused_actor_found = false;
+
+    if(current_tool == Tools::SELECT && selection_rectangle_world_space.size == Vector2f(0.0f, 0.0f)) focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
+
+    if(!focused_actor_found && current_tool == Tools::SELECT){
+
         //Set initial start position for rectangle selection tool
         if(engine->mouse.is_left_button_pressed){
             rectangle_selection_tool_start_position = engine->mouse.position;
-            std::vector<Actor*> actors_selected_this_frame;
-            this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
         }
 
         //Resize selection rectangle if mouse is moving
@@ -270,9 +362,12 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end-world_selection_rectangle_start);
 
         }
+
         //Set selection tool to inactive if user clicks but does not move the mouse
         if(engine->mouse.delta_position == Vector2f(0.0f, 0.0f) && engine->mouse.is_left_button_pressed){
-            selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
+            selection_rectangle_world_space = ufo::Rectangle(Vector2f(-200.0f, -200.0f), Vector2f(0.0f, 0.0f));
+            current_tool = Tools::SELECT;
+            this_level->SetActorsUnselectedInViewport();
 
         }
 
@@ -283,16 +378,14 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             ImGui::GetWindowDrawList()->AddRectFilled(
                 FromVector2fToImVec2((selected_rectangle.position+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))),
                 FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
-            std::vector<Actor*> actors_selected_this_frame;
-            this_level->GetSelectedActors(actors_selected_this_frame,selection_rectangle_world_space);
-            for(const auto& actor : actors_selected_this_frame){
-                //actor->OnSelectedInViewport(this);
-                actor->is_selected_in_viewport = true;
-            }
-
 
         }
+
     }
+
+    ImGui::GetWindowDrawList()->AddRectFilled(
+        FromVector2fToImVec2(TranslateToEditorScreenSpace(selection_rectangle_world_space.position)),
+        FromVector2fToImVec2(TranslateToEditorScreenSpace(selection_rectangle_world_space.position+selection_rectangle_world_space.size)), 0x55555555);
 
     ImGui::End();
 }

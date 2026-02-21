@@ -163,4 +163,16 @@ public:
     void Do() override;
 };
 
+class ActorChange_MultipleActorChange : public ufo::ActorChange{
+public:
+    std::vector<std::unique_ptr<ActorChange>> changes;
+
+public:
+    ActorChange_MultipleActorChange();
+
+    void Undo() override;
+    void Redo() override;
+    void Do() override;
+};
+
 }

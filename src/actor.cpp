@@ -327,7 +327,7 @@ void Actor::OnAdditionalButtonsForTreeItem(){
 
 }
 
-void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
+void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     //if(ImGui::GetMousePos().y > _index * ImGui::GetStyle().ItemSpacing.y * )
 
     bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
@@ -403,19 +403,18 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
                     UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
                     level_editor_tab->reset_selection_status = true;
                     should_be_selected = is_selected;
-                    //level->ResetSelectionStatus();
 
                 }
 
             }
             _editor->set_all_actors_properties_open_to_false = true;
             should_open_properties = true;
-        }
 
-        /*if(ImGui::IsItemClicked(ImGuiMouseButton_Left)){
-            _editor->set_all_actors_properties_open_to_false = true;
-            should_open_properties = true;
-        }*/
+            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP && base_class_name != "TileMap"){
+                _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::SELECT;
+
+            }
+        }
 
     }
 
@@ -587,7 +586,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor,int _index){
 
         for(int i = 0; i < actors.size(); i++){
 
-            actors[i]->UpdateEditorTree(_editor,i);
+            actors[i]->UpdateEditorTree(_editor,_level_editor_tab,i);
 
         }
 

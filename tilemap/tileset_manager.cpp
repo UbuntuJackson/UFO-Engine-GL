@@ -176,15 +176,19 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
     if(ImGui::Button("Brush")){
         tool = Tools::BRUSH;
+
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
     }
 
     if(ImGui::Button("Eraser")){
         currently_selected_tiles = ManyTiles{{0},0,0,1,1};
         tool = Tools::BRUSH;
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
     }
 
     if(ImGui::Button("Fill Bucket")){
         tool = Tools::FILL_BUCKET;
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
@@ -207,15 +211,10 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                 ImVec2 mouse_pos = ImGui::GetMousePos();
                 ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 
-                //For selectig one tile
-                /*if(ImGui::IsItemClicked(0)){
-
-
-                    UpdateSelectedTilesetTile(tileset);
-                    }*/
-
                 if(ImGui::IsItemHovered()){
                     if(ImGui::IsMouseClicked(0)){
+                        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
+
                         UpdateSelectedTilesetTile(tileset);
 
                         int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
@@ -249,18 +248,6 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                         int x1 = x+1;
                         int y1 = y+1;
 
-                        /*if(y1-y0 <= 0){
-                            int y0_t = y0;
-                            y0 = y1;
-                            y1 = y0_t;
-                        }
-
-                        if(x1-x0 <= 0){
-                            int x0_t = x0;
-                            x0 = x1;
-                            x1 = x0_t;
-                        }*/
-
                         for(int r = y0; r < y1; r++){
                             for(int c = x0; c < x1; c++){
                                 int t = (r*tileset.columns)+ c + tileset.tileset_start_id;
@@ -274,11 +261,6 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
                     }
                 }
-
-                /*ImGui::GetWindowDrawList()->AddRect(
-                    ImVec2(item_rect_pos.x + x*tileset.tile_width , item_rect_pos.y + y*tileset.tile_height),
-                    ImVec2(item_rect_pos.x + x*tileset.tile_width+tileset.tile_width , item_rect_pos.y + y*tileset.tile_height+tileset.tile_height),
-                    0xFFFF00FF, 0.0f, 0, 1.0f);*/
 
                 ImGui::GetWindowDrawList()->AddRect(
                     ImVec2(item_rect_pos.x + currently_selected_tiles.column*tileset.tile_width , item_rect_pos.y + currently_selected_tiles.row*tileset.tile_height),
