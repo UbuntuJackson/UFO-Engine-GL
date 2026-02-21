@@ -21,6 +21,8 @@ public:
 
     ufo::Rectangle rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(600.0f, 200.0f));
 
+    ufo::Rectangle GetRectangle();
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);

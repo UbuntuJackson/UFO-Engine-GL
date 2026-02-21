@@ -17,6 +17,10 @@ Widget::Widget(Vector2f _) : Actor(_){
     base_class_name = class_name;
 }
 
+ufo::Rectangle Widget::GetRectangle(){
+    return ufo::Rectangle(GetGlobalPosition()+rectangle.position,rectangle.size);
+}
+
 void Widget::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
