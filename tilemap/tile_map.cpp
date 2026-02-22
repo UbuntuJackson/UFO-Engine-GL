@@ -415,7 +415,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     if(!properties_open) return;
 
 
-    _level_editor_tab->MultiSelect(this);
+
 
 
     if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP){

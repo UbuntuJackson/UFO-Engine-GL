@@ -294,14 +294,17 @@ public:
 
     virtual void OnAdditionalButtonsForTreeItem();
 
+    //Function dedicated solely for the purpose of getting the ONE hovered actor, if it exists at all
+    Actor* GetFocusedActor(Vector2f _cursor_viewport_position);
+    virtual Actor* OnGetFocusedActor(Vector2f _cursor_viewport_position);
+
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    virtual bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual void OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
-    virtual bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     std::string editor_viewport_text;
     virtual void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

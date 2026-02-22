@@ -53,6 +53,11 @@ void ControllableCamera::OnUpdate(float _delta_time){
     if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;*/
 }
 
+Actor* ControllableCamera::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
+
+    return nullptr;
+}
+
 void ControllableCamera::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }

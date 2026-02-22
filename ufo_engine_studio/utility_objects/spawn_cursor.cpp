@@ -14,6 +14,10 @@ void SpawnCursor::OnUpdate(float _dt){
 
 }
 
+Actor* SpawnCursor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
+    return nullptr;
+}
+
 bool SpawnCursor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     return false;
 }

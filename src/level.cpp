@@ -101,9 +101,7 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
         ImVec2(min.x, min.y),
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
 
-    if(properties_open){
-        _level_editor_tab->MultiSelect(this);
-    }
+
 
     if(is_selected){
         if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){

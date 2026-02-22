@@ -769,7 +769,6 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     //Adjusting the spawn-cursor to not make usage too disorienting
     if(properties_open){
-        _level_editor_tab->MultiSelect(this);
 
         auto local_tile_map = IsInTileMap();
         if(local_tile_map){
@@ -825,6 +824,26 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
 }
 
+Actor* Actor::GetFocusedActor(Vector2f _mouse_position_over_screenspace){
+    if(import_mode != ImportModes::WRAPPED){
+        for(const auto& actor : actors){
+            Actor* act = actor->GetFocusedActor(_mouse_position_over_screenspace);
+            if(act) return act;
+        }
+    }
+
+    return OnGetFocusedActor(_mouse_position_over_screenspace);
+}
+
+Actor* Actor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
+    const Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_mouse_position_over_screenspace);
+
+    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size), world_mouse)){
+        return this;
+    }
+    return nullptr;
+}
+
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     if(import_mode != ImportModes::WRAPPED){
@@ -856,6 +875,7 @@ bool Actor::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngin
     return OnUpdateEditorViewportFocus(_editor, _level_editor_tab);
 }
 
+//Isn't this function doing two things technically?
 bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     bool focused = false;
 
@@ -871,7 +891,9 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
     if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
-        if(ImGui::IsItemHovered()){
+        bool is_viewport_hovered = ImGui::IsItemHovered(); //Hopefully this actually represents the viewport
+
+        if(is_viewport_hovered){
 
             //Basically grab on click, ungrab on release. This does not make sense if you want to
             // be able to spawn multiple actors in a row by holding the mouse button

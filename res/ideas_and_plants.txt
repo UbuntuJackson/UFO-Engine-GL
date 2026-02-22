@@ -75,3 +75,17 @@ There's a problem arising in the following scenario:
     un-undoable. In other words, InstanceTileMap1 is permanently free'd when this happens.
 
 Question: Can I ensure that a move-action like this does not refer to an object that is free'd, like InstanceTileMap1?
+
+### Recursive Copying ###
+
+I have decided that recursive copying would in fact be useful. Currently I need to use ufo::gc::Json objects to convert an actor with all its
+components and configurations to get the exact tree structure I want. The properties I would like to copy are
+-Default properties
+-custom properties, i.e ufo-variables
+-components, i.e actors attached to an actor.
+
+All these *might* be easily solvable with some code-generation, the only really controversial one being components.
+
+### Pointing and clicking ###
+-When nothing is selected and clicking, the root of the scene should be selected
+-Something is not right with how when you select a single actor, you then can't mutli-select because it searches from that actor now

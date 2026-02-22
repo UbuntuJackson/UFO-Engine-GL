@@ -38,7 +38,8 @@ public:
     //Important to note that this counts the distance from the 0,0 of the computer screen
     Vector2f level_viewport_position;
 
-    //This represents where above the level viewport you're hovering your cursor
+    //This represents where above the level viewport you're hovering your cursor, except proportional to the resized viewport
+    // in other words in-game screenspace
     Vector2f mouse_position_over_screenspace;
     Vector2f former_mouse_position_over_screenspace;
 

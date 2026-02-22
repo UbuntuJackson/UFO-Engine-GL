@@ -18,6 +18,8 @@ public:
 
         ufo::gc::JsonMap* structured_classes_json = ufo::gc::JsonRead(&gc, "../structured_classes.json");
         auto classes = structured_classes_json->map.at("contents")->AsArray();
+
+        //It would be nice if this array could be loaded at the start of the game
         for(const auto& cl : classes){
             auto macros = cl->AsMap().at("macros")->AsArray();
             found_class = cl->AsMap().at("class")->AsMap().at("name")->AsString() == _parent_actor->class_name;

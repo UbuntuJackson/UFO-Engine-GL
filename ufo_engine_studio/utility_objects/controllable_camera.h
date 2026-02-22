@@ -23,6 +23,8 @@ public:
 
     void OnUpdate(float _delta_time);
 
+    Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace);
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

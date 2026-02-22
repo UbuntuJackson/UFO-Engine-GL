@@ -206,8 +206,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     float w_h_ratio = (float)engine->width/(float)engine->height;
 
-
-
     ImGui::Image(
         (void*)(intptr_t)(dynamic_cast<ufo::OpenGLv4_5_Graphics*>(engine->graphics.get())->texture_id),
         ImVec2(ImGui::GetWindowSize().y*w_h_ratio, ImGui::GetWindowSize().y),
@@ -245,10 +243,15 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     this_level->UpdateEditorViewport(editor, this);
 
+    Actor* focused_actor = this_level->GetFocusedActor(mouse_position_over_screenspace);
+    if(focused_actor) Console::PrintLine("GetFocusedActor",focused_actor->editor_name);
+
     focused_actor_found = false;
 
     //This seems redundant, since I'm checking for these further down in UpdateEditorViewportFocus.
     if((current_tool == Tools::SELECT || current_tool == Tools::ERASE || current_tool == Tools::PLACE) && selection_rectangle_world_space.size == Vector2f(0.0f, 0.0f)) focused_actor_found = this_level->UpdateEditorViewportFocus(editor, this);
+
+    MultiSelect(this_level);
 
     ImGui::End();
 }
