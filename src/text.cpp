@@ -167,7 +167,7 @@ void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStu
         if(parent->DynamicCast<Widget>()) parent_is_widget = true;
     }
 
-    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse) && !parent_is_widget){
+    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse) && !parent_is_widget){
         //Console::PrintLine("Overlapping");
         if(engine->mouse.is_left_button_held){
             Vector2f dp = world_mouse - former_world_mouse;

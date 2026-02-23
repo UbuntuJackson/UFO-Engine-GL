@@ -4,6 +4,8 @@
 #include "raw_shape_base.h"
 #include "../external/olcPixelGameEngine.h"
 
+namespace ufo{
+
 class Pill : public RawShapeBase{
 public:
     float height;
@@ -19,5 +21,6 @@ public:
     //void Draw(Camera *_camera);
 
 };
+}
 
 #endif

@@ -124,7 +124,7 @@ Camera::TransformScreenToWorld(const olc::vf2d& _screen_position){ //position is
 
 bool
 Camera::IsOnScreen(olc::vf2d _position, olc::vf2d _offset){
-    return ufoMaths::RectangleVsPoint(GetOnScreenRectangleInWorld(_offset),_position);
+    return ufo::Maths::RectangleVsPoint(GetOnScreenRectangleInWorld(_offset),_position);
 }
 
 ufo::Rectangle

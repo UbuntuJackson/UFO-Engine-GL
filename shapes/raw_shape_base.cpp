@@ -4,6 +4,8 @@
 #include "circle.h"
 #include "pill.h"
 
+namespace ufo{
+
 RawShapeBase::RawShapeBase(olc::vf2d _position) : position{_position}{}
 
 void RawShapeBase::Update(){
@@ -16,5 +18,7 @@ void RawShapeBase::Draw(Camera *_camera){
 
 bool RawShapeBase::IsOverlappingOther(RawShapeBase* _other){return false;}
 bool RawShapeBase::IsOverlapping(Circle* _circle){return false;}
-bool RawShapeBase::IsOverlapping(ufo::Rectangle* _circle){return false;}
+bool RawShapeBase::IsOverlapping(Rectangle* _circle){return false;}
 bool RawShapeBase::IsOverlapping(Pill* _pill){return false;}
+
+}

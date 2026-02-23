@@ -12,7 +12,7 @@
 #include "../shapes/vector3.h"
 //#include "../shapes/shape.h"
 
-namespace ufoMaths{
+namespace ufo::Maths{
 
 ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle){
     ufo::Rectangle r = _rectangle;
@@ -83,8 +83,8 @@ RayVsCircleCollisionData RayVsCircle(Ray2 my_ray, Circle* circle){
     //Console::Out(circle->position);
     //Console::Out(a,b,c);
 
-    float x1 = ufoMaths::PositiveReducedQuadraticEquation(a,b,c);
-    float x2 = ufoMaths::NegativeReducedQuadraticEquation(a,b,c);
+    float x1 = ufo::Maths::PositiveReducedQuadraticEquation(a,b,c);
+    float x2 = ufo::Maths::NegativeReducedQuadraticEquation(a,b,c);
 
     //If things don't add up
     if(std::isinf(x1) || std::isinf(x2) || std::isnan(x1) || std::isnan(x2)){

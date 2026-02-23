@@ -323,8 +323,8 @@ public:
 
                     for(int yy = -32+12; yy < 32+12; yy++){
                         for(int xx = -32+6; xx < 32+6; xx++){
-                            if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 32.0f){
-                                if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 28.0f
+                            if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 32.0f){
+                                if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 28.0f
                                     && v->sprite->GetPixel(local_position+Vector2f(xx,yy)).a != 0
                                 ){
                                     olc::Pixel c = v->sprite->GetPixel(local_position+Vector2f(xx,yy));
@@ -460,8 +460,8 @@ public:
                             if(CompareColour(solid_decal->sprite->GetPixel(local_position+Vector2f(xx,yy)), olc::VERY_DARK_GREY)) continue;
                             if(CompareColour(solid_decal->sprite->GetPixel(local_position+Vector2f(xx,yy)), olc::BLUE)) continue;
 
-                            if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 33.0f){
-                                if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 28.0f
+                            if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 33.0f){
+                                if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 28.0f
                                     && v->sprite->GetPixel(local_position+Vector2f(xx,yy)).a != 0
                                 ){
                                     olc::Pixel c = v->sprite->GetPixel(local_position+Vector2f(xx,yy));
@@ -577,8 +577,8 @@ public:
 
                     for(auto&& [k,v] : game->asset_manager.GetDecals()){
                         if(k == "bg") continue;
-                        if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 14.0f){
-                            if(ufoMaths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 10.0f
+                        if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) <= 14.0f){
+                            if(ufo::Maths::Distance2(local_position+Vector2f(xx,yy), local_position+Vector2f(6.0f,12.0f)) > 10.0f
                                 && v->sprite->GetPixel(local_position+Vector2f(xx,yy)).a != 0
                             ){
                                 olc::Pixel c = v->sprite->GetPixel(local_position+Vector2f(xx,yy));
@@ -891,7 +891,7 @@ public:
             if(hit_floor){
                 state = state_walk;
                 for(const auto& goal : level->goals){
-                    if(ufoMaths::RectangleVsRectangle(ufo::Rectangle(local_position, Vector2f(12.0f,24.0f)),goal->shape)){
+                    if(ufo::Maths::RectangleVsRectangle(ufo::Rectangle(local_position, Vector2f(12.0f,24.0f)),goal->shape)){
                         is_rescued = true;
                     }
                 }
@@ -905,7 +905,7 @@ public:
         if(local_position.y > level->level_size.y) QueueForPurge();
 
         for(const auto& honey_coin : level->honey_coin_handles){
-            if(ufoMaths::RectangleVsCircle(ufo::Rectangle(local_position, Vector2f(12.0f,24.0f)),honey_coin->shape)){
+            if(ufo::Maths::RectangleVsCircle(ufo::Rectangle(local_position, Vector2f(12.0f,24.0f)),honey_coin->shape)){
                 level->honey_coin_hud->current_frame_index = 0.0f;
                 honey_coin->QueueForPurge();
             }
@@ -929,10 +929,10 @@ public:
         //MovingSolid AND pingu moves. This involves is_already_overlapping_blue a member variable of Pingu. Hence resolving is a sturdier solution.
         if(IsOverlappingFeet(local_position,olc::BLUE) && what_is_current_state != States::BLOCKER /*&& !is_already_overlapping_blue*/){
             while(IsOverlappingFeet(local_position,olc::BLUE) && !IsOverlappingSolid(local_position) && velocity.x != 0.0f){
-                local_position.x -= ufoMaths::Sign(velocity.x);
+                local_position.x -= ufo::Maths::Sign(velocity.x);
                 Console::PrintLine("While loop in PinguUpdate");
             }
-            if(IsOverlappingSolid(local_position)) local_position.x += ufoMaths::Sign(velocity.x);
+            if(IsOverlappingSolid(local_position)) local_position.x += ufo::Maths::Sign(velocity.x);
             face_direction *= -1.0f;
         }
 
@@ -1035,7 +1035,7 @@ public:
 
             //Move back until one pixel before where Pingu collided
             while(IsOverlappingSolid(incrementing_position)){
-                incrementing_position.x -= ufoMaths::Sign(velocity.x);
+                incrementing_position.x -= ufo::Maths::Sign(velocity.x);
             }
 
             while(!slope_resolved){
@@ -1057,14 +1057,14 @@ public:
                         hit_slope = false;
                         hit_wall = true;
                         incrementing_position = position_before_slope_incrementation;
-                        incrementing_position.x -= ufoMaths::Sign(velocity.x);
+                        incrementing_position.x -= ufo::Maths::Sign(velocity.x);
                         slope_resolved = true;
                         break;
 
                     }
                 }
 
-                if(!hit_wall) incrementing_position.x += ufoMaths::Sign(velocity.x);
+                if(!hit_wall) incrementing_position.x += ufo::Maths::Sign(velocity.x);
 
                 if(std::abs(local_position.x - incrementing_position.x) >= std::abs(velocity.x * Engine::Get().GetDeltaTime())){
                     slope_resolved = true;
@@ -1131,7 +1131,7 @@ public:
 
             //Move the pingu back until not colliding.
             while(IsOverlappingSolid(local_position)){
-                local_position.y-=ufoMaths::Sign(velocity.y);
+                local_position.y-=ufo::Maths::Sign(velocity.y);
             }
 
             //Setting hit_floor like this might not be necessary

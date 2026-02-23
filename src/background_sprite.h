@@ -26,7 +26,7 @@ public:
             ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
             _graphics->DrawPartialSprite(
                 key,
-                Vector2f(ufoMaths::Wrap(screen_position.x, -_camera->viewport.size.x, _camera->viewport.size.x),0.0f)),
+                Vector2f(ufo::Maths::Wrap(screen_position.x, -_camera->viewport.size.x, _camera->viewport.size.x),0.0f)),
                 /*size,*/
                 offset,
                 scale*_camera->scale,

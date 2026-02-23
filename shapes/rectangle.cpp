@@ -8,11 +8,11 @@ namespace ufo{
 Rectangle::Rectangle(olc::vf2d _position, olc::vf2d _size): RawShapeBase(_position), size{_size}{}
 
 bool Rectangle::IsOverlapping(Circle* _circle){
-    return ufoMaths::IsOverlapping(*this,*_circle);
+    return ufo::Maths::IsOverlapping(*this,*_circle);
 }
 
 bool Rectangle::IsOverlapping(Rectangle* _circle){
-    return ufoMaths::IsOverlapping(*this,*_circle);
+    return ufo::Maths::IsOverlapping(*this,*_circle);
 }
 
 bool Rectangle::IsOverlappingOther(RawShapeBase* _other){

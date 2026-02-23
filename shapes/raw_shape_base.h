@@ -1,10 +1,11 @@
-#ifndef RAW_SHAPE_BASE
-#define RAW_SHAPE_BASE
+#pragma once
 
 #include "../external/olcPixelGameEngine.h"
 
+
+namespace ufo{
 class Camera;
-namespace ufo{class Rectangle;}
+class Rectangle;
 class Circle;
 class Pill;
 
@@ -21,4 +22,4 @@ public:
     virtual bool IsOverlapping(Pill* _pill);
 };
 
-#endif
+}

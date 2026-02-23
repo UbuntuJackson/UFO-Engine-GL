@@ -1,5 +1,5 @@
 #include "is_polygon_clockwise.h"
-namespace ufoMaths{
+namespace ufo::Maths{
 bool IsPolygonClockwise(ufo::Polygon _polygon){
     float sum = 0.0f;
     for(int i = 0; i < _polygon.size(); i++){

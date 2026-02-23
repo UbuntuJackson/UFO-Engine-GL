@@ -342,7 +342,7 @@ void LevelEditorTab::MultiSelect(ufo::Actor* _actor){
             const Vector2f pos_min = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position;
             const Vector2f pos_max = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position+actor->editor_hitbox.size;
 
-            if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+            if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
                 selected_actor_is_grabbed = true;
             }
         }
@@ -368,7 +368,7 @@ void LevelEditorTab::MultiSelect(ufo::Actor* _actor){
             const Vector2f pos_min = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position;
             const Vector2f pos_max = this_level->active_camera_handles.back()->Transform(actor->GetGlobalPosition())+actor->editor_hitbox.position+actor->editor_hitbox.size;
 
-            if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+            if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
                 selected_actor_is_overlapped = true;
             }
         }

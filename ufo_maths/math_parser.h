@@ -6,7 +6,7 @@
 #include <memory>
 #include <algorithm>
 
-namespace ufoMaths{
+namespace ufo::Maths{
 
 class MathNode{
 public:

@@ -11,7 +11,7 @@
 typedef olc::vf2d Vector2f;
 typedef olc::vi2d Vector2i;
 
-namespace ufoMaths{
+namespace ufo::Maths{
 
 //#define SIN(a) std::sin(a)
 //#define COS(a) std::cos(a)

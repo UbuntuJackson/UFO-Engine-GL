@@ -5,6 +5,8 @@
 //#include "../drawing_system/drawing_system.h"
 //#include "../camera/camera.h"
 
+namespace ufo{
+
 Circle::Circle(olc::vf2d _position, float _radius) :
 RawShapeBase(_position),
     position{_position},
@@ -12,17 +14,18 @@ RawShapeBase(_position),
     {}
 
 bool Circle::IsOverlapping(Circle* _circle){
-    return ufoMaths::IsOverlapping(*this,*_circle);
+    return ufo::Maths::IsOverlapping(*this,*_circle);
 }
 
 bool Circle::IsOverlapping(ufo::Rectangle* _circle){
-    return ufoMaths::IsOverlapping(*this,*_circle);
+    return ufo::Maths::IsOverlapping(*this,*_circle);
 }
 
 bool Circle::IsOverlappingOther(RawShapeBase* _other){
     return _other->IsOverlapping(this);
 }
 
+}
 //void Circle::Draw(Camera *_camera){
     //DrawingSystem::Draw(*this,_camera, colour);
 //}

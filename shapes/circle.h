@@ -4,7 +4,8 @@
 #include "raw_shape_base.h"
 #include "../external/olcPixelGameEngine.h"
 
-namespace ufo{class Rectangle;}
+namespace ufo{
+class Rectangle;
 class Camera;
 
 class Circle : public RawShapeBase{
@@ -17,5 +18,6 @@ public:
     bool IsOverlappingOther(RawShapeBase* _other);
     //void Draw(Camera *_camera);
 };
+}
 
 #endif

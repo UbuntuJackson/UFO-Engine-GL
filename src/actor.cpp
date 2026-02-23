@@ -627,7 +627,7 @@ void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectan
     if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
 
     if(
-        ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
+        ufo::Maths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
         && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
     ){
 
@@ -881,7 +881,7 @@ Actor* Actor::GetFocusedActor(Vector2f _mouse_position_over_screenspace){
 Actor* Actor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
     const Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_mouse_position_over_screenspace);
 
-    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size), world_mouse)){
+    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size), world_mouse)){
         return this;
     }
     return nullptr;
@@ -1002,7 +1002,7 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
     const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
 
-    if(ufoMaths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
+    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
         bool is_viewport_hovered = ImGui::IsItemHovered(); //Hopefully this actually represents the viewport
 
         if(is_viewport_hovered){

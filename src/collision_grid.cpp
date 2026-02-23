@@ -16,7 +16,7 @@ CollisionGrid::CollisionGrid(Vector2f _) : Actor(_){
 int CollisionGrid::GetDivisionFromPosition(const Vector2f& _position){
     int index = ((int)_position.y/row_height)*number_of_columns+(int)_position.x/column_width;
 
-    if(!ufoMaths::RectangleVsPoint(ufo::Rectangle(Vector2f(0.0f, 0.0f), level->size), _position)) return Errors::OUT_OF_BOUNDS;
+    if(!ufo::Maths::RectangleVsPoint(ufo::Rectangle(Vector2f(0.0f, 0.0f), level->size), _position)) return Errors::OUT_OF_BOUNDS;
 
     return index;
 }

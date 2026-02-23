@@ -239,7 +239,7 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::Begin("Calculator", &view_calculator);
 
         if(ImGui::InputText("Expression:", &calculator_expression, ImGuiInputTextFlags_EnterReturnsTrue)){
-            float result = ufoMaths::ParseExpression(calculator_expression);
+            float result = ufo::Maths::ParseExpression(calculator_expression);
             Console::PrintLine("Result:",result);
         }
 

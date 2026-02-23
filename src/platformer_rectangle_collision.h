@@ -61,12 +61,12 @@ public:
                 if(tile_id != EMPTY){
                     //if(tile_id != FULL) Console::PrintLine("TileId:",tile_id);
 
-                    if(ufoMaths::RectangleVsRectangle(_rectangle, ufo::Rectangle(Vector2f(xx*16.0f,yy*16.0f), Vector2f(16.0f,16.0f)))){
+                    if(ufo::Maths::RectangleVsRectangle(_rectangle, ufo::Rectangle(Vector2f(xx*16.0f,yy*16.0f), Vector2f(16.0f,16.0f)))){
                         overlapped_tiles.push_back(tile_id);
                         if(tile_id == FULL) place_free = false;
                         if(tile_id == SLOPE45_BOTTOM_RIGHT){
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 16.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 0.0f))).is_hit)
                             {
@@ -85,7 +85,7 @@ public:
                         }
                         if(tile_id == SLOPE45_BOTTOM_LEFT){
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 0.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 16.0f))).is_hit)
                             {
@@ -96,7 +96,7 @@ public:
                         if(tile_id == SLOPE_22dot5_RIGHT_1){
                             //Console::PrintLine("SLOPE_22dot5_RIGHT_1");
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 16.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 8.0f))).is_hit)
                             {
@@ -107,7 +107,7 @@ public:
                         if(tile_id == SLOPE_22dot5_RIGHT_2){
                             //Console::PrintLine("SLOPE_22dot5_RIGHT_2");
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 8.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 0.0f))).is_hit)
                             {
@@ -119,7 +119,7 @@ public:
                         if(tile_id == SLOPE_22dot5_LEFT_2){
                             //Console::PrintLine("SLOPE_22dot5_RIGHT_1");
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 8.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 16.0f))).is_hit)
                             {
@@ -130,7 +130,7 @@ public:
                         if(tile_id == SLOPE_22dot5_LEFT_1){
                             //Console::PrintLine("SLOPE_22dot5_RIGHT_2");
                             if(
-                                ufoMaths::RayVsRay(
+                                ufo::Maths::RayVsRay(
                                     Ray2(_rectangle.position+Vector2f(0.0f, _rectangle.size.y), _rectangle.position+_rectangle.size),
                                     Ray2(Vector2f(xx*16.0f,yy*16.0f) + Vector2f(0.0f, 0.0f), Vector2f(xx*16.0f,yy*16.0f) + Vector2f(16.0f, 8.0f))).is_hit)
                             {
@@ -192,7 +192,7 @@ public:
                         local_position.y-=float(i);
                         hit_wall = false;
                         //Console::PrintLine("Slowdown");
-                        velocity.x-=ufoMaths::PreciseSignFloat(velocity.x)*(float(i)*3.0f);
+                        velocity.x-=ufo::Maths::PreciseSignFloat(velocity.x)*(float(i)*3.0f);
                         break;
                     }
                 }
@@ -202,9 +202,9 @@ public:
                 }
                 else{
                     while(GetTileCollisionData(_tile_map,_tileset,GetRectangle()).place_free){
-                        local_position.x += ufoMaths::PreciseSignFloat(velocity.x);
+                        local_position.x += ufo::Maths::PreciseSignFloat(velocity.x);
                     }
-                    local_position.x -= ufoMaths::PreciseSignFloat(velocity.x);
+                    local_position.x -= ufo::Maths::PreciseSignFloat(velocity.x);
                     velocity.x = 0.0f;
                 }
 
@@ -224,9 +224,9 @@ public:
             if(!y_place_free){
 
                 while(GetTileCollisionData(_tile_map,_tileset,GetRectangle()).place_free){
-                    local_position.y += ufoMaths::PreciseSignFloat(velocity.y);
+                    local_position.y += ufo::Maths::PreciseSignFloat(velocity.y);
                 }
-                local_position.y -= ufoMaths::PreciseSignFloat(velocity.y);
+                local_position.y -= ufo::Maths::PreciseSignFloat(velocity.y);
                 velocity.y = 0.0f;
             }
 
