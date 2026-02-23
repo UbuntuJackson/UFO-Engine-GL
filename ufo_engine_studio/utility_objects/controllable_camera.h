@@ -12,7 +12,7 @@ namespace UFOEngineStudio{
 class LevelEditorTab;
 class Editor;
 
-class ControllableCamera : public Camera{
+class ControllableCamera : public ufo::Camera{
 public:
 
     ufo::Controls* controls = nullptr;
@@ -23,9 +23,9 @@ public:
 
     void OnUpdate(float _delta_time);
 
-    Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace);
+    ufo::Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace);
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, ufo::Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

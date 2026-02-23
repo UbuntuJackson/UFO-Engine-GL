@@ -14,8 +14,10 @@
 #include "../ufo_engine_studio/editor.h"
 #include "actor_undo_and_redo.h"
 
+namespace ufo{
+
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
-    class_name = "Level";
+    class_name = "ufo::Level";
     base_class_name = class_name;
 }
 
@@ -250,5 +252,7 @@ void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEdit
 
 
     DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
+
+}
 
 }

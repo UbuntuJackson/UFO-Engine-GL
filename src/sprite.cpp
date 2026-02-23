@@ -12,6 +12,8 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_garbage_collector/gc_json.h"
 
+namespace ufo{
+
 Sprite::Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
 key{_key},
 Actor(_position),
@@ -190,4 +192,6 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
     }
+}
+
 }

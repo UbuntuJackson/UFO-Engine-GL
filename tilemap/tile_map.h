@@ -8,14 +8,16 @@
 #include "../src/level.h"
 
 class Camera;
-class Level;
 
 namespace ufo{
+    class Level;
     class Graphics;
     namespace gc{
         class JsonMap;
     }
 }
+
+namespace ufo{
 
 class TileMap : public Actor{
 public:
@@ -226,3 +228,5 @@ public:
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 };
+
+}

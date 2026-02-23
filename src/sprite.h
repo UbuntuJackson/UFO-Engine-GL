@@ -5,11 +5,10 @@
 #include "graphics.h"
 #include "shader.h"
 
-class Camera;
-
 namespace ufo{
-    class Graphics;
-}
+
+class Graphics;
+class Camera;
 
 class Sprite : public Actor{
 public:
@@ -49,3 +48,5 @@ public:
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 };
+
+}

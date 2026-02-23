@@ -7,12 +7,11 @@
 #include "actor_undo_and_redo.h"
 #include "widget.h"
 
-class Camera;
-
 namespace ufo{
-    class Controls;
-    class Graphics;
-}
+
+class Camera;
+class Controls;
+class Graphics;
 
 class Level : public Actor{
 public:
@@ -124,3 +123,5 @@ public:
     std::vector<std::unique_ptr<ufo::ActorChange>> level_changes;
 
 };
+
+}

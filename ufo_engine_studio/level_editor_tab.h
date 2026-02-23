@@ -3,13 +3,12 @@
 #include "../imgui/imgui_internal.h"
 #include "../imgui/imgui.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
-#include "../src/actor.h"
 #include <vector>
 #include "../ufo_maths/ufo_maths.h"
-
-class Level;
+#include "../src/actor.h"
 
 namespace ufo{
+    class Level;
     class Engine;
     class Graphics;
     class Editor;
@@ -29,11 +28,11 @@ public:
 
     ufo::Engine* engine = nullptr;
 
-    Actor* spawn_cursor = nullptr;
-    Level* this_level = nullptr;
+    ufo::Actor* spawn_cursor = nullptr;
+    ufo::Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;
     float window_to_engine_ratio = 1.0f;
-    std::unique_ptr<Actor> replace_with_actor;
+    std::unique_ptr<ufo::Actor> replace_with_actor;
     std::string header_file;
 
     //Important to note that this counts the distance from the 0,0 of the computer screen
@@ -45,7 +44,7 @@ public:
     Vector2f former_mouse_position_over_screenspace;
 
     //This is for multi-dragdropping and single dragdropping too
-    std::vector<Actor::DraggedActorWhereAbouts> drag_dropped_actors;
+    std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;
 
     //So, this flag might not be needed, it's just a coding practice I've had for a while that I set a flag for things to be done later
     // It's just for resetting all actors to de-selected before selecting something else.
@@ -74,7 +73,7 @@ public:
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
-    void MultiSelect(Actor* _actor);
+    void MultiSelect(ufo::Actor* _actor);
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);
 

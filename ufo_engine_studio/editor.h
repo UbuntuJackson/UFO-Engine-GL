@@ -29,7 +29,7 @@
 
 namespace UFOEngineStudio{
 
-class Editor : public Level, public ufo::gc::Root{
+class Editor : public ufo::Level, public ufo::gc::Root{
 public:
 
     bool view_calculator = false;
@@ -93,11 +93,11 @@ public:
 
         std::string base;
         std::string class_name = "";
-        std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> spawner_function;
+        std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> spawner_function;
         std::vector<std::unique_ptr<ufo::EditorProperty>> properties;
 
         AdvancedActorSpawner(
-            std::function<std::unique_ptr<Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
+            std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
             std::string _base = "",
             std::string _class_name = ""
         ) :
@@ -106,7 +106,7 @@ public:
         class_name{_class_name}
         {}
 
-        std::unique_ptr<Actor> Spawn(Editor* _editor){
+        std::unique_ptr<ufo::Actor> Spawn(Editor* _editor){
             auto act = spawner_function(_editor,this);
 
             if(actor_config_path != ""){
@@ -120,7 +120,7 @@ public:
                         //Need to somehow know if these actors are imported
                         //for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
 
-                        actor_from_file->import_mode = Actor::ImportModes::WRAPPED;
+                        actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
 
                         std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
                         if(base_class_of_actor_config != act->base_class_name){
@@ -150,10 +150,10 @@ public:
     int actor_count_for_naming_purposes = 0;
 
     void PopulateSpawnableActorMapWithBaseObjects(){
-        spawnable_actor_map.emplace("Actor",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::Actor",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
-                return std::make_unique<Actor>(Vector2f(0.0f, 0.0f));
-            }, "Actor", "Actor"))
+                return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
+            }, "ufo::Actor", "ufo::Actor"))
         );
 
         spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
@@ -168,16 +168,16 @@ public:
             }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision"))
         );
 
-        spawnable_actor_map.emplace("TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
-                return std::make_unique<TileMap>(Vector2f(0.0f, 0.0f));
-            }, "TileMap", "TileMap"))
+                return std::make_unique<ufo::TileMap>(Vector2f(0.0f, 0.0f));
+            }, "ufo::TileMap", "ufo::TileMap"))
         );
 
-        spawnable_actor_map.emplace("Level",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::Level",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
-                return std::make_unique<Level>();
-            }, "Level", "Level"))
+                return std::make_unique<ufo::Level>();
+            }, "ufo::Level", "ufo::Level"))
         );
 
         spawnable_actor_map.emplace("ufo::Widget",std::move(std::make_unique<AdvancedActorSpawner>(
@@ -199,10 +199,10 @@ public:
         );
 
         spawnable_actor_map.emplace(
-            "Sprite",
+            "ufo::Sprite",
             std::move(std::make_unique<AdvancedActorSpawner>(
                 [](Editor* _editor, AdvancedActorSpawner* _this){
-                    return std::make_unique<Sprite>("placeholder_icon",
+                    return std::make_unique<ufo::Sprite>("placeholder_icon",
                         Vector2f(0.0f, 0.0f),
                         Vector2f(0.0f, 0.0f),
                         Vector2f(32.0f, 32.0f),
@@ -211,29 +211,29 @@ public:
                         0
                     );
                 },
-                "Sprite",
-                "Sprite"
+                "ufo::Sprite",
+                "ufo::Sprite"
             ))
         );
 
         spawnable_actor_map.emplace(
-            "Animation",
+            "ufo::Animation",
             std::move(std::make_unique<AdvancedActorSpawner>(
                 [](Editor* _editor, AdvancedActorSpawner* _this){
-                    return std::make_unique<Animation>(
+                    return std::make_unique<ufo::Animation>(
                         Vector2f(0.0f, 0.0f)
                     );
                 },
-                "Animation",
-                "Animation"
+                "ufo::Animation",
+                "ufo::Animation"
             ))
         );
 
-        spawnable_actor_map.emplace("Camera",
+        spawnable_actor_map.emplace("ufo::Camera",
             std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
-                return std::make_unique<Camera>(Vector2f(0.0f, 0.0f));
+                return std::make_unique<ufo::Camera>(Vector2f(0.0f, 0.0f));
             },
-            "Camera", "Camera"))
+            "ufo::Camera", "ufo::Camera"))
         );
     }
 
@@ -257,7 +257,7 @@ public:
                                 _this->base,
                                 "and type", _this->class_name);
 
-                            return _editor->spawnable_actor_map.at("Actor")->Spawn(_editor);
+                            return _editor->spawnable_actor_map.at("ufo::Actor")->Spawn(_editor);
                         },
                         inherits,
                         class_.at("name")->AsString()

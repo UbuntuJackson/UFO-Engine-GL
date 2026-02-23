@@ -13,6 +13,8 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "texture_2d.h"
 
+namespace ufo{
+
 Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
 
     class_name = "Animation";
@@ -235,4 +237,6 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
     }
+}
+
 }

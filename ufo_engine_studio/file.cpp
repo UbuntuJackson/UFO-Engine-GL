@@ -80,12 +80,12 @@ namespace UFOEngineStudio{
 
                 auto level = _editor->AddActorUniquePtr(
                         std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json))
-                    )->DynamicCast<Level>();
+                    )->DynamicCast<ufo::Level>();
 
                 if(!level){
                     level = _editor->AddActorUniquePtr(
                             std::move(_editor->engine->actor_generator->JsonToLevelTree(&(_editor->gc), level_json))
-                        )->DynamicCast<Level>();
+                        )->DynamicCast<ufo::Level>();
                     Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
                 }
 

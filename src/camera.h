@@ -14,6 +14,8 @@ namespace UFOEngineStudio{
     class LevelEditorTab;
 }
 
+namespace ufo{
+
 struct Bounds{
     float x0;
     float x1;
@@ -52,3 +54,5 @@ public:
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };
+
+}

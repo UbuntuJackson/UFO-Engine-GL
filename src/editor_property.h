@@ -3,10 +3,9 @@
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../ufo_garbage_collector/gc_json.h"
 
+namespace ufo{
 
 class Actor;
-
-namespace ufo{
 
 class EditorProperty{
 public:

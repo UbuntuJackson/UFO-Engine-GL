@@ -6,6 +6,7 @@
 #include <memory>
 #include <openglv4_5_graphics.h>
 #include "../src/level.h"
+#include "../src/actor.h"
 #include <SDL3/SDL.h>
 #include "../ufo_engine_studio/utility_objects/controllable_camera.h"
 #include "../imgui/imgui.h"
@@ -24,7 +25,7 @@
 namespace UFOEngineStudio{
 
 LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
-    this_level = _editor->AddActor<Level>();
+    this_level = _editor->AddActor<ufo::Level>();
     this_level->Load();
 }
 
@@ -251,7 +252,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     if(is_viewport_hovered){
         focused_actor_found = false;
 
-        Actor* focused_actor = this_level->GetFocusedActor(mouse_position_over_screenspace);
+        ufo::Actor* focused_actor = this_level->GetFocusedActor(mouse_position_over_screenspace);
 
         if(current_tool == Tools::SELECT){
 
@@ -286,7 +287,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
 
     if(show_multi_selection_right_click_pop_up_menu){
-        std::vector<Actor*> previously_selected_actors;
+        std::vector<ufo::Actor*> previously_selected_actors;
 
         this_level->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
 
@@ -319,9 +320,9 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     ImGui::End();
 }
 
-void LevelEditorTab::MultiSelect(Actor* _actor){
+void LevelEditorTab::MultiSelect(ufo::Actor* _actor){
 
-    std::vector<Actor*> actors_selected_this_frame;
+    std::vector<ufo::Actor*> actors_selected_this_frame;
 
     //Set initial start position for rectangle selection tool
     if(current_tool == Tools::SELECT && engine->mouse.is_left_button_held){
@@ -355,7 +356,7 @@ void LevelEditorTab::MultiSelect(Actor* _actor){
     }
 
     if(current_tool == Tools::MULTI_SELECT){
-        std::vector<Actor*> previously_selected_actors;
+        std::vector<ufo::Actor*> previously_selected_actors;
 
         _actor->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
 
@@ -390,7 +391,7 @@ void LevelEditorTab::MultiSelect(Actor* _actor){
 
     if(current_tool == Tools::MOVE_ACTOR_CLUSTER){
 
-        std::vector<Actor*> previously_selected_actors;
+        std::vector<ufo::Actor*> previously_selected_actors;
 
         _actor->GetPreviouslySelectedActors(previously_selected_actors,selection_rectangle_world_space);
 

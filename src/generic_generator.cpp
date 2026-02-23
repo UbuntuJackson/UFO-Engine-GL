@@ -23,7 +23,7 @@ namespace ufo{
 
 void GenericGenerator::Initialise(){
 	factory_map.emplace(
-        "Actor",
+        "ufo::Actor",
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
@@ -53,11 +53,11 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "TileMap",
+        "ufo::TileMap",
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
-            auto instance = std::make_unique<TileMap>(Vector2f(_x, _y));
+            auto instance = std::make_unique<ufo::TileMap>(Vector2f(_x, _y));
 
             try{
                 auto tiles = _json->map.at("tiles")->AsArray();
@@ -81,7 +81,7 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "Text",
+        "ufo::Text",
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
@@ -147,7 +147,7 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "Camera",
+        "ufo::Camera",
         [](ufo::gc::JsonMap* _json){
 
             float _x = _json->map.at("x")->AsFloat();
@@ -167,7 +167,7 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "Level",
+        "ufo::Level",
         [](ufo::gc::JsonMap* _json){
 
             float _x = _json->map.at("x")->AsFloat();
@@ -214,7 +214,7 @@ void GenericGenerator::Initialise(){
         }
     );
     factory_map.emplace(
-        "Sprite",
+        "ufo::Sprite",
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
@@ -240,7 +240,7 @@ void GenericGenerator::Initialise(){
         );
 
         factory_map.emplace(
-            "Animation",
+            "ufo::Animation",
             [](ufo::gc::JsonMap* _json){
                 float _x = _json->map.at("x")->AsFloat();
                 float _y = _json->map.at("y")->AsFloat();

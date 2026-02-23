@@ -8,6 +8,8 @@
 #include <garbage_collector.h>
 #include <gc_json.h>
 
+namespace ufo{
+
 Camera::Camera(olc::vf2d _position):
 Actor(_position),
 scale{1.0f}
@@ -151,4 +153,6 @@ ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("scale",_gc->New<ufo::gc::JsonNumber>(scale));
 
     return parent_class_as_json;
+}
+
 }

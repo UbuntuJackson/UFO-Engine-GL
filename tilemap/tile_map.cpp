@@ -16,6 +16,8 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../src/actor_undo_and_redo.h"
 
+namespace ufo{
+
 void TileMap::OnSpawn(){
     Actor::OnSpawn();
 
@@ -638,4 +640,6 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
     parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
     return parent_class_as_json;
+}
+
 }

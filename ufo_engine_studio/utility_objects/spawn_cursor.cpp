@@ -8,13 +8,13 @@
 
 namespace UFOEngineStudio{
 
-SpawnCursor::SpawnCursor(Vector2f _) : Actor(_){}
+SpawnCursor::SpawnCursor(Vector2f _) : ufo::Actor(_){}
 
 void SpawnCursor::OnUpdate(float _dt){
 
 }
 
-Actor* SpawnCursor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
+ufo::Actor* SpawnCursor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
     return nullptr;
 }
 

@@ -22,6 +22,8 @@
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
 
+namespace ufo{
+
 Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former_local_position(_local_position){
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
@@ -1127,5 +1129,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
 //Actor generator calls this.
 void Actor::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+
+}
 
 }

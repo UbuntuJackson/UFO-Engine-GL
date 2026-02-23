@@ -5,9 +5,9 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "../ufo_garbage_collector/gc_json.h"
 
-class Actor;
-
 namespace ufo{
+
+class Actor;
 
 class ActorChange{
 public:
@@ -76,7 +76,7 @@ public:
 
 };
 
-class ActorChange_CustomVariableInt : public ufo::ActorChange{
+class ActorChange_CustomVariableInt : public ActorChange{
 private:
     Actor* actor = nullptr;
 
@@ -108,7 +108,7 @@ public:
     void Do() override;
 };
 
-class ActorChange_CustomVariableFloatHandle : public ufo::ActorChange{
+class ActorChange_CustomVariableFloatHandle : public ActorChange{
 private:
 
     float* ptr;
@@ -124,7 +124,7 @@ public:
     void Do() override;
 };
 
-class ActorChange_CustomVariableIntHandle : public ufo::ActorChange{
+class ActorChange_CustomVariableIntHandle : public ActorChange{
 private:
 
     int* ptr;
@@ -142,7 +142,7 @@ public:
 
 // ...
 
-class ActorChange_CustomVariableStringHandle : public ufo::ActorChange{
+class ActorChange_CustomVariableStringHandle : public ActorChange{
 private:
 
     std::string* ptr;
@@ -160,7 +160,7 @@ public:
 
 // ...
 
-class ActorChange_CustomVariableVector2fHandle : public ufo::ActorChange{
+class ActorChange_CustomVariableVector2fHandle : public ActorChange{
 private:
 
     Vector2f* ptr;
@@ -177,7 +177,7 @@ public:
     void Do() override;
 };
 
-class ActorChange_MultipleActorChange : public ufo::ActorChange{
+class ActorChange_MultipleActorChange : public ActorChange{
 public:
     std::vector<std::unique_ptr<ActorChange>> changes;
 

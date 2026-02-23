@@ -39,6 +39,8 @@ struct ManyTiles{
     int first_selected_tile = 0;
 };
 
+namespace ufo{
+
 class TilesetManager{
 public:
     ufo::Engine* engine = nullptr;
@@ -101,5 +103,7 @@ public:
     TilesetManager();
 
 };
+
+}
 
 #endif

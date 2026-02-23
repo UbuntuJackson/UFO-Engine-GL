@@ -10,14 +10,14 @@
 
 namespace UFOEngineStudio{
 
-ControllableCamera::ControllableCamera(Vector2f _local_position) : Camera(_local_position){
+ControllableCamera::ControllableCamera(Vector2f _local_position) : ufo::Camera(_local_position){
     class_name = "ControllableCamera";
     editor_name = "ControllableCamera (Editor Tool)";
     is_savable = false;
 }
 
 void ControllableCamera::OnSpawn(){
-    Camera::OnSpawn();
+    ufo::Camera::OnSpawn();
     clamp = false;
 
     level->active_camera_handles.push_back(this);
@@ -26,7 +26,7 @@ void ControllableCamera::OnSpawn(){
 }
 
 void ControllableCamera::OnUpdate(float _delta_time){
-    Camera::OnUpdate(_delta_time);
+    ufo::Camera::OnUpdate(_delta_time);
 
     //Console::PrintLine("Controllable camera", local_position);
 
@@ -53,12 +53,12 @@ void ControllableCamera::OnUpdate(float _delta_time){
     if(engine->keyboard.GetKey(controls->GetControl("down")).is_held) local_position.y += _delta_time * 100.0f;*/
 }
 
-Actor* ControllableCamera::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
+ufo::Actor* ControllableCamera::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
 
     return nullptr;
 }
 
-void ControllableCamera::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void ControllableCamera::OnDrawGizmos(ufo::Graphics* _graphics, ufo::Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

@@ -15,6 +15,8 @@ namespace UFOEngineStudio{
     class LevelEditorTab;
 }
 
+namespace ufo{
+
 class Animation : public Sprite{
 public:
 
@@ -61,3 +63,5 @@ public:
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
 
 };
+
+}

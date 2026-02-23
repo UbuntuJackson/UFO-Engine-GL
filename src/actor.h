@@ -9,23 +9,23 @@
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
 
-class TileMap;
-
 namespace UFOEngineStudio{
     class Editor;
     class LevelEditorTab;
 }
 
 namespace ufo{
-    namespace gc{
-        class JsonMap;
-    }
-    class Engine;
-    class GarbageCollector;
-    class Graphics;
+
+namespace gc{
+    class JsonMap;
 }
 
+class TileMap;
+class Engine;
+class GarbageCollector;
+class Graphics;
 class Level;
+class Camera;
 
 //Using rule of 0 3 and 5 for all actors
 class Actor{
@@ -293,3 +293,5 @@ protected:
     friend class UFOEngineStudio::LevelEditorTab;
 
 };
+
+}

@@ -20,6 +20,8 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 
+namespace ufo{
+
 TilesetManager::TilesetManager(){
 }
 
@@ -280,5 +282,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     for(int ts = tileset_data.size()-1; ts != -1; ts--){
         if(!tileset_data[ts].to_not_be_removed) tileset_data.erase(tileset_data.begin()+ts);
     }
+
+}
 
 }

@@ -11,7 +11,7 @@ class Editor;
 
 class Action{
 public:
-    Actor* actor = nullptr;
+    ufo::Actor* actor = nullptr;
 
     Action(){
 
