@@ -22,7 +22,7 @@ def make_generated_file(_path, _classes):
 
     includes += "\n"
 
-    namespace_string = "namespace Generated{\n\n"
+    namespace_string = "namespace ufo::Generated{\n\n"
 
     class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
     class_string += "    public:\n"
