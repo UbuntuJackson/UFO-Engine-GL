@@ -4,10 +4,10 @@
 #include "../external/olcPixelGameEngine.h"
 #include "raw_shape_base.h"
 
+namespace ufo{
+
 class Circle;
 class Camera;
-
-namespace ufo{
 
 class Rectangle : public RawShapeBase{
 public:
