@@ -29,7 +29,7 @@ std::string Text::GetText(){
 }
 
 Text::Text(Vector2f _) : Widget(_){
-    base_class_name = "Text";
+    base_class_name = "ufo::Text";
     class_name = base_class_name;
 }
 

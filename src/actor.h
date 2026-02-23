@@ -251,52 +251,19 @@ public:
 
     void OpenProperties();
 
-    void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
-        if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
-
-        if(
-            ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
-            && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
-        ){
-
-            _selected_actors.push_back(this);
-            return;
-            //Console::PrintLine(editor_name,class_name);
-        }
-
-        for(const auto& actor : actors){
-            actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
-        }
-    }
-    void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
-
-        if(
-            ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
-            && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
-        ){
-            if(is_selected_in_viewport){
-                _selected_actors.push_back(this);
-                return;
-            }
-        }
-
-        for(const auto& actor : actors){
-            actor->GetPreviouslySelectedActors(_selected_actors, _selection_rectangle_world_space);
-        }
-    }
-    void SetActorsUnselectedInViewport(){
-        is_selected_in_viewport = false;
-
-        for(const auto& actor : actors){
-            actor->SetActorsUnselectedInViewport();
-        }
-    }
+    void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
+    void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
+    void SetActorsUnselectedInViewport();
 
     virtual void OnAdditionalButtonsForTreeItem();
 
     //Function dedicated solely for the purpose of getting the ONE hovered actor, if it exists at all
     Actor* GetFocusedActor(Vector2f _cursor_viewport_position);
     virtual Actor* OnGetFocusedActor(Vector2f _cursor_viewport_position);
+    virtual void OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    virtual void OnFocused();
+    virtual bool OnGrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
+    bool GrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

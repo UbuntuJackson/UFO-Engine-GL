@@ -19,12 +19,13 @@ namespace UFOEngineStudio{
 
 class LevelEditorTab : public Tab{
 public:
-    enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER };
+    enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER, MULTI_SELECT,ESTABLISH_MULTI_SELECT };
 
     bool focused_actor_found = false;
     bool show_multi_selection_right_click_pop_up_menu = false;
 
     Tools current_tool = Tools::SELECT;
+    Tools former_tool = Tools::SELECT;
 
     ufo::Engine* engine = nullptr;
 

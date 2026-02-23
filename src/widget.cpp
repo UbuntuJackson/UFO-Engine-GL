@@ -13,7 +13,7 @@
 namespace ufo{
 
 Widget::Widget(Vector2f _) : Actor(_){
-    class_name = "Widget";
+    class_name = "ufo::Widget";
     base_class_name = class_name;
 }
 

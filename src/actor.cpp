@@ -621,6 +621,47 @@ void Actor::OpenProperties(){
 
 }
 
+void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+    if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
+
+    if(
+        ufoMaths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
+        && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
+    ){
+
+        _selected_actors.push_back(this);
+        return;
+        //Console::PrintLine(editor_name,class_name);
+    }
+
+    for(const auto& actor : actors){
+        actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
+    }
+}
+
+void Actor::GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+
+    if(
+        editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
+    ){
+        if(is_selected_in_viewport){
+            _selected_actors.push_back(this);
+            return;
+        }
+    }
+
+    for(const auto& actor : actors){
+        actor->GetPreviouslySelectedActors(_selected_actors, _selection_rectangle_world_space);
+    }
+}
+void Actor::SetActorsUnselectedInViewport(){
+    is_selected_in_viewport = false;
+
+    for(const auto& actor : actors){
+        actor->SetActorsUnselectedInViewport();
+    }
+}
+
 //Compare with .ason if there is one for the class-name and update the components
 void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _editor){
     if(_editor->spawnable_actor_map.count(class_name)){
@@ -842,6 +883,75 @@ Actor* Actor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
         return this;
     }
     return nullptr;
+}
+
+void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+}
+
+void Actor::OnFocused(){
+    //Basically grab on click, ungrab on release. This does not make sense if you want to
+    // be able to spawn multiple actors in a row by holding the mouse button
+    if(!is_grabbed_by_cursor && engine->mouse.is_left_button_pressed){
+
+        is_grabbed_by_cursor = true;
+
+        level->RemoveFutureChanges();
+
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&local_position, local_position, Vector2f(0.0f, 0.0f)));
+
+    }
+
+}
+
+bool Actor::OnGrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace){
+
+    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_mouse_position_over_screenspace);
+    Vector2f former_world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_former_mouse_position_over_screenspace);
+
+    if(is_grabbed_by_cursor){
+        Vector2f dp = world_mouse - former_world_mouse;
+
+        local_position += dp;
+
+        if(engine->mouse.is_left_button_released){
+
+            is_grabbed_by_cursor = false;
+            TileMap* tile_map = IsInTileMap();
+            if(tile_map){
+                local_position = Vector2f(
+                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
+            }
+
+            //This looks extremely error prone.
+            ufo::ActorChange_CustomVariableVector2fHandle* position_change = dynamic_cast<ufo::ActorChange_CustomVariableVector2fHandle*>(level->level_changes.back().get());
+
+            if(position_change){
+                position_change->current_value = local_position;
+
+            }
+            else{
+                Console::PrintLine("[UFO-Engine Studio] Actor::OnUpdateEditorViewportFocus: Undo & Redo action was added while ufo::ActorChange_CustomVariableVector2fHandle* was handled");
+                throw;
+            }
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+bool Actor::GrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace){
+
+    for(const auto& actor : actors){
+        bool act_is_grabbed_by_cursor = actor->GrabbedByCursor(_mouse_position_over_screenspace, _former_mouse_position_over_screenspace);
+        if(act_is_grabbed_by_cursor) return true;
+    }
+
+    return OnGrabbedByCursor(_mouse_position_over_screenspace, _former_mouse_position_over_screenspace);
+
 }
 
 void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

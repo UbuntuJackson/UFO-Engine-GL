@@ -180,22 +180,22 @@ public:
             }, "Level", "Level"))
         );
 
-        spawnable_actor_map.emplace("Widget",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::Widget",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
-            }, "Widget", "Widget"))
+            }, "ufo::Widget", "ufo::Widget"))
         );
 
-        spawnable_actor_map.emplace("Text",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::Text",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<ufo::Text>(Vector2f(0.0f, 0.0f));
-            }, "Text", "Text"))
+            }, "ufo::Text", "ufo::Text"))
         );
 
-        spawnable_actor_map.emplace("Button",std::move(std::make_unique<AdvancedActorSpawner>(
+        spawnable_actor_map.emplace("ufo::Button",std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
                 return std::make_unique<ufo::Button>(Vector2f(0.0f, 0.0f));
-            }, "Button", "Button"))
+            }, "ufo::Button", "ufo::Button"))
         );
 
         spawnable_actor_map.emplace(

@@ -91,9 +91,33 @@ void ActorChange_RemoveActor::Undo(){
 
 }
 
+//...
+
+void ActorChange_RemoveMultipleActors::Redo(){
+    for(ActorChange_RemoveActor change : changes){
+        change.Redo();
+    }
+}
+
+void ActorChange_RemoveMultipleActors::Undo(){
+
+    for(ActorChange_RemoveActor change : changes){
+        change.Undo();
+    }
+
+}
+
+void ActorChange_RemoveMultipleActors::Do(){
+
+}
+
+//...
+
 void ActorChange_RemoveActor::Redo(){
     actor->stash = true;
 }
+
+//...
 
 ActorChange_CustomVariableInt::ActorChange_CustomVariableInt(Actor* _actor, std::string _variable_name, int _former_value, int _current_value) :
     actor{_actor},

@@ -7,7 +7,7 @@
 namespace ufo{
 
 Button::Button(Vector2f _) : Text(_){
-    class_name = "Button";
+    class_name = "ufo::Button";
     base_class_name = class_name;
 }
 

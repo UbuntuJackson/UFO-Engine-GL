@@ -37,7 +37,7 @@ void Level::OnSpawn(){
 }
 
 ufo::Controls* Level::GetControls(){
-    if(control_handout_counter == engine->control_settings.controls.size()-1) return nullptr;
+    if(control_handout_counter == (int)engine->control_settings.controls.size()-1) return nullptr;
 
     control_handout_counter++;
     return &engine->control_settings.controls[control_handout_counter];

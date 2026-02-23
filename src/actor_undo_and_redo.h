@@ -62,6 +62,20 @@ public:
 
 };
 
+class ActorChange_RemoveMultipleActors : public ActorChange{
+public:
+    std::vector<ActorChange_RemoveActor> changes;
+
+    ActorChange_RemoveMultipleActors() = default;
+
+    void Undo() override;
+
+    void Redo() override;
+
+    void Do() override;
+
+};
+
 class ActorChange_CustomVariableInt : public ufo::ActorChange{
 private:
     Actor* actor = nullptr;

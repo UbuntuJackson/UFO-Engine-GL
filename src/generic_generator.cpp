@@ -100,7 +100,7 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "Button",
+        "ufo::Button",
         [](ufo::gc::JsonMap* _json){
 
             float _x = _json->map.at("x")->AsFloat();
@@ -120,7 +120,7 @@ void GenericGenerator::Initialise(){
     );
 
     factory_map.emplace(
-        "Widget",
+        "ufo::Widget",
         [](ufo::gc::JsonMap* _json){
 
             float _x = _json->map.at("x")->AsFloat();
