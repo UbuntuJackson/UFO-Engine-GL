@@ -15,10 +15,10 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     default_properties_string = ""
 
     if _actor_json["base_class_name"] == "ufo::Sprite":
-        default_properties_string = get_sprite_loading_code(actor_name, _actor_json)
+        default_properties_string += get_sprite_loading_code(actor_name, _actor_json)
 
     if _actor_json["base_class_name"] == "ufo::Animation":
-        default_properties_string = get_animation_loading_code(actor_name, _actor_json)
+        default_properties_string += get_animation_loading_code(actor_name, _actor_json)
 
     code += (
         "    auto "
@@ -75,13 +75,13 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
         )
         sys.exit()
 
-    if klass["extends"] == "ufo::Sprite":
-        default_properties_string = get_sprite_loading_code(
+    if klass["extends"][0] == "ufo::Sprite":
+        default_properties_string += get_sprite_loading_code(
             "instance" + str(this_actor_id), _actor_json
         )
 
-    if klass["base_class_name"] == "ufo::Animation":
-        default_properties_string = get_animation_loading_code(
+    if klass["extends"][0] == "ufo::Animation":
+        default_properties_string += get_animation_loading_code(
             "instance" + str(this_actor_id), _actor_json
         )
 
@@ -241,6 +241,8 @@ def get_sprite_loading_code(_instance, _actor_json):
 def get_animation_loading_code(_instance, _actor_json):
     default_properties_string = ""
 
+    print("get_animation_loading_code", _actor_json["name"])
+
     for costume in _actor_json["costumes"]:
         key = costume["key"]
         offset_x = str(costume["offset_x"])
@@ -289,9 +291,7 @@ def get_animation_loading_code(_instance, _actor_json):
             + ");\n"
         )
 
-    default_properties_string += (
-        "    " + _instance + '->SetCostume("' + _actor_json["current_costume"] + '");\n'
-    )
+    # Need to set the key because otherwise SetCostume will try to access the engine before AddNewActors, resulting in a crash
     default_properties_string += (
         "    " + _instance + '->key ="' + _actor_json["current_costume"] + '";\n'
     )
@@ -357,6 +357,16 @@ def main(_working_directory):
                         "Error, could not find Main actor",
                     )
                     sys.exit()
+
+                if klass["extends"][0] == "ufo::Sprite":
+                    default_properties_string += get_sprite_loading_code(
+                        "instance" + str(this_actor_id), main
+                    )
+
+                if klass["extends"][0] == "ufo::Animation":
+                    default_properties_string += get_animation_loading_code(
+                        "instance" + str(this_actor_id), main
+                    )
 
                 for actor in actors:
                     if actor["import_mode"] == 2:
