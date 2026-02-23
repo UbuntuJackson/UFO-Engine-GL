@@ -9,18 +9,17 @@
 #include "../shapes/rectangle.h"
 #include "../ufo_maths/ufo_maths.h"
 
-namespace ufo{
-    class Engine;
-    class GarbageCollector;
-
-    namespace gc{
-        class JsonMap;
-    }
-}
-
 namespace UFOEngineStudio{
     class LevelEditorTab;
     class Editor;
+}
+
+namespace ufo{
+class Engine;
+class GarbageCollector;
+
+namespace gc{
+    class JsonMap;
 }
 
 class Camera;
@@ -38,8 +37,6 @@ struct ManyTiles{
     int number_of_rows;
     int first_selected_tile = 0;
 };
-
-namespace ufo{
 
 class TilesetManager{
 public:

@@ -1,6 +1,8 @@
 #ifndef TILESET_DATA_H
 #define TILESET_DATA_H
 #include <string>
+namespace ufo{
+
 struct TilesetData{
     std::string name;
     int columns;
@@ -13,5 +15,7 @@ struct TilesetData{
     bool is_loaded_from_path = true;
     bool to_not_be_removed = true;
 };
+
+}
 
 #endif

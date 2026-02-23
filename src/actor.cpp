@@ -426,7 +426,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             _editor->set_all_actors_properties_open_to_false = true;
             should_open_properties = true;
 
-            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP && base_class_name != "TileMap"){
+            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP && base_class_name != "ufo::TileMap"){
                 _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::SELECT;
 
             }
@@ -827,7 +827,7 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
     if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
 
     ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "Level") colour = 0xFF664422;
+    if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
 
     ImU32 line_clour =  0x66664422;
 
@@ -1076,7 +1076,7 @@ bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
 TileMap* Actor::IsInTileMap(){
     if(parent == nullptr) return nullptr;
     else{
-        if(parent->class_name == "TileMap") return parent->DynamicCast<TileMap>();
+        if(parent->class_name == "ufo::TileMap") return parent->DynamicCast<TileMap>();
         else{
             return parent->IsInTileMap();
         }

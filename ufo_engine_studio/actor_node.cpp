@@ -44,7 +44,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
 
     if(editing_name){
         ImGui::SameLine();
-        
+
         ImGui::InputText(("###EditText"+std::to_string(id)).c_str(),&name);
 
         if(ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsItemHovered()){
@@ -89,7 +89,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
             if(ImGui::Button(actor_class.name.c_str())){
                 auto new_actor_node = std::make_unique<ActorNode>();
                 new_actor_node->actor_type = actor_class.name;
-                
+
                 //Change type of the node
                 new_actor_node->editor_object = CreateEditorObjectWithTypeFromString(actor_class.name);
 
@@ -139,7 +139,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
     if(ImGui::BeginDragDropTarget()){
 
         if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
-            
+
             //_program->drag_drop_stack.back().move_to_folder = this;
             //_program->drag_drop_stack.push_back();
         }
@@ -160,7 +160,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
             //actor_nodes_to_be_added_at_end_of_frame.back()->editing_name = true;
 
             add_actor_node_dialogue_open = true;
-            
+
         }
 
         if(ImGui::MenuItem("Change ActorNode Type")){
@@ -168,7 +168,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
             //actor_nodes_to_be_added_at_end_of_frame.back()->editing_name = true;
 
             editing_type = true;
-            
+
         }
 
         ImGui::EndPopup();
@@ -181,7 +181,7 @@ void ActorNode::Update(int _file_index, LevelEditorTab* _level_editor_tab, Actor
         }
 
         ImGui::TreePop();
-        
+
     }
 }
 
@@ -264,7 +264,7 @@ std::unique_ptr<ActorEditorObject> ActorNode::CreateEditorObjectWithTypeFromStri
         return std::make_unique<AnimationEditorObject>();
     }
 
-    if(_actor_type == "TileMap"){
+    if(_actor_type == "ufo::TileMap"){
         return std::make_unique<TileMapEditorObject>();
     }
 
@@ -294,5 +294,5 @@ void ActorNode::ReadFromJson(JsonDictionary* _json){
     }
 
 }
-    
+
 }

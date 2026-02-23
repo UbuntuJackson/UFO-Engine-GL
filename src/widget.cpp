@@ -132,7 +132,7 @@ void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineS
         Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
 
         ImU32 colour = 0xFFFFFFFF;
-        if(parent->base_class_name != "Level") colour = 0xFF664422;
+        if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
 
         ImGui::GetWindowDrawList()->AddRect(ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y),ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y), colour);
 
