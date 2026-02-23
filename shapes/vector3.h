@@ -1,6 +1,8 @@
 #ifndef VECTOR_3_H
 #define VECTOR_3_H
 
+namespace ufo{
+
 struct Vector3{
     float x;
     float y;
@@ -12,5 +14,7 @@ struct Vector3{
         return Vector3{x-_other.x, y-_other.y, z-_other.z};
     }
 };
+
+}
 
 #endif

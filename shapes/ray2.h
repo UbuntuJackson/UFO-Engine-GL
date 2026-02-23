@@ -1,6 +1,9 @@
 #ifndef RAY_2_H
 #define RAY_2_H
 #include "../external/olcPixelGameEngine.h"
+
+namespace ufo{
+
 class Ray2{
 public:
     olc::vf2d p0;
@@ -13,5 +16,7 @@ public:
     Ray2(olc::vf2d _p0, olc::vf2d _p1);
     olc::vf2d Normal() const;
 };
+
+}
 
 #endif

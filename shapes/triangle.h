@@ -2,10 +2,14 @@
 #define TRIANGLE_3_H
 #include "vector3.h"
 
+namespace ufo{
+
 struct Triangle3{
     Vector3 p1;
     Vector3 p2;
     Vector3 p3;
+}
+
 }
 
 #endif

@@ -6,6 +6,7 @@
 #include "../shapes/ray2.h"
 #include "../shapes/rectangle.h"
 #include "../shapes/circle.h"
+#include "../shapes/vector3.h"
 //#include "../shapes/shape.h"
 #include <cassert>
 typedef olc::vf2d Vector2f;
@@ -17,6 +18,8 @@ namespace ufo::Maths{
 //#define COS(a) std::cos(a)
 
 ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle);
+
+Vector3 CrossProduct(Vector3 _a, Vector3 _b);
 
 CollisionData RayVsRay(Ray2 _v, Ray2 _w);
 

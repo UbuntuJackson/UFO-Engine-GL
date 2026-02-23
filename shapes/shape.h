@@ -25,16 +25,16 @@ public:
         Actor::UpdateGlobalPosition(_position);
 
         shape.position = position+offset;
-        
+
     }
 
     void OnDebugDraw(Camera* _camera){
-        
+
         (&shape)->Draw(_camera);
-        
+
     }
 
-    
+
 };
 
 #endif

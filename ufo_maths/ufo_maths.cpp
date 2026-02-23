@@ -8,7 +8,6 @@
 #include "../shapes/circle.h"
 #include "../utils/console.h"
 #include "../shapes/pill.h"
-#include "cross_product.h"
 #include "../shapes/vector3.h"
 //#include "../shapes/shape.h"
 
@@ -25,6 +24,13 @@ ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle){
         r.size.y = std::abs(_rectangle.size.y);
     }
     return r;
+}
+
+Vector3 CrossProduct(Vector3 _a, Vector3 _b){
+    float x = (_a.y*_b.z)-(_a.z*_b.y);
+    float y = (_a.z*_b.x)-(_a.x*_b.z);
+    float z = (_a.x*_b.y)-(_a.y*_b.x);
+    return Vector3{x, y, z};
 }
 
 CollisionData RayVsRay(Ray2 _v, Ray2 _w){

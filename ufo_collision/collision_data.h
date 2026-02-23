@@ -2,6 +2,8 @@
 #include "../external/olcPixelGameEngine.h"
 #include "../shapes/ray2.h"
 
+namespace ufo{
+
 enum PillCollidedSegment{
     LEFT_SIDE,
     RIGHT_SIDE,
@@ -32,3 +34,5 @@ struct PillResolutionData{
     Ray2 line_segment;
     int pill_collided_segment;
 };
+
+}

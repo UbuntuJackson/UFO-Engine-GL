@@ -1,5 +1,8 @@
 #include "ray2.h"
 #include "../external/olcPixelGameEngine.h"
+
+namespace ufo{
+
 Ray2::Ray2(olc::vf2d _p0, olc::vf2d _p1) : p0{_p0}, p1{_p1}{}
 
 /*Ray2::Ray2(const Ray2& _copy){
@@ -25,4 +28,6 @@ Ray2::Size() const{
 olc::vf2d
 Ray2::Normal() const{
     return olc::vf2d(Size().y, -Size().x);
+}
+
 }
