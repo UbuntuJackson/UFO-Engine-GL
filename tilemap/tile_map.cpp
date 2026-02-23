@@ -24,7 +24,7 @@ void TileMap::OnSpawn(){
 }
 
 TileMap::TileMap(Vector2f _) : Actor(_){
-    base_class_name = "TileMap";
+    base_class_name = "ufo::TileMap";
     class_name = base_class_name;
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
 }

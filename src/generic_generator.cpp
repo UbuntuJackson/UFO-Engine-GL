@@ -406,7 +406,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	}
 	else{
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("base_class_name")->AsString());
-					return std::move(factory_map.at("Actor")(_json));
+					return std::move(factory_map.at("ufo::Actor")(_json));
 	}
 }
 

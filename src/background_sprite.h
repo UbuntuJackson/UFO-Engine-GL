@@ -6,6 +6,8 @@
 #include "graphics.h"
 #include "camera.h"
 
+namespace ufo{
+
 class BackgroundSprite : public Sprite{
 public:
     Vector2f parallax = Vector2f(1.5f,1.5f);
@@ -37,3 +39,5 @@ public:
     }
 
 };
+
+}

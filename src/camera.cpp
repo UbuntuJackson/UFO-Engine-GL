@@ -22,8 +22,8 @@ void Camera::OnSpawn(){
     world = Bounds{0.0f,level->size.x, 0.0f ,level->size.y};
 
     if(!engine->in_editor) level->active_camera_handles.push_back(this);
-    class_name = "Camera";
-    base_class_name = "Camera";
+    class_name = "ufo::Camera";
+    base_class_name = class_name;
 
     Console::PrintLine("Camera Spawned", editor_name);
 }

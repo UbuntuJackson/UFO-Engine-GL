@@ -195,8 +195,8 @@ public:
     void ReplaceActors(UFOEngineStudio::Editor* _editor);
 
     std::string editor_name = "Actor";
-    std::string class_name = "Actor";
-    std::string base_class_name = "Actor";
+    std::string class_name = "ufo::Actor";
+    std::string base_class_name = "ufo::Actor";
 
     bool marked_for_drag = false;
     bool marked_for_drop = false;

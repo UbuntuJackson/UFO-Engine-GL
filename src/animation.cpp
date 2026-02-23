@@ -17,7 +17,7 @@ namespace ufo{
 
 Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
 
-    class_name = "Animation";
+    class_name = "ufo::Animation";
     base_class_name = class_name;
 
 }

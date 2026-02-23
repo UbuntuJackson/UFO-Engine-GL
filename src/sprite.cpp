@@ -23,7 +23,7 @@ scale{_scale},
 rotation{_rotation},
 current_frame_index{_frame_index}
 {
-    class_name = "Sprite";
+    class_name = "ufo::Sprite";
     base_class_name = class_name;
 }
 
