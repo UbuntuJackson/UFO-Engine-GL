@@ -27,6 +27,8 @@ public:
 
     Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index);
 
+    Sprite(olc::vf2d _position);
+
     void OnSpawn();
 
     ufo::Rectangle

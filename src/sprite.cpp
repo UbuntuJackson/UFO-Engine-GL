@@ -27,6 +27,19 @@ current_frame_index{_frame_index}
     base_class_name = class_name;
 }
 
+Sprite::Sprite(olc::vf2d _position) :
+key{"placeholder_icon"},
+Actor(_position),
+offset{Vector2f(0.0f,0.0f)},
+frame_size{Vector2f(32.0f,32.0f)},
+scale{Vector2f(1.0f,1.0f)},
+rotation{0.0f},
+current_frame_index{0.0f}
+{
+    class_name = "ufo::Sprite";
+    base_class_name = class_name;
+}
+
 void Sprite::OnSpawn(){
 
     if(!engine->asset_manager.textures.count(key)){

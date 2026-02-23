@@ -145,6 +145,12 @@ public:
 
     }
 
+    virtual std::string GetInfo(){
+
+        return "[UFO-Engine] Actor::GetInfo " + class_name + " " + std::to_string(editor_id);
+
+    }
+
     //For UFO-Engine Studio Editor actor tree widget
 
     void SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value);

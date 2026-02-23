@@ -3,10 +3,13 @@ import os
 import pprint
 import sys
 
+import generate_actor_spawner_functions
+
 
 def make_generated_file(_path, _classes):
     includes = "#include <functional>\n"
-    includes += "#include <memory>\n\n"
+    includes += "#include <memory>\n"
+    includes = "#include <ufo_maths.h>\n\n"
     includes += '#include "UFO-Engine/ufo_garbage_collector/gc_json.h"\n'
     includes += '#include "UFO-Engine/src/generic_generator.h"\n'
     includes += '#include "UFO-Engine/src/actor.h"\n'
@@ -108,6 +111,9 @@ def make_generated_file(_path, _classes):
     # function_ += "    std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(factory_map.at(_json->map.at(\"name\")->AsString())(_json));}"
 
     function_ += "};\n\n"
+
+    function_ += generate_actor_spawner_functions.main(_path)
+
     function_ += "}\n"
 
     f = open(_path + "/generated.h", "w")

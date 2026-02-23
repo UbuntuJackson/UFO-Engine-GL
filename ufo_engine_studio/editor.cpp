@@ -312,6 +312,7 @@ void Editor::OnUpdate(float _delta_time){
 
         spawnable_actor_map.clear();
         std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+        //std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 generate_actor_spawner_functions.py" + std::string(" "))+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 
         PopulateSpawnableActorMapWithBaseObjects();
         ReloadSpawnableActorMap();
