@@ -76,7 +76,7 @@ There's a problem arising in the following scenario:
 
 Question: Can I ensure that a move-action like this does not refer to an object that is free'd, like InstanceTileMap1?
 
-### Recursive Copying ###
+[ONGOING] ### Recursive Copying ###
 
 I have decided that recursive copying would in fact be useful. Currently I need to use ufo::gc::Json objects to convert an actor with all its
 components and configurations to get the exact tree structure I want. The properties I would like to copy are
@@ -86,6 +86,17 @@ components and configurations to get the exact tree structure I want. The proper
 
 All these *might* be easily solvable with some code-generation, the only really controversial one being components.
 
+-Update: instantiating scenes is now done via UFO-Engine/header_tool/generate_actor_spawner_functions.py which recurses the components of an actor
+ and creates dedicated Spawn-functions, which ends up in <project path>/generated.h, in namespace ufo::Generated.
+
+-There's a small issue where I believe an error in generate_actor_spawner_functions.py can prevent structured_classes.json from updating.
+    structured_classes.json is written after generate_actor_spawner_functions.py runs, so that would stop imports to UFO-Engine Studio resulting in behaviour like a newly modified actor not appearing like it should, appearing as an Actor crosshair. This happened for example with WorldMapLevel
+
 ### Pointing and clicking ###
 -When nothing is selected and clicking, the root of the scene should be selected
 -Something is not right with how when you select a single actor, you then can't mutli-select because it searches from that actor now
+
+### SuperTux Advance Replica ###
+
+-Bug with camera not clamping for a second when you switch camera.
+-Out of bounds array access in

@@ -1,12 +1,18 @@
 import json
 import sys
 
+IMPORT_MODE_UNWRAPPED = 2
+IMPORT_MODE_WRAPPED = 0
 
+
+# For non-imported actor components, i.e components that don't have their own .ufo.h files and by extension no .ason file
 def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     code = ""
 
+    # The identifier of this component, will look something like instance1, instance2, instance300, etc.
     actor_name = "instance" + str(_counter.get_count())
 
+    # Need to get the x and y values of course
     actor_position_x = _actor_json["x"]
     actor_position_y = _actor_json["y"]
 
@@ -24,6 +30,7 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     if _actor_json["base_class_name"] == "ufo::Button":
         default_properties_string += get_button_loading_code(actor_name, _actor_json)
 
+    # Declaration of this component
     code += (
         "    auto "
         + actor_name
@@ -38,6 +45,7 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
         + "));\n"
     )
 
+    # Have to set some metainfo such as editor_name and class_name. It could be useful at runtime.
     code += "    " + actor_name + '->editor_name = "' + _actor_json["name"] + '";\n'
     code += (
         "    " + actor_name + '->class_name = "' + _actor_json["class_name"] + '";\n'
@@ -45,10 +53,11 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
 
     code += default_properties_string
 
+    # Recurse to generate more code for more components if there are any. These can also be imported.
     for actor in _actor_json["actors"]:
-        if actor["import_mode"] == 2:
+        if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
             code += add_actor(_working_directory, _counter, actor_name, actor)
-        if actor["import_mode"] == 0:
+        if actor["import_mode"] == IMPORT_MODE_WRAPPED:
             code += add_imported_actor(_working_directory, _counter, actor_name, actor)
 
     return code
@@ -84,6 +93,8 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
         )
         sys.exit()
 
+    # I'm considering using _actor_json to get the base_class_name. This code has been faulty and bottlenecking the toolchain by erroring
+    # and not letting make_generated_file finish.
     if klass["extends"][0] == "ufo::Sprite":
         default_properties_string += get_sprite_loading_code(
             "instance" + str(this_actor_id), _actor_json
@@ -106,6 +117,8 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
 
     custom_properties_string = ""
 
+    # Assigning custom properties. These are a lot easier to deal with because the naming with the custom properties is a lot more consistent
+    # than with default properties
     for key, custom_property in _actor_json["custom_editor_properties"].items():
         if custom_property["type"] == "std::string":
             custom_properties_string += (
@@ -158,6 +171,7 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
 
     actors_string = ""
 
+    # Search for ufo_actor_config with path to .ason file. Same idea as in function main in this file, but with some modifications
     for macro in macros:
         if macro["name"] == "ufo_actor_config" and len(macro["args"]) > 0:
             actor_config_path = macro["args"][0]
@@ -172,24 +186,25 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
                 if i["name"] == "Main":
                     main = i
 
-            if main:
-                actors = main["actors"]
-            else:
+            if not main:
                 print(
                     "generate_actor_spawner_functions.py",
                     "Error, could not find Main actor",
                 )
                 sys.exit()
 
-            for actor in actors:
-                if actor["import_mode"] == 2:
+            # Iterate through all components of this actor
+            for actor in main["actors"]:
+                # If actor is not imported
+                if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
                     actors_string += add_actor(
                         _working_directory,
                         _counter,
                         "instance" + str(this_actor_id),
                         actor,
                     )
-                if actor["import_mode"] == 0:
+                # If actor is imported
+                if actor["import_mode"] == IMPORT_MODE_WRAPPED:
                     actors_string += add_imported_actor(
                         _working_directory,
                         _counter,
@@ -230,6 +245,7 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
     return code
 
 
+# Generate code to set default properties for build-in class
 def get_sprite_loading_code(_instance, _actor_json):
     default_properties_string = ""
 
@@ -262,6 +278,7 @@ def get_sprite_loading_code(_instance, _actor_json):
     return default_properties_string
 
 
+# Generate code to set default properties for build-in class
 def get_animation_loading_code(_instance, _actor_json):
     default_properties_string = ""
 
@@ -323,12 +340,30 @@ def get_animation_loading_code(_instance, _actor_json):
     return default_properties_string
 
 
+# Generate code to set default properties for build-in class
 def get_widget_loading_code(_instance, _actor_json):
     default_properties_string = ""
+
+    rectangle = _actor_json["rectangle"]
+
+    default_properties_string += (
+        "    "
+        + _instance
+        + "->rectangle = ufo::Rectangle(Vector2f("
+        + str(rectangle["x"])
+        + ","
+        + str(rectangle["y"])
+        + "),Vector2f("
+        + str(rectangle["w"])
+        + ","
+        + str(rectangle["h"])
+        + "));\n"
+    )
 
     return default_properties_string
 
 
+# Generate code to set default properties for build-in class
 def get_button_loading_code(_instance, _actor_json):
     default_properties_string = ""
 
@@ -356,8 +391,10 @@ def get_button_loading_code(_instance, _actor_json):
     return default_properties_string
 
 
+# Entry point for this feature. This is called from function ufo_engine_header_tool.make_generated_file
 def main(_working_directory):
 
+    # Counter to generate unique identifiers present in <project>/generated.h, inside namespace ufo::Generated
     class ActorCounter:
         def __init__(self) -> None:
             self.count = 0
@@ -368,29 +405,37 @@ def main(_working_directory):
 
     actor_counter = ActorCounter()
 
+    # Load structured_classes.json to get all classes
     structured_classes_file = open(_working_directory + "/structured_classes.json")
-
     structured_classes_dict = json.loads(structured_classes_file.read())
-
-    print(structured_classes_dict)
 
     structured_classes_file.close()
 
+    # This is part of generated.h and will end up after the custom actor generator ufo::Generated::ActorGenerator
     generated_spawner_functions = ""
 
+    # Iterate through all classes
     for content in structured_classes_dict["contents"]:
+        # This is the object that is returned by the spawner function
         this_actor_id = actor_counter.get_count()
 
+        # This is the code for the actual spawner function
         spawner_function_string = ""
 
+        # This string will contain the code loading the default properties for this actor, the actor returned by this function
         default_properties_string = ""
 
+        # This json object represents the class.
         klass = content["class"]
+        # These are all the macros and meta-settings like category, actor-config, and ufo-comments
         macros = content["macros"]
 
+        # This string contains all components of this actor.
         actors_string = ""
 
+        # Iterating through macros to find ufo_cator_config, and loading the .ason file taken as an argument
         for macro in macros:
+            # Double checking that ufo_actor_config actually has an argument
             if macro["name"] == "ufo_actor_config" and len(macro["args"]) > 0:
                 actor_config_path = macro["args"][0]
 
@@ -400,17 +445,17 @@ def main(_working_directory):
 
                 file_actor_config_json = json.loads(file_actor_config_file.read())
 
+                # This is the actor named Main, in the .ason file.
                 main = None
 
+                # Looking for main-actor.
                 for i in file_actor_config_json["actors"]:
                     if i["name"] == "Main":
                         main = i
 
-                if main:
-                    actors = main["actors"]
-                else:
+                if not main:
                     print(
-                        "generate_actor_spawner_functions.py",
+                        "[UFO-Engine Header Tool] generate_actor_spawner_functions.py",
                         "Error, could not find Main actor",
                     )
                     sys.exit()
@@ -435,15 +480,18 @@ def main(_working_directory):
                         "instance" + str(this_actor_id), main
                     )
 
-                for actor in actors:
-                    if actor["import_mode"] == 2:
+                # Evertything from here is just components, so there will be some loading of further .ason files
+                # to get those default attributes too
+
+                for actor in main["actors"]:
+                    if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
                         actors_string += add_actor(
                             _working_directory,
                             actor_counter,
                             "instance" + str(this_actor_id),
                             actor,
                         )
-                    if actor["import_mode"] == 0:
+                    if actor["import_mode"] == IMPORT_MODE_WRAPPED:
                         actors_string += add_imported_actor(
                             _working_directory,
                             actor_counter,
@@ -455,8 +503,10 @@ def main(_working_directory):
 
         klass_name = klass["name"]
 
+        # Can't have colons in function names
         func_name = klass_name.replace("::", "_")
 
+        # Function head
         spawner_function_string += (
             "inline std::unique_ptr<"
             + klass_name
@@ -466,6 +516,7 @@ def main(_working_directory):
             + "(Vector2f _local_position){\n"
         )
 
+        # Function body...
         spawner_function_string += (
             "    std::unique_ptr<"
             + klass_name
@@ -496,5 +547,7 @@ def main(_working_directory):
         spawner_function_string += "}"
 
         generated_spawner_functions += spawner_function_string + "\n\n"
+
+        # Function body end.
 
     return generated_spawner_functions
