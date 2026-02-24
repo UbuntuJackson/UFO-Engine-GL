@@ -5,8 +5,6 @@ import sys
 def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     code = ""
 
-    print(_actor_json["name"])
-
     actor_name = "instance" + str(_counter.get_count())
 
     actor_position_x = _actor_json["x"]
@@ -20,6 +18,12 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     if _actor_json["base_class_name"] == "ufo::Animation":
         default_properties_string += get_animation_loading_code(actor_name, _actor_json)
 
+    if _actor_json["base_class_name"] == "ufo::Widget":
+        default_properties_string += get_widget_loading_code(actor_name, _actor_json)
+
+    if _actor_json["base_class_name"] == "ufo::Button":
+        default_properties_string += get_button_loading_code(actor_name, _actor_json)
+
     code += (
         "    auto "
         + actor_name
@@ -32,6 +36,11 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
         + ","
         + str(actor_position_y)
         + "));\n"
+    )
+
+    code += "    " + actor_name + '->editor_name = "' + _actor_json["name"] + '";\n'
+    code += (
+        "    " + actor_name + '->class_name = "' + _actor_json["class_name"] + '";\n'
     )
 
     code += default_properties_string
@@ -82,6 +91,16 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
 
     if klass["extends"][0] == "ufo::Animation":
         default_properties_string += get_animation_loading_code(
+            "instance" + str(this_actor_id), _actor_json
+        )
+
+    if klass["extends"][0] == "ufo::Widget":
+        default_properties_string += get_widget_loading_code(
+            "instance" + str(this_actor_id), _actor_json
+        )
+
+    if klass["extends"][0] == "ufo::Button":
+        default_properties_string += get_button_loading_code(
             "instance" + str(this_actor_id), _actor_json
         )
 
@@ -197,6 +216,11 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
         + "));\n"
     )
 
+    code += "    " + actor_name + '->editor_name = "' + _actor_json["name"] + '";\n'
+    code += (
+        "    " + actor_name + '->class_name = "' + _actor_json["class_name"] + '";\n'
+    )
+
     code += default_properties_string
 
     code += custom_properties_string
@@ -299,6 +323,39 @@ def get_animation_loading_code(_instance, _actor_json):
     return default_properties_string
 
 
+def get_widget_loading_code(_instance, _actor_json):
+    default_properties_string = ""
+
+    return default_properties_string
+
+
+def get_button_loading_code(_instance, _actor_json):
+    default_properties_string = ""
+
+    language_to_text = _actor_json["language_to_text"]
+
+    for language, text in language_to_text.items():
+        default_properties_string += (
+            "    "
+            + _instance
+            + '->language_to_text["'
+            + language
+            + '"] = "'
+            + text
+            + '";\n'
+        )
+
+    default_properties_string += (
+        "    "
+        + _instance
+        + "->is_wrapping = bool("
+        + str(_actor_json["is_wrapping"])
+        + ");\n"
+    )
+
+    return default_properties_string
+
+
 def main(_working_directory):
 
     class ActorCounter:
@@ -321,9 +378,9 @@ def main(_working_directory):
 
     generated_spawner_functions = ""
 
-    this_actor_id = actor_counter.get_count()
-
     for content in structured_classes_dict["contents"]:
+        this_actor_id = actor_counter.get_count()
+
         spawner_function_string = ""
 
         default_properties_string = ""
@@ -358,13 +415,23 @@ def main(_working_directory):
                     )
                     sys.exit()
 
-                if klass["extends"][0] == "ufo::Sprite":
+                if main["base_class_name"] == "ufo::Sprite":
                     default_properties_string += get_sprite_loading_code(
                         "instance" + str(this_actor_id), main
                     )
 
-                if klass["extends"][0] == "ufo::Animation":
+                if main["base_class_name"] == "ufo::Animation":
                     default_properties_string += get_animation_loading_code(
+                        "instance" + str(this_actor_id), main
+                    )
+
+                if main["base_class_name"] == "ufo::Widget":
+                    default_properties_string += get_widget_loading_code(
+                        "instance" + str(this_actor_id), main
+                    )
+
+                if main["base_class_name"] == "ufo::Button":
+                    default_properties_string += get_button_loading_code(
                         "instance" + str(this_actor_id), main
                     )
 
@@ -407,6 +474,15 @@ def main(_working_directory):
             + " = std::make_unique<"
             + klass_name
             + ">(_local_position);\n"
+        )
+
+        # runtime instantiated actor has no clas_name
+        spawner_function_string += (
+            "    instance"
+            + str(this_actor_id)
+            + '->class_name = "'
+            + klass["name"]
+            + '";\n'
         )
 
         spawner_function_string += default_properties_string

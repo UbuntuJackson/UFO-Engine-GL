@@ -55,7 +55,7 @@ void CollisionGrid::OnUpdate(float _delta_time){
         if(new_division != former_division || u_actor->is_dead){
             //Unnecessary if the new division is going to be reordered anyway. This could be solved
             // partly by keeping track of whether things are removed from the division or not.
-            divisions_to_reset.insert(former_division);
+            if(former_division != Errors::OUT_OF_BOUNDS) divisions_to_reset.insert(former_division);
 
 
         }

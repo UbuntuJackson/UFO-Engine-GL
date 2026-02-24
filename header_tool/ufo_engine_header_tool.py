@@ -59,9 +59,9 @@ def make_generated_file(_path, _classes):
             + ">(Vector2f(_x, _y));\n"
         )
 
-        function_ += "          try{\n"
+        function_ += "                try{\n"
 
-        function_ += 'auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();\n'
+        function_ += '                auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();\n'
 
         for member in cl["class"]["members"]:
             if member[1]["data_type"] == "int":
