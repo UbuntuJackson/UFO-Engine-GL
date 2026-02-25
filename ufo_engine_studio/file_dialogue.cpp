@@ -1,5 +1,7 @@
 #include <SDL3/SDL.h>
+#include "console.h"
 #include "editor.h"
+#include <cstddef>
 #include <string>
 #include "file_dialogue.h"
 #include "level_editor_tab.h"
@@ -46,9 +48,14 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
 void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
 
-    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
+    while(*_filelist != NULL){
+        Console::PrintLine(*_filelist);
+        UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
 
-    level_editor_tab->engine->asset_manager.OnAddTexture(*_filelist, level_editor_tab);
+        level_editor_tab->engine->asset_manager.OnAddTexture(*_filelist, level_editor_tab);
+
+        _filelist++;
+    }
 
 }
 

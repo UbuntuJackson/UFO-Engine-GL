@@ -332,6 +332,12 @@ def get_animation_loading_code(_instance, _actor_json):
             + ");\n"
         )
 
+    preview = str(_actor_json["preview"])
+
+    default_properties_string += (
+        "    " + _instance + "->preview = bool(" + preview + ");\n"
+    )
+
     # Need to set the key because otherwise SetCostume will try to access the engine before AddNewActors, resulting in a crash
     default_properties_string += (
         "    " + _instance + '->key ="' + _actor_json["current_costume"] + '";\n'

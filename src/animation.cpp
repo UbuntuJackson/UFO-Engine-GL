@@ -5,6 +5,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "animation.h"
+#include "console.h"
 #include "sprite.h"
 #include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_engine_studio/editor.h"
@@ -23,7 +24,7 @@ Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _loc
 }
 
 void Animation::SetCostume(const std::string& _configuration_key){
-    try{
+    if(costumes.count(_configuration_key)){
         Costume& costume = costumes.at(_configuration_key);
         key = costume.key;
         offset = costume.offset;
@@ -32,9 +33,10 @@ void Animation::SetCostume(const std::string& _configuration_key){
         rotation = costume.rotation;
         current_frame_index = costume.frame_index;
         animation_speed = costume.animation_speed;
-    } catch(const std::out_of_range& _out_of_bounds){
-        Console::PrintLine("Out of range", _configuration_key);
-        throw;
+    }
+    else{
+        Console::PrintLine("[UFO-Engine] Animation::SetCostume: Could not find costume with key:", _configuration_key);
+
     }
 
     if(!engine->asset_manager.textures.count(_configuration_key)){
@@ -135,7 +137,7 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
     ImGui::Separator();
 
     if(ImGui::Button("Add Texture")){
-        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
     }
 
     bool texture_was_erased = false;
