@@ -115,75 +115,139 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     ImGui::Begin(std::string("ActorPicker###ActorPicker"+std::to_string(id)).c_str());
 
-    std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
+    if(ImGui::BeginTabBar("MyResourcesTabBar")){
 
-    for(const auto& [k,v] : _editor->spawnable_actor_map){
-        if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
-        categories.at(v->category).push_back(v.get());
-    }
+        if(ImGui::BeginTabItem("Actors")){
 
-    ImGui::SameLine();
+            std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
 
-    if(ImGui::Button("Select")){
-        current_tool = Tools::SELECT;
-        spawn_cursor->actors.clear();
-    }
+            for(const auto& [k,v] : _editor->spawnable_actor_map){
+                if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
+                categories.at(v->category).push_back(v.get());
+            }
 
-    ImGui::SameLine();
+            if(ImGui::Button("Select")){
+                current_tool = Tools::SELECT;
+                spawn_cursor->actors.clear();
+            }
 
-    if(ImGui::Button("Erase")){
-        current_tool = Tools::ERASE;
-    }
+            ImGui::SameLine();
 
-    ImGui::Separator();
+            if(ImGui::Button("Erase")){
+                current_tool = Tools::ERASE;
+            }
 
-    if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
-    {
-        UFOEngineStudio::PushStyleCompact();
-        for(const auto& [k,v] : categories){
-            ImGui::TableNextColumn();
-            ImGui::Text("%s",k.c_str());
+            ImGui::Separator();
 
-            for(const auto& s : v){
-                int w = engine->asset_manager.textures.at("actor_icon").width;
-                int h = engine->asset_manager.textures.at("actor_icon").height;
+            if(ImGui::BeginChild("MyAssetsChildWindow")){
 
-                bool pressed = ImGui::ImageButton(
+                if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
+                {
+                    UFOEngineStudio::PushStyleCompact();
+                    for(const auto& [k,v] : categories){
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s",k.c_str());
 
-                    std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
-                    (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
-                    ImVec2(w, h));
+                        for(const auto& s : v){
+                            int w = engine->asset_manager.textures.at("actor_icon").width;
+                            int h = engine->asset_manager.textures.at("actor_icon").height;
 
-                if(editor->currently_selected_actor_type == s->class_name){
-                    ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 0x55FFFFFF);
+                            bool pressed = ImGui::ImageButton(
+
+                                std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
+                                (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
+                                ImVec2(w, h));
+
+                            if(editor->currently_selected_actor_type == s->class_name){
+                                ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 0x55FFFFFF);
+                            }
+
+                            if(pressed){
+                                editor->currently_selected_actor_type = s->class_name;
+                                current_tool = Tools::PLACE;
+
+                                spawn_cursor->actors.clear();
+                                spawn_cursor->AddActorUniquePtr(editor->spawnable_actor_map.at(s->class_name)->Spawn(editor));
+                            }
+
+                            ImGui::SameLine();
+
+                            ImGui::TextWrapped("%s", (s->comment == "" ? s->class_name.c_str() : std::string(s->class_name+"\n-- Description --\n"+s->comment)).c_str());
+                        }
+                    }
+                    UFOEngineStudio::PopStyleCompact();
+
+                    ImGui::EndTable();
                 }
 
-                if(pressed){
-                    editor->currently_selected_actor_type = s->class_name;
-                    current_tool = Tools::PLACE;
+                ImGui::Separator();
 
-                    spawn_cursor->actors.clear();
-                    spawn_cursor->AddActorUniquePtr(editor->spawnable_actor_map.at(s->class_name)->Spawn(editor));
+                for(const auto& [k,v] : _editor->spawnable_actor_map){
+                    if(ImGui::Button(std::string("Add "+k).c_str())){
+                        /*auto inst = v->Spawn(_editor);
+                        inst->class_name = k;
+                        AddActorUniquePtr(std::move(inst));*/
+                    }
+                }
+
+                ImGui::EndChild();
+            }
+
+            ImGui::EndTabItem();
+        }
+
+        if(ImGui::BeginTabItem("MyAssets")){
+
+            if(ImGui::Button("[+] Add Texture")){
+                SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, this, engine->window, nullptr, 0, editor->opened_directory_path.c_str(), true);
+            }
+            ImGui::Separator();
+
+            if(ImGui::BeginChild("MyAssetsChildWindow")){
+
+            bool texture_was_erased = false;
+            std::string name_of_erased_texture = "";
+
+            for(const auto& [name, texture] : engine->asset_manager.textures){
+
+                float w = (float)texture.width;
+                float h = (float)texture.height;
+
+                if(ImGui::Button(std::string("[x]###UnloadTexture"+name).c_str())){
+                    name_of_erased_texture = name;
+                    texture_was_erased = true;
                 }
 
                 ImGui::SameLine();
 
-                ImGui::TextWrapped("%s", (s->comment == "" ? s->class_name.c_str() : std::string(s->class_name+"\n-- Description --\n"+s->comment)).c_str());
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
+                ImGui::ImageButton(name.c_str(),
+                    (void*)(intptr_t)texture.id,
+                    ImVec2(32.0f*w/h, 32.0f),
+                    ImVec2(0,0),
+                    ImVec2(1,1),
+                    ImVec4(0,0,0,1)
+                );
+                ImGui::PopStyleVar();
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
             }
+
+            if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
+                engine->asset_manager.textures.at(name_of_erased_texture).Delete();
+                engine->asset_manager.textures.erase(name_of_erased_texture);
+
+            }
+                ImGui::EndChild();
+
+            }
+
+            ImGui::EndTabItem();
         }
-        UFOEngineStudio::PopStyleCompact();
 
-        ImGui::EndTable();
-    }
+        ImGui::EndTabBar();
 
-    ImGui::Separator();
-
-    for(const auto& [k,v] : _editor->spawnable_actor_map){
-        if(ImGui::Button(std::string("Add "+k).c_str())){
-            /*auto inst = v->Spawn(_editor);
-            inst->class_name = k;
-            AddActorUniquePtr(std::move(inst));*/
-        }
     }
 
     ImGui::End();
