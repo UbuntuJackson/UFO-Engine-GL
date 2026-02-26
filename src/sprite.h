@@ -41,7 +41,10 @@ public:
 
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
+    void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
+
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
+
     ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     void OnAdditionalButtonsForTreeItem() override;

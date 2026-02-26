@@ -867,6 +867,22 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
 }
 
+Actor* Actor::GetInspectedActor(){
+    if(import_mode != ImportModes::WRAPPED){
+        if(is_selected) return this;
+
+        for(const auto& actor : actors){
+            Actor* act = actor->GetInspectedActor();
+            if(act) return act;
+        }
+    }
+    return nullptr;
+}
+
+void Actor::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+}
+
 Actor* Actor::GetFocusedActor(Vector2f _mouse_position_over_screenspace){
     if(import_mode != ImportModes::WRAPPED){
         for(const auto& actor : actors){

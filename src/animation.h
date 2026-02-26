@@ -53,14 +53,15 @@ public:
         olc::vf2d _scale,
         float _rotation, float _frame_index, float _animation_speed);
 
-    void OnSpawn();
+    void OnSpawn() override;
+    void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void OnUpdate(float _delta_time);
+    void OnUpdate(float _delta_time) override;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
-    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 
 };
 

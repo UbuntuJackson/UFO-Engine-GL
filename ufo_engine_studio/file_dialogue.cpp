@@ -65,7 +65,7 @@ void OnRecoverTileset(void *_userdata, const char * const *_filelist, int _filte
 void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
 
-    while(*_filelist != NULL){
+    while(*_filelist != nullptr){
         Console::PrintLine(*_filelist);
         UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
 

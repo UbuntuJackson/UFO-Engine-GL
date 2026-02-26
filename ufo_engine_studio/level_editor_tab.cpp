@@ -196,92 +196,10 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             ImGui::EndTabItem();
         }
 
-        if(ImGui::BeginTabItem("MyAssets")){
+        ufo::Actor* inspected_actor = this_level->GetInspectedActor();
 
-            if(ImGui::Button("[+] Add Texture")){
-                SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, this, engine->window, nullptr, 0, editor->opened_directory_path.c_str(), true);
-            }
-
-            if(ImGui::InputText("Search###SearchAssetBrowser", &asset_browser_search)){
-
-            }
-
-            ImGui::Separator();
-
-            if(ImGui::BeginChild("MyAssetsChildWindow")){
-
-            bool texture_was_erased = false;
-            std::string name_of_erased_texture = "";
-
-            std::vector<std::string> texture_names;
-            for(const auto& [name, texture] : engine->asset_manager.textures){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) texture_names.push_back(name);
-            }
-            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
-
-            for(const std::string& name : texture_names){
-
-                auto& texture = engine->asset_manager.textures.at(name);
-
-                float w = (float)texture.width;
-                float h = (float)texture.height;
-
-                bool view_asset_details = ImGui::CollapsingHeader(std::string("###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
-
-                ImGui::SameLine();
-
-                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
-                ImGui::ImageButton(name.c_str(),
-                    (void*)(intptr_t)texture.id,
-                    ImVec2(32.0f*w/h, 32.0f),
-                    ImVec2(0,0),
-                    ImVec2(1,1),
-                    ImVec4(0,0,0,1)
-                );
-                ImGui::PopStyleVar();
-
-                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
-
-                if(view_asset_details){
-                    if(ImGui::Button(std::string("Unload Texture###UnloadTexture"+name).c_str())){
-                        name_of_erased_texture = name;
-                        texture_was_erased = true;
-                    }
-                    ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
-                    ImGui::Text(("name:"+name).c_str(),"%s");
-                    ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
-                }
-
-            }
-
-            if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
-                engine->asset_manager.textures.at(name_of_erased_texture).Delete();
-                engine->asset_manager.textures.erase(name_of_erased_texture);
-
-            }
-                ImGui::EndChild();
-
-            }
-
-            ImGui::EndTabItem();
+        if(inspected_actor){
+            inspected_actor->OnUtiliseAssetManager(this);
         }
 
         ImGui::EndTabBar();
