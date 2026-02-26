@@ -3,6 +3,7 @@
 #include <string>
 #include <camera.h>
 #include <filesystem>
+#include "console.h"
 #include "file_node.h"
 #include "../imgui/imgui.h"
 #include "../ufo_engine_studio/dock_utils.h"
@@ -115,8 +116,6 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::SetNextWindowSize(viewport->Size);
         ImGui::SetNextWindowViewport(viewport->ID);
 
-    //UFOEngineStudio::Tutorial()
-
     ImGui::Begin("DemoDockspaceForGodsSake", nullptr, im_gui_window_flags);
 
     ImGuiID dock_space_id = ImGui::GetID("DemoDockspaceForGodsSake");
@@ -205,6 +204,7 @@ void Editor::OnUpdate(float _delta_time){
             if(ImGui::MenuItem("Calculator")){
                 view_calculator = true;
             }
+
             ImGui::EndMenu();
         }
         if(ImGui::MenuItem("Undo")){

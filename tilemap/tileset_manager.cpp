@@ -39,6 +39,10 @@ void TilesetManager::InitialiseTextures(){
             std::string path = editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
             Console::PrintLine("Full Tileset Path",path);
             if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+
+            if(!engine->asset_manager.textures.count(tileset.name)){
+                //...
+            }
         }
     }
 
@@ -169,6 +173,34 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
     );
 }
 
+void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    Console::PrintLine(_path, _level_editor_tab->editor->opened_directory_path);
+    Console::PrintLine(ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path));
+
+    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+
+    engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
+    int width = engine->asset_manager.textures.at(".."+relative_path).width;
+    int height = engine->asset_manager.textures.at(".."+relative_path).height;
+
+    int columns = (int)width/16;
+
+    int rows = (int)height/16;
+
+    int tileset_start_id = 1;
+
+    tileset_start_id = tileset_data[_index].tileset_start_id;
+
+    tileset_data[_index] = TilesetData{
+            ".."+relative_path,
+            columns,
+            tileset_start_id,
+            (float)width, (float)height,
+            16.0f, 16.0f,
+            columns*rows
+        };
+}
+
 void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::Button("Add Tileset")){
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
@@ -195,6 +227,16 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
     if(ImGui::BeginTabBar("TilesetManager")){
         for(auto& tileset : tileset_data){
+            if(!engine->asset_manager.textures.count(tileset.name)){
+                if(ImGui::Button(("Recover Missing Tileset:"+ tileset.name).c_str())){
+                    SDL_ShowOpenFileDialog(&UFOEngineStudio::OnRecoverTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+                    tileset_being_recovered = tileset.name;
+                }
+
+                Console::PrintLine("[UFO-Engine] TilesetManager::EditorTilesetWidget: Error, missing asset", tileset.name);
+                continue;
+            }
+
             if(ImGui::BeginTabItem(tileset.name.c_str(), &tileset.to_not_be_removed, ImGuiTabItemFlags_None)){
                 if(current_tileset != tileset.name){
                     UpdateSelectedTilesetTile(tileset);

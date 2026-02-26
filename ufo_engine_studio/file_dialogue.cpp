@@ -45,6 +45,23 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
 
 }
 
+void OnRecoverTileset(void *_userdata, const char * const *_filelist, int _filter){
+    if(*_filelist == nullptr) return; //Should file not have been selected
+
+    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
+
+    std::string tile_set = *_filelist;
+
+    int index = 0;
+    for(auto&& tileset : level_editor_tab->this_level->tileset_manager.tileset_data){
+        if(tileset.name == level_editor_tab->this_level->tileset_manager.tileset_being_recovered){
+            level_editor_tab->this_level->tileset_manager.RecoverTileset(index, tile_set, level_editor_tab);
+        }
+        index++;
+    }
+
+}
+
 void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
 

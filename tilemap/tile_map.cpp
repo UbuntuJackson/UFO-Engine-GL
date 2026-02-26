@@ -1,3 +1,4 @@
+#include <exception>
 #include <stdexcept>
 #include <vector>
 #include <memory>
@@ -12,6 +13,7 @@
 #include "../src/graphics.h"
 #include "../src/engine.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "console.h"
 #include "tileset_manager.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../src/actor_undo_and_redo.h"
@@ -98,10 +100,10 @@ TileMap::GetRectangle(int _x, int _y, Vector2f _frame_size){
 }
 
 ufo::Rectangle
-TileMap::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size){
+TileMap::GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size){
     return GetRectangle(
-        (int)_frame % (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x), //1 can only give me x = 0
-        (int)_frame / (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x),
+        (int)_frame % (_sprite_width/(int)_frame_size.x), //1 can only give me x = 0
+        (int)_frame / (_sprite_width/(int)_frame_size.x),
         _frame_size); //1 can only give y = 1
 }
 
@@ -224,18 +226,28 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                 olc::vd2d tile_position = {(hovered_tile_x+ xx)*tileset.tile_width, (hovered_tile_y+yy)*tileset.tile_height};
 
                 if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
-                    ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(tileset.name,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
-                    //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
-                    _graphics->DrawPartialSprite(
-                        tileset.name,
-                        _camera->Transform(tile_position),
-                        {0.0f, 0.0f},
-                        {scale, scale},
-                        sample_rectangle.position,
-                        sample_rectangle.size,
-                        0.0f,
-                        ufo::Colour(255,255,255,255)
-                    );
+                    int sprite_width = 0;
+                    try{
+                        sprite_width = engine->asset_manager.textures.at(tileset.name).width;
+
+                        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(sprite_width,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
+                        //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
+                        _graphics->DrawPartialSprite(
+                            tileset.name,
+                            _camera->Transform(tile_position),
+                            {0.0f, 0.0f},
+                            {scale, scale},
+                            sample_rectangle.position,
+                            sample_rectangle.size,
+                            0.0f,
+                            ufo::Colour(255,255,255,255)
+                        );
+
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("TileMap error");
+                        continue;
+                    }
                 }
 
             }
@@ -281,18 +293,28 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                 olc::vd2d tile_position = {index_x*tileset.tile_width, index_y*tileset.tile_height};
 
                 if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
-                    ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(tileset.name,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
-                    //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
-                    _graphics->DrawPartialSprite(
-                        tileset.name,
-                        _camera->Transform(tile_position),
-                        {0.0f, 0.0f},
-                        {scale, scale},
-                        sample_rectangle.position,
-                        sample_rectangle.size,
-                        0.0f,
-                        ufo::Colour(255,255,255,255)
-                    );
+
+                    int sprite_width = 0;
+                    try{
+                        sprite_width = engine->asset_manager.textures.at(tileset.name).width;
+
+                        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(sprite_width,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
+                        //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
+                        _graphics->DrawPartialSprite(
+                            tileset.name,
+                            _camera->Transform(tile_position),
+                            {0.0f, 0.0f},
+                            {scale, scale},
+                            sample_rectangle.position,
+                            sample_rectangle.size,
+                            0.0f,
+                            ufo::Colour(255,255,255,255)
+                        );
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("[UFO-Engine] TileMap::OnDraw Error, missing asset:",tileset.name);
+                        continue;
+                    }
                 }
 
             }

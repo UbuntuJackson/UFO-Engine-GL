@@ -1,5 +1,6 @@
 #include "../imgui/imgui.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
+#include "console.h"
 #include "file_node.h"
 #include "file.h"
 #include "directory.h"
@@ -75,6 +76,8 @@ namespace UFOEngineStudio{
         }
 
         if(ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered()){
+
+            //If the file is a level file
             if(IsExtension(path+"/"+file_name, "ason")){
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
@@ -114,6 +117,30 @@ namespace UFOEngineStudio{
                     Console::PrintLine("[UFO-Engine Studio]", _error.what());
                 }
             }
+
+        }
+
+        if(open_pop_up){
+            ImGui::OpenPopup(("Open File###OpenFilePopup"+path+"/"+file_name).c_str());
+        }
+
+        if(ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered() && IsExtension(path+"/"+file_name, "json")){
+            open_pop_up = true;
+
+        }
+
+        if(ImGui::BeginPopup(("Open File###OpenFilePopup"+path+"/"+file_name).c_str())){
+
+            open_pop_up = false;
+
+            if(ImGui::Button("Convert to .ason")){
+                std::system(
+                    (std::string("cd ../UFO-Engine/tiled_map_conversion_tool && python3 tiled_map_conversion_tool.py ")
+                        + "\"" +_editor->opened_directory_path+"\" \"" +path+"/"+file_name+"\"").c_str()
+                );
+            }
+
+            ImGui::EndPopup();
         }
 
         if(!ImGui::IsItemClicked() && (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsKeyPressed(ImGuiKey_Enter))){

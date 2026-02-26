@@ -78,6 +78,7 @@ public:
     int number_of_columns;
     int tile_width;
     int tile_height;
+    std::string tileset_being_recovered;
     std::vector<std::string> keys_to_temporary_assets;
     //  firstgid, key
     std::vector<TilesetData> tileset_data;
@@ -94,6 +95,8 @@ public:
     void Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json);
 
     void AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    void RecoverTileset(int _index,const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

@@ -32,6 +32,9 @@ namespace UFOEngineStudio{
 class Editor : public ufo::Level, public ufo::gc::Root{
 public:
 
+    std::string open_file_dialog_path = "";
+    bool is_open_file_dialog_open = false;
+
     bool view_calculator = false;
     std::string calculator_expression;
 

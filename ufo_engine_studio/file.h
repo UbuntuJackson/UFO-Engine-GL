@@ -9,9 +9,10 @@ class Editor;
 class TreeFile : public FileNode{
 public:
     bool is_new_file = false;
+    bool open_pop_up = false;
 
     TreeFile(bool _is_new_file = false) : is_new_file{_is_new_file}{
-        
+
     }
 
     void Update(int _file_index, Directory* _parent,std::string path , Editor* _editor);

@@ -177,7 +177,7 @@ public:
 
     int GetTileID_AtLevelPosition(Vector2f _position);
 
-    ufo::Rectangle GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
+    ufo::Rectangle GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size);
 
     void ResizeRight(int _number_of_tiles_to_insert);
     void ResizeLeft(int _number_of_tiles_to_insert);
