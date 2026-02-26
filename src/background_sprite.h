@@ -21,13 +21,15 @@ public:
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override {
         if(!visible) return;
 
-        int number_of_background_sprites = engine->width / (int)frame_size.x + 1;
+        int scaled_frame_size_x = frame_size.x * _camera->scale;
+
+        int number_of_background_sprites = engine->width / scaled_frame_size_x + 1;
 
         for(int i = 0; i < number_of_background_sprites+1; i++){
 
-            Vector2f screen_position = Vector2f(_camera->GetGlobalPosition().x/parallax.x+i*frame_size.x, 0.0f);
+            Vector2f screen_position = Vector2f(-_camera->GetGlobalPosition().x*parallax.x+i*scaled_frame_size_x, 0.0f);
 
-            screen_position.x = ufo::Maths::Wrap(screen_position.x, -frame_size.x*1.0f, 1.0f*frame_size.x*number_of_background_sprites);
+            screen_position.x = ufo::Maths::Wrap(screen_position.x, -scaled_frame_size_x*1.0f, 1.0f*scaled_frame_size_x*number_of_background_sprites);
 
             ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
             _graphics->DrawPartialSprite(
