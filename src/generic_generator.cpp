@@ -18,6 +18,7 @@
 #include "platformer_rectangle_collision.h"
 #include "collision_grid.h"
 #include "../src/editor_property.h"
+#include "background_sprite.h"
 
 namespace ufo{
 
@@ -250,7 +251,20 @@ void GenericGenerator::Initialise(){
 
                 return std::move(instance);
             }
-            );
+        );
+
+        factory_map.emplace(
+            "ufo::BackgroundSprite",
+            [](ufo::gc::JsonMap* _json){
+                float _x = _json->map.at("x")->AsFloat();
+                float _y = _json->map.at("y")->AsFloat();
+
+                auto instance = std::make_unique<ufo::BackgroundSprite>(
+                   	Vector2f(_x, _y));
+
+                return std::move(instance);
+            }
+        );
 }
 
 std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json){

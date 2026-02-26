@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include "background_sprite.h"
 #include "file_node.h"
 #include "tab.h"
 #include <graphics.h>
@@ -26,6 +27,7 @@
 #include "../src/platformer_rectangle_collision.h"
 #include "../src/collision_grid.h"
 #include "../src/editor_property.h"
+#include "../src/background_sprite.h"
 
 namespace UFOEngineStudio{
 
@@ -216,6 +218,19 @@ public:
                 },
                 "ufo::Sprite",
                 "ufo::Sprite"
+            ))
+        );
+
+        spawnable_actor_map.emplace(
+            "ufo::BackgroundSprite",
+            std::move(std::make_unique<AdvancedActorSpawner>(
+                [](Editor* _editor, AdvancedActorSpawner* _this){
+                    return std::make_unique<ufo::BackgroundSprite>(
+                        Vector2f(0.0f, 0.0f)
+                    );
+                },
+                "ufo::BackgroundSprite",
+                "ufo::BackgroundSprite"
             ))
         );
 
