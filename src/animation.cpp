@@ -24,6 +24,8 @@ Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _loc
 }
 
 void Animation::SetCostume(const std::string& _configuration_key){
+    // If the key does not exist in the asset manager, then this code will just fail silently. That's pretty bad.
+
     if(costumes.count(_configuration_key)){
         Costume& costume = costumes.at(_configuration_key);
         key = costume.key;

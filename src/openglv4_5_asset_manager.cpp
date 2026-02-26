@@ -1,6 +1,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <string>
+#include "console.h"
 #include "texture_2d.h"
 #include "../external/stb_image.h"
 #include "shader.h"
@@ -20,6 +21,11 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     );
 
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+
+    if(!textures.count("placeholder_icon")){
+        Console::PrintLine("Could not load placeholder_icon");
+        throw;
+    }
 
     Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
     AssetJson j;
@@ -47,6 +53,10 @@ OpenGLv4_5_AssetManager::~OpenGLv4_5_AssetManager(){
 }
 
 void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::string& _name, bool _alpha){
+    if(!ufo::FileSystem::FileExists(_path)){
+        Console::PrintLine("[UFO-Engine] OpenGLv4_5_AssetManager::LoadTexture: Error, could not find image at path",_path);
+        return;
+    }
     textures[_name] = LoadTextureFromFile(_path, _alpha);
 }
 
@@ -67,7 +77,7 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
     // replacing 0 with _alpha ? 4 : 3
     unsigned char* data = stbi_load(_path.c_str(), &width, &height, &number_of_channels, _alpha ? 4 : 3);
 
-    texture.Generate(width, height, data);
+    texture.Generate((int)width, (int)height, data);
 
     Console::PrintLine("[UFO-Engine] Loading texture of size", width, height);
 

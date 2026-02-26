@@ -201,6 +201,11 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             if(ImGui::Button("[+] Add Texture")){
                 SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, this, engine->window, nullptr, 0, editor->opened_directory_path.c_str(), true);
             }
+
+            if(ImGui::InputText("Search###SearchAssetBrowser", &asset_browser_search)){
+
+            }
+
             ImGui::Separator();
 
             if(ImGui::BeginChild("MyAssetsChildWindow")){
@@ -208,15 +213,38 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             bool texture_was_erased = false;
             std::string name_of_erased_texture = "";
 
+            std::vector<std::string> texture_names;
             for(const auto& [name, texture] : engine->asset_manager.textures){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) texture_names.push_back(name);
+            }
+            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : texture_names){
+
+                auto& texture = engine->asset_manager.textures.at(name);
 
                 float w = (float)texture.width;
                 float h = (float)texture.height;
 
-                if(ImGui::Button(std::string("[x]###UnloadTexture"+name).c_str())){
-                    name_of_erased_texture = name;
-                    texture_was_erased = true;
-                }
+                bool view_asset_details = ImGui::CollapsingHeader(std::string("###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
 
                 ImGui::SameLine();
 
@@ -231,6 +259,16 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 ImGui::PopStyleVar();
 
                 if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Texture###UnloadTexture"+name).c_str())){
+                        name_of_erased_texture = name;
+                        texture_was_erased = true;
+                    }
+                    ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
+                    ImGui::Text(("name:"+name).c_str(),"%s");
+                    ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
+                }
 
             }
 
@@ -323,11 +361,18 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             if(focused_actor){
                 //Console::PrintLine("GetFocusedActor",focused_actor->editor_name);
 
-                focused_actor->OnFocused();
+                focused_actor->OnFocused(this);
 
             }
 
             focused_actor_found = this_level->GrabbedByCursor(mouse_position_over_screenspace, former_mouse_position_over_screenspace);
+        }
+
+        if(current_tool == Tools::PLACE){
+
+            //    this_level->should_be_selected = true;
+            //    this_level->ResetSelectionStatus();
+
         }
 
         if(current_tool == Tools::ERASE){

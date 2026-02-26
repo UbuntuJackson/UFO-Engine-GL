@@ -891,12 +891,15 @@ void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_
 
 }
 
-void Actor::OnFocused(){
+void Actor::OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     //Basically grab on click, ungrab on release. This does not make sense if you want to
     // be able to spawn multiple actors in a row by holding the mouse button
     if(!is_grabbed_by_cursor && engine->mouse.is_left_button_pressed){
 
         is_grabbed_by_cursor = true;
+
+        should_open_properties = true;
+        _level_editor_tab->editor->set_all_actors_properties_open_to_false = true;
 
         level->RemoveFutureChanges();
 

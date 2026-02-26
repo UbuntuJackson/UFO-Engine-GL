@@ -20,7 +20,7 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
         Console::PrintLine("AssetJson::Read:",_opened_directory_path+a->AsString());
 
         _asset_manager->LoadTexture(_opened_directory_path+a->AsString().substr(2,a->AsString().size()),a->AsString(),true);
-        _asset_manager->textures.at(a->AsString()).permanent = true;
+        if(_asset_manager->textures.count(a->AsString())) _asset_manager->textures.at(a->AsString()).permanent = true;
     }
 }
 

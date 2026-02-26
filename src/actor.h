@@ -267,7 +267,7 @@ public:
     Actor* GetFocusedActor(Vector2f _cursor_viewport_position);
     virtual Actor* OnGetFocusedActor(Vector2f _cursor_viewport_position);
     virtual void OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-    virtual void OnFocused();
+    virtual void OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
     virtual bool OnGrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
     bool GrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
 
