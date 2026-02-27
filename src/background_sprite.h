@@ -2,49 +2,31 @@
 
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "gc_json.h"
 #include "sprite.h"
-#include "graphics.h"
-#include "camera.h"
-#include "engine.h"
+
+namespace UFOEngineStudio{class LevelEditorTab;}
 
 namespace ufo{
+
+namespace gc{class JsonMap;}
+
+class Graphics;
+class Camera;
 
 class BackgroundSprite : public Sprite{
 public:
     Vector2f parallax = Vector2f(0.5f,0.5f);
 
-    BackgroundSprite(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
-        class_name = "ufo::BackgroundSprite";
-        base_class_name = class_name;
-    }
+    BackgroundSprite(Vector2f _local_position);
 
-    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override {
-        if(!visible) return;
+    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 
-        int scaled_frame_size_x = frame_size.x * _camera->scale;
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-        int number_of_background_sprites = engine->width / scaled_frame_size_x + 1;
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
-        for(int i = 0; i < number_of_background_sprites+1; i++){
-
-            Vector2f screen_position = Vector2f(-_camera->GetGlobalPosition().x*parallax.x+i*scaled_frame_size_x, 0.0f);
-
-            screen_position.x = ufo::Maths::Wrap(screen_position.x, -scaled_frame_size_x*1.0f, 1.0f*scaled_frame_size_x*number_of_background_sprites);
-
-            ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
-            _graphics->DrawPartialSprite(
-                key,
-                screen_position,
-                /*size,*/
-                offset,
-                scale*_camera->scale,
-                sample_rectangle.position,
-                sample_rectangle.size,
-                rotation,
-                tint
-            );
-        }
-    }
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 
 };
 

@@ -329,6 +329,8 @@ void Engine::StartWithImGui(){
     //io.Fonts->AddFontDefault();
     //io.Fonts->AddFontFromFileTTF("/etc/alternatives/fonts-japanese-mincho.ttf");
 
+    //io.Fonts->AddFontFromFileTTF("../UFO-Engine/res/fonts-japanese-gothic.ttf", 12);
+
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/Roboto-Medium.ttf");

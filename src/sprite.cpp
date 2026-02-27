@@ -212,8 +212,6 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
     }
 
-    ImGui::Separator();
-
     /*if(ImGui::Button("Add Texture")){
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
     }

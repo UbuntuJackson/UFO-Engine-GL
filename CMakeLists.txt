@@ -51,6 +51,7 @@ set(
     src/shader.cpp
     src/openglv4_5_graphics.cpp
     src/sprite.cpp
+    src/background_sprite.cpp
     src/animation.cpp
     src/openglv4_5_asset_manager.cpp
     src/asset_json.cpp
