@@ -281,11 +281,11 @@ public:
                         class_.at("name")->AsString()
                     );
 
-            bool hide_in_editor = false;
+            bool hide_from_editor = false;
 
             for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
-                if(macro->AsMap().at("name")->AsString() == "ufo_hide_in_editor"){
-                    hide_in_editor = true;
+                if(macro->AsMap().at("name")->AsString() == "ufo_hide_from_editor"){
+                    hide_from_editor = true;
                     break;
                 }
 
@@ -318,7 +318,7 @@ public:
                 }
             }
 
-            if(hide_in_editor) continue;
+            if(hide_from_editor) continue;
 
             for(const auto& member : class_.at("members")->AsArray()){
 

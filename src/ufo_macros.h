@@ -53,7 +53,7 @@
 
 //Not implemented yet, but this macro would make it so you can have a ufo-class which doesn't show up in the editor but still has it's spawn-function generated
 // in <project>/generated.h
-#define hide_from_editor(_takes_boolean)
+#define ufo_hide_from_editor()
 
 //Unimplemented, not sure what a ufo_method would mean.
 #define ufo_method()

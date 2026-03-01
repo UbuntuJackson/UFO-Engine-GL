@@ -818,6 +818,7 @@ def analyse_compound_object(_compound_object, _line_number):
             "ufo_actor_config",
             "ufo_alias",
             "ufo_class",
+            "ufo_hide_from_editor",
             "ufo_category",
             "ufo_variable",
             "ufo_int_range",
