@@ -262,6 +262,9 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
+    //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
+    // However they need to be recovered.
+
     parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
     parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
     parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));

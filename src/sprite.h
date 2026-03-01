@@ -29,7 +29,7 @@ public:
 
     Sprite(olc::vf2d _position);
 
-    void OnSpawn();
+    void OnSpawn() override;
 
     ufo::Rectangle
     GetRectangle(int _x, int _y, Vector2f _frame_size);

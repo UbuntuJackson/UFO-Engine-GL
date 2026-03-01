@@ -51,6 +51,10 @@
 //Adds a description to an exposed variable. Unimplemented.
 #define ufo_comment(_s)
 
+//Not implemented yet, but this macro would make it so you can have a ufo-class which doesn't show up in the editor but still has it's spawn-function generated
+// in <project>/generated.h
+#define hide_from_editor(_takes_boolean)
+
 //Unimplemented, not sure what a ufo_method would mean.
 #define ufo_method()
 
@@ -61,6 +65,7 @@
 #define begin_parsing()
 #define end_parsing()
 
+//Unimpolemented
 #define ufo_inherit_variables()
 
 //Allcaps versions of the above macros. Not valid yet.

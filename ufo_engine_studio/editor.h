@@ -281,7 +281,14 @@ public:
                         class_.at("name")->AsString()
                     );
 
+            bool hide_in_editor = false;
+
             for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
+                if(macro->AsMap().at("name")->AsString() == "ufo_hide_in_editor"){
+                    hide_in_editor = true;
+                    break;
+                }
+
                 if(macro->AsMap().at("name")->AsString() == "ufo_actor_config"){
 
                         auto arr = macro->AsMap().at("args")->AsArray();
@@ -310,6 +317,8 @@ public:
                         }
                 }
             }
+
+            if(hide_in_editor) continue;
 
             for(const auto& member : class_.at("members")->AsArray()){
 
@@ -384,6 +393,8 @@ public:
                             Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
                         }
                     }
+
+                    //Small glaring issue, but if you put ufo_variable before ufo_alias the property will be pushed without the alias.
 
                     if(macro_name == "ufo_variable"){
 
