@@ -9,7 +9,9 @@
 #include "control_settings.h"
 //#include "text_rendering.h"
 #include "generic_generator.h"
+#include "save_file.h"
 #include <SDL3/SDL_opengl.h>
+#include <unordered_map>
 
 struct TTF_Font;
 struct SDL_Texture;
@@ -25,6 +27,8 @@ class Main;
 
 class Engine{
 public:
+    std::unique_ptr<ufo::SaveFile> save_file = nullptr;
+
     std::string language = "English";
     std::vector<std::string> languages = {
         "English",
