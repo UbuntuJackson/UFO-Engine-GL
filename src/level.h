@@ -15,6 +15,9 @@ class Graphics;
 
 class Level : public Actor{
 public:
+    //Keep level in memory on level transition
+    bool persistent_on_level_transition = false;
+
     bool is_paused = false;
 
     TilesetManager tileset_manager;

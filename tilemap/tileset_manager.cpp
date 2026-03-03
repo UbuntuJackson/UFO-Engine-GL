@@ -34,7 +34,7 @@ void TilesetManager::InitialiseTextures(){
     }
     else{
         //This might break at some point.
-        UFOEngineStudio::Editor* editor = engine->level->DynamicCast<UFOEngineStudio::Editor>();
+        UFOEngineStudio::Editor* editor = engine->level_handle->DynamicCast<UFOEngineStudio::Editor>();
         for(const auto& tileset : tileset_data){
             std::string path = editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
             Console::PrintLine("Full Tileset Path",path);

@@ -42,6 +42,7 @@ set(
     src/generic_generator.cpp
     src/texture_2d.cpp
     #main.cpp
+    src/viewport_editing_utils.cpp
     src/level.cpp
     src/input.cpp
     src/actor.cpp
@@ -55,7 +56,6 @@ set(
     src/animation.cpp
     src/openglv4_5_asset_manager.cpp
     src/asset_json.cpp
-    src/Main.cpp
     #src/text_rendering.cpp
     src/control_settings.cpp
     src/widget.cpp

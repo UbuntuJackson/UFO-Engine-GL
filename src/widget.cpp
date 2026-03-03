@@ -29,13 +29,13 @@ void Widget::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
 
 }
 
-void Widget::ResizeOrMove(Vector2f _screen_space_mouse_position){
-    const float margin = 10.0f; //Pixels.
+void Widget::ResizeOrMove(Vector2f _position_screen_space,Vector2f _size_screen_space, Vector2f& _rectangle_position, Vector2f& _rectangle_size, Vector2f _screen_space_mouse_position){
+    const float margin = 20.0f; //Pixels.
     const Vector2f margin_vector = Vector2f(margin, margin);
 
-    const ufo::Rectangle move_rectangle = ufo::Rectangle(GetGlobalPosition()+rectangle.position+margin_vector, rectangle.size-margin_vector*2.0f);
+    const ufo::Rectangle move_rectangle = ufo::Rectangle(_position_screen_space+margin_vector, _size_screen_space-margin_vector*2.0f);
 
-    const ufo::Rectangle resize_rectangle_left = ufo::Rectangle(GetGlobalPosition()+rectangle.position+Vector2f(0.0f, margin), Vector2f(margin, move_rectangle.size.y));
+    const ufo::Rectangle resize_rectangle_left = ufo::Rectangle(_position_screen_space+Vector2f(0.0f, margin), Vector2f(margin, move_rectangle.size.y));
 
     const ufo::Rectangle resize_rectangle_right = ufo::Rectangle(Vector2f(move_rectangle.position.x+move_rectangle.size.x, move_rectangle.position.y), Vector2f(margin, move_rectangle.size.y));
 
@@ -48,68 +48,100 @@ void Widget::ResizeOrMove(Vector2f _screen_space_mouse_position){
     const ufo::Rectangle resize_rectangle_bottom_left = ufo::Rectangle(resize_rectangle_top_left.position+Vector2f(0.0f, resize_rectangle_left.size.y+margin), margin_vector);
     const ufo::Rectangle resize_rectangle_bottom_right = ufo::Rectangle(move_rectangle.position+move_rectangle.size, margin_vector);
 
+    if(engine->mouse.is_left_button_released) part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
+
     if(ufo::Maths::RectangleVsPoint(move_rectangle,_screen_space_mouse_position)){
 
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::MIDDLE;
 
-        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-        local_position += dp;
-
-        Console::PrintLine("Move Rectangle");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_left,_screen_space_mouse_position)){
 
 
-        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-        rectangle.size.x -= dp.x;
-        rectangle.position.x += dp.x;
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::LEFT;
 
 
         Console::PrintLine("Resize left");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_right,_screen_space_mouse_position)){
 
-        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-        rectangle.size.x += dp.x;
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::RIGHT;
 
         Console::PrintLine("Resize right");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_top,_screen_space_mouse_position)){
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP;
         Console::PrintLine("Resize top");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom,_screen_space_mouse_position)){
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM;
         Console::PrintLine("Resize bottom");
 
     }
 
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_top_left,_screen_space_mouse_position)){
-
-        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-        rectangle.position += dp;
-        rectangle.size -= dp;
-
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP_LEFT;
         Console::PrintLine("Resize top left");
     }
 
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_top_right,_screen_space_mouse_position)){
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP_RIGHT;
         Console::PrintLine("Resize top right");
     }
 
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom_left,_screen_space_mouse_position)){
-
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM_LEFT;
         Console::PrintLine("Resize bottom left");
     }
 
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom_right,_screen_space_mouse_position)){
-
-        Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-        rectangle.size += dp;
-
+        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM_RIGHT;
         Console::PrintLine("Resize bottom right");
+    }
+
+    Vector2f dp = engine->mouse.position - engine->mouse.former_position;
+
+    switch(part_of_rectangle_resized_in_editor){
+        case PartsOfRectangle::TOP:{
+            _rectangle_position.y+=dp.y;
+            _rectangle_size.y-=dp.y;
+            break;
+        }
+        case PartsOfRectangle::BOTTOM:{
+            _rectangle_size.y+=dp.y;
+            break;
+        }
+        case PartsOfRectangle::RIGHT:{
+            _rectangle_size.x += dp.x;
+            break;
+        }
+        case PartsOfRectangle::LEFT:{
+            _rectangle_size.x -= dp.x;
+            _rectangle_position.x += dp.x;
+            break;
+        }
+        case PartsOfRectangle::TOP_LEFT:{
+
+            _rectangle_position += dp;
+            _rectangle_size += dp;
+            break;
+        }
+        case PartsOfRectangle::TOP_RIGHT:{
+
+            break;
+        }
+        case PartsOfRectangle::BOTTOM_LEFT:{
+            break;
+        }
+        case PartsOfRectangle::BOTTOM_RIGHT:{
+            _rectangle_size += dp;
+            break;
+        }
+        case PartsOfRectangle::MIDDLE:{
+
+            local_position += dp;
+            break;
+        }
     }
 
 }
@@ -153,28 +185,21 @@ void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineS
     Vector2f world_mouse = mouse_position_over_screenspace;
     Vector2f former_world_mouse = engine->mouse.former_position-editor_viewport_pos;
 
+    ResizeOrMove(GetGlobalPosition()+rectangle.position, rectangle.size, rectangle.position, rectangle.size, world_mouse);
+
     if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+rectangle.position, rectangle.size),world_mouse)){
         //Console::PrintLine("Overlapping");
 
         if(engine->mouse.is_left_button_held){
-            ResizeOrMove(world_mouse);
+
             IrregularUpdate();
         }
-
-        /*if(engine->mouse.is_left_button_held){
-
-            Vector2f dp = world_mouse - former_world_mouse;
-
-            local_position += dp;
-
-            }*/
 
     }
 
 }
 
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
-    Console::PrintLine("Does this even run?");
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 

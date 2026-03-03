@@ -18,7 +18,6 @@
 #include "openglv4_5_graphics.h"
 #include "engine.h"
 #include "input.h"
-#include "Main.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/object.h"
 #include "level_loader.h"
@@ -39,7 +38,7 @@ Engine::~Engine(){
     asset_manager.Clear();
 
     //Null some resources to make sure for example SDL font resources aren't freed later than the SDL ttf libraries themseleves.
-    level = nullptr;
+    loaded_levels.clear();
     level_handle = nullptr;
 
     TTF_CloseFont(font);
@@ -51,33 +50,6 @@ Engine::~Engine(){
     SDL_Quit();
 
     Console::PrintLine("[UFO-Engine] ufo::Application::~Application()");
-}
-
-void
-Engine::Init(Main* _main){
-    SDL_GetWindowSize(_main->window, &width, &height);
-
-    level = std::make_unique<Level>();
-    level_handle = level->DynamicCast<Level>();
-
-    //text_renderer.Init(this);
-    //Reserve space for a few dozens of actors or so
-    level->actors.reserve(50);
-    level->engine = this;
-
-    /*if(!File::Exists("../loaded_assets.json")){
-        Console::PrintLine("[UFO-Engine] No loaded_assets.json found");
-    }
-    else{
-        JsonDictionary d = JsonDictionary::Read("../loaded_assets.json");
-        for(const auto& asset : d.Get("assets").AsArray().Iterable()){
-            asset_manager.LoadTexture(asset->AsDictionary().Get("path").AsString(), asset->AsDictionary().Get("alias").AsString(), true);
-        }
-        }*/
-
-    actor_generator->Initialise();
-
-    m_tp1 = std::chrono::system_clock::now();
 }
 
 void Engine::InitIndependant(){
@@ -190,20 +162,18 @@ void Engine::InitIndependant(){
     if(!font){
         Console::PrintLine("Failed to load font", SDL_GetError());
     }
+
+    loaded_levels.push_back(std::make_unique<Level>());
 }
 
 void Engine::Start(){
 
-    Console::PrintLine("level memory address",level.get());
-
-
-    level = std::make_unique<Level>();
-    level_handle = level->DynamicCast<Level>();
+    level_handle = loaded_levels[0]->DynamicCast<Level>();
 
     //text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
-    level->actors.reserve(50);
-    level->engine = this;
+    level_handle->actors.reserve(50);
+    level_handle->engine = this;
 
     actor_generator->Initialise();
 
@@ -215,7 +185,7 @@ void Engine::Start(){
     asset_manager.Initialise(this);
 
     level_handle->Load();
-    level->OnSpawn();
+    level_handle->OnSpawn();
 
 
     while(!quit){
@@ -253,13 +223,12 @@ void Engine::Start(){
 
 void Engine::StartWithImGui(){
 
-    level = std::make_unique<Level>();
-    level_handle = level->DynamicCast<Level>();
+    level_handle = loaded_levels[0]->DynamicCast<Level>();
 
     //text_renderer.Init(this);
     //Reserve space for a few dozens of actors or so
-    level->actors.reserve(50);
-    level->engine = this;
+    level_handle->actors.reserve(50);
+    level_handle->engine = this;
 
     actor_generator->Initialise();
 
@@ -427,7 +396,10 @@ void Engine::Quit(){
 bool Engine::GoToLevel(const std::string& _path){
 
     try{
-        pending_levels.push_back(std::move(ufo::LevelLoader().LoadLevel(this, _path)));
+        //Pushes the loaded level to loaded_levels just to make it not go out of memory.
+        loaded_levels.push_back(std::move(ufo::LevelLoader().LoadLevel(this, _path)));
+
+        pending_levels.push_back(loaded_levels.back().get());
     }
     catch(const std::exception& _error){
         Console::Print("[UFO-Engine Studio] Engine::GoToLevel\n");
@@ -507,9 +479,15 @@ void Engine::Update(){
     level_handle->UpdatePhase(fLastElapsed);
 
     if(pending_levels.size() > 0){
+
+        for(int l = 0; l < loaded_levels.size(); l++){
+            Actor* level = loaded_levels[l].get();
+
+            if(level != pending_levels.back()) loaded_levels.erase(loaded_levels.begin()+l);
+        }
+
         //Do everything needed to initialise a level.
-        level = std::move(pending_levels.back());
-        level_handle = level->DynamicCast<Level>();
+        level_handle = pending_levels.back()->DynamicCast<Level>();
         level_handle->actors.reserve(50);
         level_handle->engine = this;
         level_handle->Load();
@@ -570,7 +548,7 @@ void Engine::EditorRender(){
 }
 
 void Engine::GarbageCollect(){
-    level->InvokeGarbageCollector();
+    level_handle->InvokeGarbageCollector();
 }
 
 }

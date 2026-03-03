@@ -28,6 +28,7 @@
 #include "../src/collision_grid.h"
 #include "../src/editor_property.h"
 #include "../src/background_sprite.h"
+#include "../src/rectangular_area.h"
 
 namespace UFOEngineStudio{
 
@@ -252,6 +253,13 @@ public:
                 return std::make_unique<ufo::Camera>(Vector2f(0.0f, 0.0f));
             },
             "ufo::Camera", "ufo::Camera"))
+        );
+
+        spawnable_actor_map.emplace("ufo::RectangularArea",
+            std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::RectangularArea>(Vector2f(0.0f, 0.0f));
+            },
+            "ufo::RectangularArea", "ufo::RectangularArea"))
         );
     }
 

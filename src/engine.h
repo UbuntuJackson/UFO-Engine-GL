@@ -23,8 +23,6 @@ enum PaintingMethods{
     RECTANGLE_BRUSH_PixelBufferObject
 };
 
-class Main;
-
 class Engine{
 public:
     std::unique_ptr<ufo::SaveFile> save_file = nullptr;
@@ -58,8 +56,8 @@ public:
     std::chrono::time_point<std::chrono::system_clock> m_tp1, m_tp2;
 
     Level* level_handle = nullptr;
-    std::unique_ptr<Actor> level = nullptr;
-    std::vector<std::unique_ptr<Actor>> pending_levels;
+    std::vector<std::unique_ptr<Actor>> loaded_levels;
+    std::vector<Actor*> pending_levels;
 
     //ufo::TextRenderer text_renderer;
 
@@ -79,9 +77,6 @@ public:
 
     Engine();
     virtual ~Engine();
-
-    //Old init method for when this was inside of class Main
-    void Init(Main* _main);
 
     //New methods to get rid of Main class.
     void InitIndependant();
