@@ -480,10 +480,10 @@ void Engine::Update(){
 
     if(pending_levels.size() > 0){
 
-        for(int l = 0; l < loaded_levels.size(); l++){
-            Actor* level = loaded_levels[l].get();
+        for(int l = 0; l < (int)loaded_levels.size(); l++){
+            ufo::Level* level = loaded_levels[l]->DynamicCast<ufo::Level>();
 
-            if(level != pending_levels.back()) loaded_levels.erase(loaded_levels.begin()+l);
+            if(level != pending_levels.back() && !level->persistent_on_level_transition) loaded_levels.erase(loaded_levels.begin()+l);
         }
 
         //Do everything needed to initialise a level.
