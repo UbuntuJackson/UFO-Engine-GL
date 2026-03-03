@@ -19,6 +19,7 @@
 #include "collision_grid.h"
 #include "../src/editor_property.h"
 #include "background_sprite.h"
+#include "rectangular_area.h"
 
 namespace ufo{
 
@@ -128,21 +129,6 @@ void GenericGenerator::Initialise(){
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Widget>(Vector2f(_x, _y));
 
-            try{
-                auto j_rectangle = _json->map.at("rectangle")->AsMap();
-                float widget_x = j_rectangle.at("x")->AsFloat();
-                float widget_y = j_rectangle.at("y")->AsFloat();
-                float widget_w = j_rectangle.at("w")->AsFloat();
-                float widget_h = j_rectangle.at("h")->AsFloat();
-                instance->rectangle.position.x = widget_x;
-                instance->rectangle.position.y = widget_y;
-                instance->rectangle.size.x = widget_w;
-                instance->rectangle.size.y = widget_h;
-
-
-            } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Widget instance", _error.what());
-            }
             return std::move(instance);
         }
     );
@@ -260,6 +246,19 @@ void GenericGenerator::Initialise(){
                 float _y = _json->map.at("y")->AsFloat();
 
                 auto instance = std::make_unique<ufo::BackgroundSprite>(
+                   	Vector2f(_x, _y));
+
+                return std::move(instance);
+            }
+        );
+
+        factory_map.emplace(
+            "ufo::RectangularArea",
+            [](ufo::gc::JsonMap* _json){
+                float _x = _json->map.at("x")->AsFloat();
+                float _y = _json->map.at("y")->AsFloat();
+
+                auto instance = std::make_unique<ufo::RectangularArea>(
                    	Vector2f(_x, _y));
 
                 return std::move(instance);

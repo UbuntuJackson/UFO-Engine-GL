@@ -199,6 +199,28 @@ void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineS
 
 }
 
+void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    //A good example of large amount of properties being written to an object
+    // Potential solution, have an additional map which handles writing of default properties.
+    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
+    // Son of a biscuit this has been redundant.
+    // Writing of custom properties handled in generated.h.
+
+    try{
+        auto j_rectangle = _json->map.at("rectangle")->AsMap();
+        float widget_x = j_rectangle.at("x")->AsFloat();
+        float widget_y = j_rectangle.at("y")->AsFloat();
+        float widget_w = j_rectangle.at("w")->AsFloat();
+        float widget_h = j_rectangle.at("h")->AsFloat();
+        rectangle.position.x = widget_x;
+        rectangle.position.y = widget_y;
+        rectangle.size.x = widget_w;
+        rectangle.size.y = widget_h;
+    } catch(const std::exception& _error){
+        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::Widget instance");
+    }
+}
+
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);

@@ -1,4 +1,3 @@
-#pragma once
 #include "../shapes/rectangle.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
@@ -8,7 +7,15 @@
 
 namespace ufo{
 
-void ResizeOrMove(Actor* _actor, PartsOfRectangle& _part_of_rectangle_resized_in_editor, Vector2f _position_screen_space,Vector2f _size_screen_space, Vector2f& _rectangle_position, Vector2f& _rectangle_size, Vector2f _screen_space_mouse_position){
+void ResizeOrMove(Actor* _actor,
+    PartsOfRectangle& _part_of_rectangle_resized_in_editor,
+    Vector2f _position_screen_space,
+    Vector2f _size_screen_space,
+    Vector2f& _rectangle_position,
+    Vector2f& _rectangle_size,
+    Vector2f _screen_space_mouse_position,
+    Vector2f _scaled_delta_mouse_position
+){
     const float margin = 20.0f; //Pixels.
     const Vector2f margin_vector = Vector2f(margin, margin);
 
@@ -78,7 +85,7 @@ void ResizeOrMove(Actor* _actor, PartsOfRectangle& _part_of_rectangle_resized_in
         Console::PrintLine("Resize bottom right");
     }
 
-    Vector2f dp = _actor->engine->mouse.position - _actor->engine->mouse.former_position;
+    Vector2f dp = _scaled_delta_mouse_position;
 
     switch(_part_of_rectangle_resized_in_editor){
         case PartsOfRectangle::TOP:{

@@ -59,6 +59,7 @@ set(
     #src/text_rendering.cpp
     src/control_settings.cpp
     src/widget.cpp
+    src/rectangular_area.cpp
     src/text.cpp
     src/button.cpp
     src/font.cpp

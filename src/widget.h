@@ -37,6 +37,7 @@ public:
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 };
 
