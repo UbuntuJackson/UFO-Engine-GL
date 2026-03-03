@@ -14,6 +14,10 @@ RectangularArea::RectangularArea(Vector2f _) : Actor(_){
     base_class_name = class_name;
 }
 
+ufo::Rectangle RectangularArea::GetRectangle(){
+    return ufo::Rectangle(GetGlobalPosition()+rectangle.position,rectangle.size);
+}
+
 void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     //Actor::OnUpdateEditorViewport(_editor, _level_editor_tab);

@@ -21,6 +21,8 @@ class RectangularArea : public Actor{
 public:
     RectangularArea(Vector2f _);
 
+    ufo::Rectangle GetRectangle();
+
     ufo::Rectangle rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(100.0f, 50.0f));
 
     PartsOfRectangle part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
