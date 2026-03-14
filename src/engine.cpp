@@ -484,7 +484,14 @@ void Engine::Update(){
         for(int l = (int)loaded_levels.size()-1; l != -1; l--){
             ufo::Level* loaded_level = loaded_levels[l]->DynamicCast<ufo::Level>();
 
-            if(loaded_level != pending_levels.back() && !loaded_level->persistent_on_level_transition){
+            bool level_in_pending_levels = false;
+            for(ufo::Actor* level : pending_levels){
+                if(loaded_level == level){
+                    level_in_pending_levels = true;
+                }
+            }
+
+            if(!level_in_pending_levels && !loaded_level->persistent_on_level_transition){
                 Console::PrintLine("[UFO-Engine] Engine::Update: Freeing level",loaded_level->editor_name);
                 loaded_levels.erase(loaded_levels.begin()+l);
             }
