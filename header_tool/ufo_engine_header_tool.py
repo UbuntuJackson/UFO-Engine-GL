@@ -252,7 +252,7 @@ def search_file(_path, _local_path, _file_name):
     header_tool_file_log += pprint.pformat(dictionary, indent=4) + "\n"
 
     for i in dictionary:
-        i["class"]["header_file"] = _local_path[1:] + "/" + _file_name
+        i["class"]["header_file"] = (_local_path + "/" + _file_name)[1:]
         # print("UFO-Header Tool: path", _path)
 
     return (dictionary, header_tool_file_log)

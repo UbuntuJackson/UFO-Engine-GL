@@ -1,4 +1,5 @@
 import json
+import os.path
 import sys
 
 IMPORT_MODE_UNWRAPPED = 2
@@ -412,6 +413,10 @@ def main(_working_directory):
     actor_counter = ActorCounter()
 
     # Load structured_classes.json to get all classes
+    # if structured classes doesn't exist yet, then add nothing to generated code
+    if not os.path.isfile(_working_directory + "/structured_classes.json"):
+        return ""
+
     structured_classes_file = open(_working_directory + "/structured_classes.json")
     structured_classes_dict = json.loads(structured_classes_file.read())
 

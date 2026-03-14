@@ -20,15 +20,15 @@
 
 namespace ufo{
 
-void TileMap::OnSpawn(){
-    Actor::OnSpawn();
-
-}
-
 TileMap::TileMap(Vector2f _) : Actor(_){
     base_class_name = "ufo::TileMap";
     class_name = base_class_name;
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
+}
+
+void TileMap::OnSpawn(){
+    Actor::OnSpawn();
+
 }
 
 void TileMap::Do(){
@@ -511,7 +511,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
                             int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
 
-                            if(tile_index > -1 && tile_index < tilemap_data.size()){
+                            if(tile_index > -1 && tile_index < (int)tilemap_data.size()){
                                 if(tilemap_data[tile_index] == 0){
 
                                     tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;

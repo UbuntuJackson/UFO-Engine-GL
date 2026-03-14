@@ -106,6 +106,7 @@ gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path){
     if(!member){
         invalid_cjson = true;
         Console::PrintLine("[!]", "[Json::JsonRead()]" ,"Could not load json from path:", _path);
+        return _gc->New<gc::FaultyJsonMap>();
     }
     else Console::PrintLine("[!]", "[Json::JsonRead()]","Json loaded successfully", _path);
     gc::JsonMap* j = GetDictionaryAsTree(_gc,member);

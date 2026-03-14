@@ -32,6 +32,14 @@
 
 namespace UFOEngineStudio{
 
+struct ProjectSettings{
+    bool v_sync = true;
+    int game_width = 1600;
+    int game_height = 900;
+    std::string game_window_title = "Untitled";
+    bool multi_player = false;
+};
+
 class Editor : public ufo::Level, public ufo::gc::Root{
 public:
 
@@ -43,14 +51,8 @@ public:
 
     bool will_compile_game = false;
     bool will_run_game = false;
-    bool v_sync = true;
 
-    int game_width = 1600;
-    int game_height = 900;
-
-    std::string game_window_title;
-
-    bool multi_player = false;
+    ProjectSettings project_settings;
 
     bool project_settings_open = false;
 
@@ -266,6 +268,12 @@ public:
     void ReloadSpawnableActorMap(){
 
         auto exported_actors_json = ufo::gc::JsonRead(&gc, opened_directory_path+"/structured_classes.json");
+
+        if(exported_actors_json->IsNull()){
+            Console::PrintLine("[UFO-Engine Studio] Warning: Could not find file with exported actors",opened_directory_path+"/structured_classes.json");
+            return;
+        }
+
         for(const auto& j_class : exported_actors_json->map.at("contents")->AsArray()){
             auto class_ = j_class->AsMap().at("class")->AsMap();
 

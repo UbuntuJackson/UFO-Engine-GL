@@ -13,6 +13,14 @@
 
 namespace ufo::Maths{
 
+Vector2f RotateVector(Vector2f _v,float _angle_in_radians){
+
+    float original_angle = std::atan2(_v.y,_v.x);
+    float new_angle = original_angle+_angle_in_radians;
+
+    return Vector2f(std::cos(new_angle), std::sin(new_angle))*_v.mag();
+}
+
 ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle){
     ufo::Rectangle r = _rectangle;
     if(_rectangle.size.x < 0.0f){

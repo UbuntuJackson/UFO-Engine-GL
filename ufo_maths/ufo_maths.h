@@ -14,6 +14,8 @@ typedef olc::vi2d Vector2i;
 
 namespace ufo::Maths{
 
+Vector2f RotateVector(Vector2f _v,float _angle_in_radians);
+
 //#define SIN(a) std::sin(a)
 //#define COS(a) std::cos(a)
 

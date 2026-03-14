@@ -8,6 +8,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
+#include "../shapes/rectangle.h"
 
 namespace UFOEngineStudio{
     class Editor;
@@ -33,6 +34,7 @@ public:
 
     Vector2f local_position;
     Vector2f former_local_position;
+    ufo::Rectangle former_rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(0.0f, 0.0f));
 
     bool is_dead = false;
 
@@ -44,6 +46,8 @@ public:
     Level* level = nullptr;
 
     Vector2f GetGlobalPosition();
+
+    virtual ufo::Rectangle GetRectangle();
 
     Actor* GetActor(std::string _path);
 

@@ -398,6 +398,7 @@ bool Engine::GoToLevel(const std::string& _path){
     try{
         //Pushes the loaded level to loaded_levels just to make it not go out of memory.
         loaded_levels.push_back(std::move(ufo::LevelLoader().LoadLevel(this, _path)));
+        Console::PrintLine("[UFO-Engine Studio] Engine::GoToLevel",loaded_levels.back()->editor_name);
 
         pending_levels.push_back(loaded_levels.back().get());
     }
@@ -480,10 +481,13 @@ void Engine::Update(){
 
     if(pending_levels.size() > 0){
 
-        for(int l = 0; l < (int)loaded_levels.size(); l++){
-            ufo::Level* level = loaded_levels[l]->DynamicCast<ufo::Level>();
+        for(int l = (int)loaded_levels.size()-1; l != -1; l--){
+            ufo::Level* loaded_level = loaded_levels[l]->DynamicCast<ufo::Level>();
 
-            if(level != pending_levels.back() && !level->persistent_on_level_transition) loaded_levels.erase(loaded_levels.begin()+l);
+            if(loaded_level != pending_levels.back() && !loaded_level->persistent_on_level_transition){
+                Console::PrintLine("[UFO-Engine] Engine::Update: Freeing level",loaded_level->editor_name);
+                loaded_levels.erase(loaded_levels.begin()+l);
+            }
         }
 
         //Do everything needed to initialise a level.

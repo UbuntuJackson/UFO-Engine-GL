@@ -140,6 +140,11 @@ public:
 
 };
 
+class FaultyJsonMap : public JsonMap{
+public:
+     bool IsNull() override {return true;}
+};
+
 gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj);
 
 gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member);

@@ -37,6 +37,10 @@ Vector2f Actor::GetGlobalPosition(){
     return local_position + parent->GetGlobalPosition();
 }
 
+ufo::Rectangle Actor::GetRectangle(){
+    return ufo::Rectangle(GetGlobalPosition(), Vector2f(16.0f, 16.0f));
+}
+
 Actor* Actor::GetActor(std::string _path){
 
     size_t first_of_index = _path.find_first_of("/");
@@ -149,6 +153,7 @@ void Actor::ReplaceActors(UFOEngineStudio::Editor* _editor){
 }
 
 void Actor::Update(float _delta_time){
+    former_rectangle = GetRectangle();
 
     for(const auto& actor : actors){
         actor->Update(_delta_time);

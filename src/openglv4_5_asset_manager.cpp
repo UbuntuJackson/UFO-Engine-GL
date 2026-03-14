@@ -37,6 +37,7 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
 
 void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
 
 
     save_path = _editor->opened_directory_path+"/loaded_assets.json";

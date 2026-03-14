@@ -7,17 +7,13 @@
 #include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
 
-class Camera;
-
 namespace ufo{
+    class Camera;
     class Level;
     class Graphics;
     namespace gc{
         class JsonMap;
     }
-}
-
-namespace ufo{
 
 class TileMap : public Actor{
 public:

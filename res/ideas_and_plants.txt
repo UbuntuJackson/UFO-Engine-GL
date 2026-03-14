@@ -100,3 +100,12 @@ All these *might* be easily solvable with some code-generation, the only really 
 
 -Bug with camera not clamping for a second when you switch camera.
 -Out of bounds array access in
+
+### Project Management ###
+
+I need to rethink the various files the editor will be looking for in a project.
+
+1.) <Project>/CMakeLists.txt - This is handled via std::system, and I might not have to worry about this
+2.) <Project>/structured_classes.json
+3.) <Project>/settings.json
+4.) <Project>/loaded_assets.json

@@ -138,8 +138,16 @@ TilesetData TilesetManager::GetTilesetData(std::string _name){
         if(data.name == _name) return data;
     }
     Console::PrintLine("Tilemap::GetTilesetData Invalid tileset name:", _name);
+    //This error handling might not be good.
     return {
-        ""
+        "",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
     };
 }
 

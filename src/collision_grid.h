@@ -23,6 +23,8 @@ public:
 
     int GetDivisionFromPosition(const Vector2f& _position);
 
+    std::vector<int> GetDivisionsForRectangle(const ufo::Rectangle& _rect);
+
     void OnSpawn();
 
     void OnUpdate(float _delta_time);
