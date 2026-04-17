@@ -24,6 +24,8 @@
 namespace ufo{
 
 void GenericGenerator::Initialise(){
+    //gc::JsonMap classes = gc::JsonRead(&gc, engine->game_directory);
+
     //Gotta add all the ufo classes to class_jsons
 
     //Also gotta add all .asons to actor_jsons_with_unaltered_default_properties
@@ -293,7 +295,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 		}catch(const std::exception& _error){
 		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
 		}
-		instance->OnLoadDefaultProperties(_json);
+		/* if(instance->import_mode == Actor::ImportModes::UNWRAPPED) */ instance->OnLoadDefaultProperties(_json);
 
 		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
 

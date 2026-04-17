@@ -52,6 +52,10 @@ public:
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+    //For UFO-Engine Studio
+
+    void OnResourcesEdited() override;
 };
 
 }

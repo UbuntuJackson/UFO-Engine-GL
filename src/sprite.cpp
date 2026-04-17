@@ -107,84 +107,86 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
         if(ImGui::BeginChild("MyAssetsChildWindow")){
 
-        bool texture_was_erased = false;
-        std::string name_of_erased_texture = "";
+            bool texture_was_erased = false;
+            std::string name_of_erased_texture = "";
 
-        std::vector<std::string> texture_names;
-        for(const auto& [name, texture] : engine->asset_manager.textures){
-            bool search_is_in_word = false;
+            std::vector<std::string> texture_names;
+            for(const auto& [name, texture] : engine->asset_manager.textures){
+                bool search_is_in_word = false;
 
-            for(int c = 0; c < (int)name.size(); c++){
-                bool found_match_from_this_character = true;
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
 
-                for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                    if(c+d > (int)name.size()-1) continue;
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
 
-                    if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                        found_match_from_this_character = false;
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
                     }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
                 }
 
-                if(found_match_from_this_character) search_is_in_word = true;
+                if(search_is_in_word) texture_names.push_back(name);
             }
+            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
 
-            if(search_is_in_word) texture_names.push_back(name);
-        }
-        std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-            return _a<_b;
-        });
+            for(const std::string& name : texture_names){
 
-        for(const std::string& name : texture_names){
+                auto& texture = engine->asset_manager.textures.at(name);
 
-            auto& texture = engine->asset_manager.textures.at(name);
+                float w = (float)texture.width;
+                float h = (float)texture.height;
 
-            float w = (float)texture.width;
-            float h = (float)texture.height;
+                bool view_asset_details = ImGui::CollapsingHeader(std::string("###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
 
-            bool view_asset_details = ImGui::CollapsingHeader(std::string("###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
-
-            ImGui::SameLine();
-
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
-            ImGui::ImageButton(name.c_str(),
-                (void*)(intptr_t)texture.id,
-                ImVec2(32.0f*w/h, 32.0f),
-                ImVec2(0,0),
-                ImVec2(1,1),
-                ImVec4(0,0,0,1)
-            );
-            ImGui::PopStyleVar();
-
-            if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
-
-            if(view_asset_details){
-                if(ImGui::Button(std::string("Unload Texture###UnloadTexture"+name).c_str())){
-                    name_of_erased_texture = name;
-                    texture_was_erased = true;
-                }
                 ImGui::SameLine();
-                if(ImGui::Button(std::string("Assign Texture to Current Sprite###AddCostume"+name).c_str())){
-                    float w = (float)engine->asset_manager.textures.at(name).width;
-                    float h = (float)engine->asset_manager.textures.at(name).height;
-                    key = name;
-                    frame_size = Vector2f(w,h);
-                    number_of_frames = 1;
 
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
+                ImGui::ImageButton(name.c_str(),
+                    (void*)(intptr_t)texture.id,
+                    ImVec2(32.0f*w/h, 32.0f),
+                    ImVec2(0,0),
+                    ImVec2(1,1),
+                    ImVec4(0,0,0,1)
+                );
+                ImGui::PopStyleVar();
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Texture###UnloadTexture"+name).c_str())){
+                        name_of_erased_texture = name;
+                        texture_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Texture to Current Sprite###AddCostume"+name).c_str())){
+                        float w = (float)engine->asset_manager.textures.at(name).width;
+                        float h = (float)engine->asset_manager.textures.at(name).height;
+                        key = name;
+                        frame_size = Vector2f(w,h);
+                        number_of_frames = 1;
+
+                    }
+                    ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
+                    ImGui::Text(("name:"+name).c_str(),"%s");
+                    ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
                 }
-                ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
-                ImGui::Text(("name:"+name).c_str(),"%s");
-                ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
+
             }
 
-        }
+            if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
+                engine->asset_manager.textures.at(name_of_erased_texture).Delete();
+                engine->asset_manager.textures.erase(name_of_erased_texture);
+                _level_editor_tab->this_level->ResourcesEdited();
 
-        if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
-            engine->asset_manager.textures.at(name_of_erased_texture).Delete();
-            engine->asset_manager.textures.erase(name_of_erased_texture);
+                if(key == name_of_erased_texture) key = "placeholder_icon";
 
-            if(key == name_of_erased_texture) key = "placeholder_icon";
+            }
 
-        }
             ImGui::EndChild();
 
         }
@@ -265,6 +267,9 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
     // However they need to be recovered.
 
+    //I'm gonna make it so all default properties are excluded if the object is wrapped
+
+    //if(import_mode == ImportModes::UNWRAPPED){
     parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
     parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
     parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));
@@ -283,6 +288,7 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
 
     parent_class_as_json->map.emplace("colour", j_colour);
 
+    //}
 
     return parent_class_as_json;
 }
@@ -306,6 +312,12 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
+    }
+}
+
+void Sprite::OnResourcesEdited(){
+    if(!engine->asset_manager.textures.count(key)){
+        key = "placeholder_icon";
     }
 }
 

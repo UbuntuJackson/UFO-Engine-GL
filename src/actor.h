@@ -154,6 +154,17 @@ public:
 
     //For UFO-Engine Studio Editor actor tree widget
 
+    virtual void OnResourcesEdited(){
+
+    }
+
+    void ResourcesEdited(){
+        OnResourcesEdited();
+        for(const auto& actor : actors){
+            actor->ResourcesEdited();
+        }
+    }
+
     void SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value);
 
     enum ImportModes{

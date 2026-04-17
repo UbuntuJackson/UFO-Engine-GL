@@ -57,7 +57,6 @@ set(
     src/animation.cpp
     src/openglv4_5_asset_manager.cpp
     src/asset_json.cpp
-    #src/text_rendering.cpp
     src/control_settings.cpp
     src/widget.cpp
     src/rectangular_area.cpp

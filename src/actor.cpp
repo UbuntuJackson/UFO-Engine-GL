@@ -315,6 +315,14 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
 
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
+
+        //An issue here: the attributes aren't copied.
+        // An idea would be
+        // 1.) Save the old actor
+        // 2.) Replace the old one with the new one
+        // 3.) Move all the custom properties to the new one from the saved old one
+        // 4.) Refresh, remove outdated properties, add new ones with Actor::RemoveAndAddEditorPropertiesDuringRuntime
+
         for(auto&& actor : act->new_actor_queue){
             AddActorUniquePtr(std::move(actor));
         }
