@@ -45,6 +45,10 @@ public:
     //The engine utilises the relative path to the executable location
     std::string engine_path = "../UFO-Engine";
 
+    //Used for editor to locate resources, structured_classes.json, and more
+    // this can be a global path if game is opened in editor, and simply the relative path if the game is run by itself as it is
+    std::string game_directory = "..";
+
     bool multi_player = false;
 
     //Width and height of window

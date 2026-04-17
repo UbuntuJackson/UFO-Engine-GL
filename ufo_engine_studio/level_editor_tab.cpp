@@ -119,10 +119,10 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
         if(ImGui::BeginTabItem("Actors")){
 
-            std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
+            std::map<std::string, std::vector<UFOEngineStudio::AdvancedActorSpawner*>> categories;
 
             for(const auto& [k,v] : _editor->spawnable_actor_map){
-                if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
+                if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::AdvancedActorSpawner*>{});
                 categories.at(v->category).push_back(v.get());
             }
 

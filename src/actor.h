@@ -39,6 +39,9 @@ public:
     bool is_dead = false;
 
     Actor(Vector2f _local_position);
+
+    virtual std::string GetInfo();
+
 public:
     Actor* parent = nullptr;
 public:
@@ -146,12 +149,6 @@ public:
     }
 
     virtual ~Actor(){
-
-    }
-
-    virtual std::string GetInfo(){
-
-        return "[UFO-Engine] Actor::GetInfo " + class_name + " " + std::to_string(editor_id);
 
     }
 
@@ -281,9 +278,6 @@ public:
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
-    bool UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-    virtual bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual void OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

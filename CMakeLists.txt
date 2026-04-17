@@ -38,6 +38,7 @@ add_subdirectory(glm-1.0.1)
 
 set(
     SRC
+    shared_json/shared_json.cpp
     src/engine.cpp
     src/generic_generator.cpp
     src/texture_2d.cpp
@@ -87,6 +88,7 @@ set(
 
     #The Beam garbage collector
     ufo_garbage_collector/garbage_collector.cpp
+    ufo_garbage_collector/object.cpp
     ufo_garbage_collector/gc_json.cpp
 
     #ImGui
@@ -108,6 +110,7 @@ set(
     ufo_engine_studio/directory.cpp
     ufo_engine_studio/tab.cpp
     ufo_engine_studio/editor.cpp
+    ufo_engine_studio/advanced_actor_spawner.cpp
     ufo_engine_studio/level_editor_tab.cpp
     ufo_engine_studio/file_dialogue.cpp
     ufo_engine_studio/text_editor_tab.cpp

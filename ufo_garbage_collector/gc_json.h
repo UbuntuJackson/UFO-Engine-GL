@@ -121,7 +121,7 @@ public:
 
         std::string string_to_return = json_as_string;
 
-        delete json_as_string;
+        free(json_as_string);
 
         cJSON_Delete(json_obj);
 

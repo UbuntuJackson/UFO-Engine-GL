@@ -19,6 +19,8 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
     for(const auto& a : arr){
         Console::PrintLine("AssetJson::Read:",_opened_directory_path+a->AsString());
 
+        //Here the first two characters are removed, which always have to be ..
+        // would be simpler if the default path was just the project root after all
         _asset_manager->LoadTexture(_opened_directory_path+a->AsString().substr(2,a->AsString().size()),a->AsString(),true);
         if(_asset_manager->textures.count(a->AsString())) _asset_manager->textures.at(a->AsString()).permanent = true;
     }

@@ -21,6 +21,8 @@
 #include "../ufo_engine_studio/im_vec.h"
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
+#include "../ufo_engine_studio/advanced_actor_spawner.h"
+#include "../utils/conversion.h"
 
 namespace ufo{
 
@@ -28,6 +30,10 @@ Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
+}
+
+std::string Actor::GetInfo(){
+    return "[Instance of type "+class_name+"] "+"name: "+editor_name+", address:"+ufo::MemoryAddressToString(this);
 }
 
 Vector2f Actor::GetGlobalPosition(){
@@ -485,10 +491,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
         ImGui::Begin("Adding Actor");
 
-        std::map<std::string, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>> categories;
+        std::map<std::string, std::vector<UFOEngineStudio::AdvancedActorSpawner*>> categories;
 
         for(const auto& [k,v] : _editor->spawnable_actor_map){
-            if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::Editor::AdvancedActorSpawner*>{});
+            if(!categories.count(v->category)) categories.emplace(v->category, std::vector<UFOEngineStudio::AdvancedActorSpawner*>{});
             categories.at(v->category).push_back(v.get());
         }
 
@@ -674,13 +680,13 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
     if(_editor->spawnable_actor_map.count(class_name)){
 
         //Basically, get the actor that would be spawned in the editor, and update according to that
-        UFOEngineStudio::Editor::AdvancedActorSpawner* advanced_spawner_of_this_class = _editor->spawnable_actor_map.at(class_name).get();
+        UFOEngineStudio::AdvancedActorSpawner* advanced_spawner_of_this_class = _editor->spawnable_actor_map.at(class_name).get();
 
         std::map<std::string, std::unique_ptr<ufo::EditorProperty>> properties_template;
 
         std::map<std::string, ufo::EditorProperty*> properties_of_this;
 
-        for(const auto& property : advanced_spawner_of_this_class->properties){
+        for(const auto& property : advanced_spawner_of_this_class->custom_properties){
              properties_template.emplace(property->variable_name,property->Copy());
         }
 
@@ -995,106 +1001,6 @@ void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStud
 //Might not use
 void Actor::OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-}
-
-bool Actor::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-    if(import_mode != ImportModes::WRAPPED){
-        for(const auto& actor : actors){
-            bool focused = actor->UpdateEditorViewportFocus(_editor, _level_editor_tab);
-            if(focused || actor->is_grabbed_by_cursor){
-                return true;
-            }
-        }
-    }
-
-    return OnUpdateEditorViewportFocus(_editor, _level_editor_tab);
-}
-
-//Isn't this function doing two things technically?
-bool Actor::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    bool focused = false;
-
-    const Vector2f pos_min = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition())+editor_hitbox.position;
-    const Vector2f pos_max = _level_editor_tab->this_level->active_camera_handles.back()->Transform(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
-
-    if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
-
-    const Vector2f mouse_position_over_screenspace = _level_editor_tab->mouse_position_over_screenspace;
-    const Vector2f former_mouse_position_over_screenspace = _level_editor_tab->former_mouse_position_over_screenspace;
-
-    const Vector2f world_mouse = _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
-    const Vector2f former_world_mouse =  _level_editor_tab->this_level->active_camera_handles.back()->TransformScreenToWorld(former_mouse_position_over_screenspace);
-
-    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(pos_min, pos_max-pos_min), mouse_position_over_screenspace)){
-        bool is_viewport_hovered = ImGui::IsItemHovered(); //Hopefully this actually represents the viewport
-
-        if(is_viewport_hovered){
-
-            //Basically grab on click, ungrab on release. This does not make sense if you want to
-            // be able to spawn multiple actors in a row by holding the mouse button
-            if(engine->mouse.is_left_button_pressed){
-                focused = true;
-
-                if(ImGui::IsItemHovered() && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::SELECT){
-                    should_open_properties = true;
-                    _editor->set_all_actors_properties_open_to_false = true;
-                }
-
-                is_grabbed_by_cursor = true;
-
-                level->RemoveFutureChanges();
-
-                level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&local_position, local_position, Vector2f(0.0f, 0.0f)));
-
-            }
-
-            //For now I want the eraser to easily delete multiple objects, therefore it would make sense to
-            // activate it when the mouse is held, not just on the first down event
-            if(engine->mouse.is_left_button_held){
-                if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::ERASE && editor_name != "SpawnCursor (Editor Tool)"){
-                    level->RemoveFutureChanges();
-
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(this));
-
-                    stash = true;
-                }
-            }
-
-        }
-
-    }
-
-    if(engine->mouse.is_left_button_released && is_grabbed_by_cursor){
-        is_grabbed_by_cursor = false;
-        TileMap* tile_map = IsInTileMap();
-        if(tile_map){
-            local_position = Vector2f(
-                std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
-                std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
-        }
-
-        //This looks extremely error prone.
-        ufo::ActorChange_CustomVariableVector2fHandle* position_change = dynamic_cast<ufo::ActorChange_CustomVariableVector2fHandle*>(level->level_changes.back().get());
-
-        if(position_change){
-            position_change->current_value = local_position;
-
-        }
-        else{
-            Console::PrintLine("[UFO-Engine Studio] Actor::OnUpdateEditorViewportFocus: Undo & Redo action was added while ufo::ActorChange_CustomVariableVector2fHandle* was handled");
-            throw;
-        }
-
-    }
-
-    if(is_grabbed_by_cursor){
-        Vector2f dp = world_mouse - former_world_mouse;
-
-        local_position += dp;
-    }
-
-    return focused;
 }
 
 TileMap* Actor::IsInTileMap(){

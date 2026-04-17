@@ -81,25 +81,25 @@ namespace UFOEngineStudio{
             if(IsExtension(path+"/"+file_name, "ason")){
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
-                auto level = _editor->AddActorUniquePtr(
+                ufo::Level* level = _editor->AddActorUniquePtr(
                         std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json))
                     )->DynamicCast<ufo::Level>();
 
                 if(!level){
-                    level = _editor->AddActorUniquePtr(
-                            std::move(_editor->engine->actor_generator->JsonToLevelTree(&(_editor->gc), level_json))
-                        )->DynamicCast<ufo::Level>();
+
                     Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
                 }
+                else{
 
 
-                auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
-                level_editor_tab->this_level = level;
-                level_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
-                level_editor_tab->Initialise();
+                    auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
+                    level_editor_tab->this_level = level;
+                    level_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
+                    level_editor_tab->Initialise();
 
-                _editor->tabs.push_back(std::move(level_editor_tab));
-                _editor->refresh_entire_project = true;
+                    _editor->tabs.push_back(std::move(level_editor_tab));
+                    _editor->refresh_entire_project = true;
+                }
 
 
             }

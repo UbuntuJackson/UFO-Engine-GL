@@ -4,6 +4,7 @@
 #include <memory>
 #include "../utils/console.h"
 #include "garbage_collector.h"
+#include "dynamic_array.h"
 
 namespace ufo::gc{
 
@@ -99,15 +100,11 @@ public:
     virtual ~Object(){
         //Console::Print("Destroyed object", name, this, "\n");
     }
-/*protected:
+public:
     //Callback approach
-    void mark(Object* _obj){
-        if(_obj != nullptr) _obj->Mark();
-    }
+    void mark(Object* _obj);
 
-    void mark(DynamicArray<Object*>& _obj){
-        _obj.OnMark();
-        }*/
+    void mark(DynamicArray<Object*>& _obj);
 };
 
 //Inherit from this as the root of your program.

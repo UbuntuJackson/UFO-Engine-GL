@@ -218,8 +218,6 @@ public:
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
-
     void OnAdditionalButtonsForTreeItem() override;
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;

@@ -638,10 +638,6 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
 }
 
-bool TileMap::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    return false;
-}
-
 void TileMap::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
     std::string visible_or_not_string = visible ? "<o>###" : "</>###";

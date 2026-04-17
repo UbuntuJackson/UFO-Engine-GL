@@ -12,8 +12,15 @@ namespace ufo{
 
 class GarbageCollector{
 public:
+    //ufo::Heap<1000> heap;
+
+    GarbageCollector(){
+        //heap.Allocate<gc::Object>();
+    }
+
     //This is basically all of the program's garbage-collected memory.
     std::vector<ufo::gc::Object*> memory;
+
     //This is a handle to the root of the program.
     ufo::gc::Object* root;
 

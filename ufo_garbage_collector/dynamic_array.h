@@ -2,17 +2,22 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include "object.h"
+#include <bits/stl_iterator_base_funcs.h>
 
 namespace ufo::gc{
 
 template<typename tType>
-class DynamicArray : public Object{
+class DynamicArray{
 private:
     int m_size;
     int m_capacity;
     tType* m_array;
 public:
+
+    //Too platform specific
+    typedef __gnu_cxx::__normal_iterator<tType*, DynamicArray<tType>> iterator;
+    typedef __gnu_cxx::__normal_iterator<const tType*, DynamicArray<tType>> const_iterator;
+
     DynamicArray():
     m_size{0},
     //capacity needs to be incremented somehow, pretty sure
@@ -104,8 +109,6 @@ public:
         return m_array[_index];
     }
 
-
-
     bool operator==(const DynamicArray<tType>& _rhs) const {
         if(m_size != _rhs.size()) return false;
         else{
@@ -121,23 +124,29 @@ public:
         return !(*this == _rhs);
     }
 
-    tType& begin(){
-        return *m_array[0];
+    const_iterator cbegin(){
+        return const_iterator(&m_array[0]);
     }
 
-    tType& end(){
-        return *m_array[m_size];
+    const_iterator cend(){
+        return const_iterator(&m_array[m_size]);
+    }
+
+    iterator begin(){
+        return iterator(&m_array[0]);
+    }
+
+    iterator end(){
+        return iterator(&m_array[m_size]);
     }
 
     //GC mark phase
-    void OnMark(){
+    void Mark(){
         for(int i = 0; i<m_size; i++){
             if(m_array[i] != nullptr) m_array[i]->Mark();
         }
     }
 
 };
-
-typedef DynamicArray<beam::gc::Object*> DynamicObjectArray;
 
 }

@@ -22,7 +22,7 @@
 namespace UFOEngineStudio{
 
 Editor::Editor(){
-
+    name = "GC_Editor";
 }
 
 void Editor::ResetUFOEngineStudio(){
@@ -338,6 +338,292 @@ void Editor::OnUpdate(float _delta_time){
     }
 
     gc.Collect();
+}
+
+void Editor::PopulateSpawnableActorMapWithBaseObjects(){
+    spawnable_actor_map.emplace("ufo::Actor",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
+        }, "ufo::Actor", "ufo::Actor"))
+    );
+
+    spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::CollisionGrid>(Vector2f(0.0f, 0.0f));
+        }, "ufo::CollisionGrid", "ufo::CollisionGrid"))
+    );
+
+    spawnable_actor_map.emplace("ufo::PlatformerRectangleCollision",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(0.0f, 0.0f));
+        }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision"))
+    );
+
+    spawnable_actor_map.emplace("ufo::TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::TileMap>(Vector2f(0.0f, 0.0f));
+        }, "ufo::TileMap", "ufo::TileMap"))
+    );
+
+    spawnable_actor_map.emplace("ufo::Level",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Level>();
+        }, "ufo::Level", "ufo::Level"))
+    );
+
+    spawnable_actor_map.emplace("ufo::Widget",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
+        }, "ufo::Widget", "ufo::Widget"))
+    );
+
+    spawnable_actor_map.emplace("ufo::Text",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Text>(Vector2f(0.0f, 0.0f));
+        }, "ufo::Text", "ufo::Text"))
+    );
+
+    spawnable_actor_map.emplace("ufo::Button",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Button>(Vector2f(0.0f, 0.0f));
+        }, "ufo::Button", "ufo::Button"))
+    );
+
+    spawnable_actor_map.emplace(
+        "ufo::Sprite",
+        std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::Sprite>("placeholder_icon",
+                    Vector2f(0.0f, 0.0f),
+                    Vector2f(0.0f, 0.0f),
+                    Vector2f(32.0f, 32.0f),
+                    Vector2f(1.0f, 1.0f),
+                    0.0f,
+                    0
+                );
+            },
+            "ufo::Sprite",
+            "ufo::Sprite"
+        ))
+    );
+
+    spawnable_actor_map.emplace(
+        "ufo::BackgroundSprite",
+        std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::BackgroundSprite>(
+                    Vector2f(0.0f, 0.0f)
+                );
+            },
+            "ufo::BackgroundSprite",
+            "ufo::BackgroundSprite"
+        ))
+    );
+
+    spawnable_actor_map.emplace(
+        "ufo::Animation",
+        std::move(std::make_unique<AdvancedActorSpawner>(
+            [](Editor* _editor, AdvancedActorSpawner* _this){
+                return std::make_unique<ufo::Animation>(
+                    Vector2f(0.0f, 0.0f)
+                );
+            },
+            "ufo::Animation",
+            "ufo::Animation"
+        ))
+    );
+
+    spawnable_actor_map.emplace("ufo::Camera",
+        std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::Camera>(Vector2f(0.0f, 0.0f));
+        },
+        "ufo::Camera", "ufo::Camera"))
+    );
+
+    spawnable_actor_map.emplace("ufo::RectangularArea",
+        std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::RectangularArea>(Vector2f(0.0f, 0.0f));
+        },
+        "ufo::RectangularArea", "ufo::RectangularArea"))
+    );
+}
+
+void Editor::ReloadSpawnableActorMap(){
+
+    auto exported_actors_json = ufo::gc::JsonRead(&gc, opened_directory_path+"/structured_classes.json");
+
+    if(exported_actors_json->IsNull()){
+        Console::PrintLine("[UFO-Engine Studio] Warning: Could not find file with exported actors",opened_directory_path+"/structured_classes.json");
+        return;
+    }
+
+    for(const auto& j_class : exported_actors_json->map.at("contents")->AsArray()){
+        auto class_ = j_class->AsMap().at("class")->AsMap();
+
+        std::string inherits = "";
+        if(class_.at("extends")->AsArray().size() > 0) inherits = class_.at("extends")->AsArray()[0]->AsString();
+
+        auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
+                        if(_editor->spawnable_actor_map.count(_this->base)){
+                            auto instance = _editor->spawnable_actor_map.at(_this->base)->Spawn(_editor);
+
+                            return std::move(instance);
+                        }
+
+                        Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Error, could not find spawner of base-type",
+                            _this->base,
+                            "and type", _this->class_name);
+
+                        return _editor->spawnable_actor_map.at("ufo::Actor")->Spawn(_editor);
+                    },
+                    inherits,
+                    class_.at("name")->AsString()
+                );
+
+        bool hide_from_editor = false;
+
+        for(const auto& macro : j_class->AsMap().at("macros")->AsArray()){
+            if(macro->AsMap().at("name")->AsString() == "ufo_hide_from_editor"){
+                hide_from_editor = true;
+                break;
+            }
+
+            if(macro->AsMap().at("name")->AsString() == "ufo_actor_config"){
+
+                    auto arr = macro->AsMap().at("args")->AsArray();
+                    if(arr.size() == 1){
+                        if(std::filesystem::exists(opened_directory_path+"/"+arr[0]->AsString())){
+                            act_spawner->actor_config_path = arr[0]->AsString();
+                        }
+                        else Console::PrintLine("[UFO-Engine Studio] Faulty actor_config path for class", class_.at("name")->AsString(), opened_directory_path+"/"+arr[0]->AsString());
+                    }
+            }
+            if(macro->AsMap().at("name")->AsString() == "ufo_category"){
+
+                    auto arr = macro->AsMap().at("args")->AsArray();
+                    if(arr.size() == 1){
+                        act_spawner->category = arr[0]->AsString();
+
+                    }
+            }
+
+            if(macro->AsMap().at("name")->AsString() == "ufo_comment"){
+
+                    auto arr = macro->AsMap().at("args")->AsArray();
+                    if(arr.size() == 1){
+                        act_spawner->comment = arr[0]->AsString();
+
+                    }
+            }
+        }
+
+        if(hide_from_editor) continue;
+
+        for(const auto& member : class_.at("members")->AsArray()){
+
+            std::string name = "<Faulty Name>";
+            std::string value = "<Faulty Value>";
+            std::string data_type = "<Faulty DataType>";
+
+            //This function is full of potential conversion errors due to faulty syntax. At least try handle them.
+
+            if(member->AsArray()[1]->AsMap().count("name")) name = member->AsArray()[1]->AsMap().at("name")->AsString();
+            else{
+                Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable name");
+                continue;
+            }
+
+            if(member->AsArray()[1]->AsMap().count("variable_value")) value = member->AsArray()[1]->AsMap().at("variable_value")->AsString();
+            else{
+                Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable value");
+                continue;
+            }
+
+            if(member->AsArray()[1]->AsMap().count("data_type")) data_type = member->AsArray()[1]->AsMap().at("data_type")->AsString();
+            else{
+                Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable datatype");
+                continue;
+            }
+
+            std::string alias = name;
+
+            for(const auto& macro : member->AsArray()[0]->AsArray()){
+                std::string macro_name = macro->AsMap().at("name")->AsString();
+
+                auto args = macro->AsMap().at("args")->AsArray();
+
+                if(macro_name == "ufo_alias") alias = args[0]->AsString();
+
+                if(macro_name == "ufo_int_slider"){
+
+                    try{
+                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyIntSlider>(
+                            name,
+                            alias,
+                            std::stoi(value),
+                            std::stoi(args[0]->AsString()),
+                            std::stoi(args[1]->AsString())
+                        ));
+                    }
+                    catch(const std::out_of_range& _error){
+                        Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_int_slider takes 2 args", _error.what());
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
+                    }
+                }
+
+                if(macro_name == "ufo_float_slider"){
+
+                    try{
+                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyFloatSlider>(
+                            name,
+                            alias,
+                            std::stof(value),
+                            std::stof(args[0]->AsString()),
+                            std::stof(args[1]->AsString()),
+                            std::stof(args[2]->AsString())
+                        ));
+                    }
+                    catch(const std::out_of_range& _error){
+                        Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_float_slider takes 3 args", _error.what());
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
+                    }
+                }
+
+                //Small glaring issue, but if you put ufo_variable before ufo_alias the property will be pushed without the alias.
+
+                if(macro_name == "ufo_variable"){
+
+                    if(data_type == "int") act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name,alias,std::stoi(value)));
+                    if(data_type == "float") act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name,alias,std::stoi(value)));
+                    if(data_type == "bool"){
+                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
+                    }
+                    if(data_type == "std::string"){
+                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyString>(name,alias,value));
+                    }
+                }
+            }
+        }
+
+        spawnable_actor_map.emplace(class_.at("name")->AsString(),
+            std::move(
+                act_spawner
+            )
+
+        );
+
+    }
+
+}
+
+void Editor::OnMark() {
+    for(const auto& [k,v] : spawnable_actor_map){
+        v->Mark();
+    }
 }
 
 void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path){

@@ -3,6 +3,8 @@
 #include "../utils/console.h"
 #include "ufo_macros.h"
 #include "../utils/opengl_utils.h"
+#include "ufo_maths.h"
+#include "../external/olcPixelGameEngine.h"
 
 namespace ufo{
 
@@ -19,9 +21,16 @@ public:
     unsigned int filter_mode_min; //Filtering mode if texture pixles < screen pixels?
     unsigned int filter_mode_max; //Filtering mode if texture pixles > screen pixels?
     bool permanent = false; //If the asset is supposed to be preloaded and saved
+
+    int number_of_colour_channels = 4;
+
+    unsigned char* pixel_data;
+
     Texture2D();
 
     void Generate(unsigned int _width, unsigned int _height, unsigned char* _data);
+
+    olc::Pixel GetPixel(Vector2i _position);
 
     void Bind();
 

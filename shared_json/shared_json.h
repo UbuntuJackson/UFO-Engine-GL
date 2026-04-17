@@ -1,6 +1,4 @@
 #pragma once
-
-#include "engine_memory.h"
 #include <map>
 #include <stdexcept>
 #include <string>
@@ -107,7 +105,7 @@ namespace ufo::SharedMemory{
 
             std::string string_to_return = json_as_string;
 
-            delete json_as_string;
+            free(json_as_string);
 
             cJSON_Delete(json_obj);
 
@@ -126,10 +124,15 @@ namespace ufo::SharedMemory{
 
     };
 
-    gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj);
+    class FaultyJsonMap : public JsonMap{
+    public:
+        bool IsNull() override{return true;}
+    };
 
-    gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member);
+    std::shared_ptr<JsonMap> GetDictionaryAsTree(cJSON* _obj);
 
-    gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path);
+    std::shared_ptr<JsonArray> cJSON_ToArray(cJSON* member);
+
+    std::shared_ptr<JsonMap> JsonRead(std::string _path);
 
 }

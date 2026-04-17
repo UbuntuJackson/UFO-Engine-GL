@@ -21,6 +21,8 @@ Texture2D::Texture2D() :
 
 void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned char* _data){
 
+    //std::memcpy(&pixel_data, _data, sizeof(unsigned char) * _width * _height * 4);
+
     glGenTextures(1, &id);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
@@ -72,6 +74,11 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
     //Resetting the currently bound texture
     glBindTexture(GL_TEXTURE_2D, 0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+}
+
+olc::Pixel Texture2D::GetPixel(Vector2i _position){
+    int i = _position.x*number_of_colour_channels+width*number_of_colour_channels*_position.y;
+    return olc::Pixel(pixel_data[i],pixel_data[i+1],pixel_data[i+2],pixel_data[i+3]);
 }
 
 void Texture2D::Bind(){
