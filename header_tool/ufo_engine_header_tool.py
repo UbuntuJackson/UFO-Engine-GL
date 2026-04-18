@@ -27,6 +27,8 @@ def make_generated_file(_path, _classes):
 
     namespace_string = "namespace ufo::Generated{\n\n"
 
+    namespace_string += generate_actor_spawner_functions.main(_path)
+
     class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
     class_string += "    public:\n"
 
@@ -111,8 +113,6 @@ def make_generated_file(_path, _classes):
     # function_ += "    std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json){return std::move(factory_map.at(_json->map.at(\"name\")->AsString())(_json));}"
 
     function_ += "};\n\n"
-
-    function_ += generate_actor_spawner_functions.main(_path)
 
     function_ += "}\n"
 

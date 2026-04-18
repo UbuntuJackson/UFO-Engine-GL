@@ -311,7 +311,68 @@ void Actor::DeclareImportedRecursive(){
 }
 
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
-    if(import_mode == ImportModes::WRAPPED){
+
+    Console::PrintLine("UpdateActorStructure",editor_name, actors.size(), import_mode == ImportModes::WRAPPED);
+
+    for(int a = 0; a < (int)actors.size(); a++){
+        if(actors[a]->import_mode == ImportModes::WRAPPED){
+            Console::PrintLine("UpdateActorStructure actors",actors[a]->editor_name);
+
+            auto old_actor = std::move(actors[a]);
+
+            actors[a] = std::move(_editor->spawnable_actor_map.at(old_actor->class_name)->Spawn(_editor));
+
+            actors[a]->local_position = old_actor->local_position;
+            actors[a]->parent = old_actor->parent;
+            actors[a]->level = old_actor->level;
+            actors[a]->engine = old_actor->engine;
+            actors[a]->properties_open = old_actor->properties_open;
+            actors[a]->editor_name = old_actor->editor_name;
+
+            actors[a]->OnSpawn();
+
+            actors[a]->editor_properties.clear();
+            for(auto&& property : old_actor->editor_properties){
+                actors[a]->editor_properties.push_back(property->Copy());
+            }
+
+        }
+
+        actors[a]->UpdateActorStructure(_editor, _parent_is_modifiable);
+    }
+
+    for(int a = 0; a < (int)new_actor_queue.size(); a++){
+        if(new_actor_queue[a]->import_mode == ImportModes::WRAPPED){
+            Console::PrintLine("UpdateActorStructure new_actor_queue",new_actor_queue[a]->editor_name);
+
+            auto old_actor = std::move(new_actor_queue[a]);
+
+            new_actor_queue[a] = std::move(_editor->spawnable_actor_map.at(old_actor->class_name)->Spawn(_editor));
+
+            new_actor_queue[a]->local_position = old_actor->local_position;
+            new_actor_queue[a]->parent = old_actor->parent;
+            new_actor_queue[a]->level = old_actor->level;
+            new_actor_queue[a]->engine = old_actor->engine;
+            new_actor_queue[a]->properties_open = old_actor->properties_open;
+            new_actor_queue[a]->editor_name = old_actor->editor_name;
+
+            new_actor_queue[a]->OnSpawn();
+
+            new_actor_queue[a]->editor_properties.clear();
+            for(auto&& property : old_actor->editor_properties){
+                new_actor_queue[a]->editor_properties.push_back(property->Copy());
+            }
+
+        }
+
+        new_actor_queue[a]->UpdateActorStructure(_editor, _parent_is_modifiable);
+    }
+
+    /*for(auto&& actor : new_actor_queue){
+        actor->UpdateActorStructure(_editor, false);
+    }*/
+
+    /*if(import_mode == ImportModes::WRAPPED){
 
         actors.clear();
         auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
@@ -333,7 +394,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
         for(const auto& actor : actors){
             actor->UpdateActorStructure(_editor, false);
         }
-    }
+    }*/
 
 }
 
