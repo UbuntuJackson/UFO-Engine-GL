@@ -327,6 +327,8 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
 
 void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
+    //if(import_mode == Actor::ImportModes::UNWRAPPED){
+
     try{
 
         for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
@@ -349,6 +351,8 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
     }
+
+    //}
 }
 
 }

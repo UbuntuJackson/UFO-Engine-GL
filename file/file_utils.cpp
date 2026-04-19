@@ -54,7 +54,7 @@ void Rename(const std::string& _path, const std::string& _new_path){
 
 std::string GetRelativePath(const std::string& _full_path, const std::string& _current_working_directory){
 
-    size_t cut_index = _full_path.find(_current_working_directory);
+    size_t cut_index = _full_path.find(_current_working_directory)+1;
 
     if(cut_index == std::string::npos) throw std::runtime_error("ufo::FileSystem::GetRelativePath: Found no matching subpath");
 

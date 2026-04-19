@@ -23,8 +23,17 @@
 
 namespace ufo{
 
+void GenericGenerator::InitialiseActorClassJsons(ufo::Engine* _engine){
+    class_jsons.clear();
+
+    auto class_jsons_uncasted = gc::JsonRead(&gc, _engine->game_directory)->AsMap();
+
+    for(const auto& [k,v] : class_jsons_uncasted){
+         class_jsons.emplace(k,v->AsJsonMap());
+    }
+}
+
 void GenericGenerator::Initialise(){
-    //gc::JsonMap classes = gc::JsonRead(&gc, engine->game_directory);
 
     //Gotta add all the ufo classes to class_jsons
 

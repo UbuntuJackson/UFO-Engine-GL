@@ -15,12 +15,15 @@ namespace ufo{
 
 namespace gc{
 
+class JsonMap;
+
 class Json : public gc::Object{
 public:
 
     virtual float AsFloat(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not float");}
     virtual std::string AsString(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not String");}
     virtual std::map<std::string,gc::Json*> AsMap(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Map");}
+    virtual gc::JsonMap* AsJsonMap(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Map");}
     virtual std::vector<gc::Json*> AsArray(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Array");}
     virtual bool IsNull(){return true;}
 
@@ -94,6 +97,7 @@ public:
     std::map<std::string,gc::Json*> map;
 
     std::map<std::string,gc::Json*> AsMap(){return map;}
+    gc::JsonMap* AsJsonMap(){return this;}
     bool IsNull(){return false;}
 
     void OnMark(){
@@ -101,6 +105,35 @@ public:
         for(const auto& [k,v] : map){
             v->Mark();
 
+        }
+    }
+
+    void TryToGetValueAsString(std::string _key, std::string& _string){
+        try{
+            _string = map.at(_key)->AsString();
+        } catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine] JsonMap: Could not get value for key",_key);
+        }
+    }
+    void TryToGetValueAsFloat(std::string _key, float& _i){
+        try{
+            _i = map.at(_key)->AsFloat();
+        } catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine] JsonMap: Could not get value for key",_key);
+        }
+    }
+    void TryToGetValueAsArray(std::string _key, std::vector<gc::Json*>& _array){
+        try{
+            _array = map.at(_key)->AsArray();
+        } catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine] JsonMap: Could not get value for key",_key);
+        }
+    }
+    void TryToGetValueAsMap(std::string _key, std::map<std::string,gc::Json*>& _map){
+        try{
+            _map = map.at(_key)->AsMap();
+        } catch(const std::exception& _error){
+            Console::PrintLine("[UFO-Engine] JsonMap: Could not get value for key",_key);
         }
     }
 

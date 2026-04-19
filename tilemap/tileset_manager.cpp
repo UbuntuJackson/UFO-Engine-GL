@@ -36,7 +36,7 @@ void TilesetManager::InitialiseTextures(){
         //This might break at some point.
         UFOEngineStudio::Editor* editor = engine->level_handle->DynamicCast<UFOEngineStudio::Editor>();
         for(const auto& tileset : tileset_data){
-            std::string path = editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
+            std::string path = editor->opened_directory_path + "/" + tileset.name;
             Console::PrintLine("Full Tileset Path",path);
             if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
 
@@ -157,9 +157,9 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
 
     std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-    engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
-    int width = engine->asset_manager.textures.at(".."+relative_path).width;
-    int height = engine->asset_manager.textures.at(".."+relative_path).height;
+    engine->asset_manager.LoadTexture(_path, relative_path, true);
+    int width = engine->asset_manager.textures.at(relative_path).width;
+    int height = engine->asset_manager.textures.at(relative_path).height;
 
     int columns = (int)width/16;
 
@@ -171,7 +171,7 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
 
     tileset_data.push_back(
         TilesetData{
-            ".."+relative_path,
+            relative_path,
             columns,
             tileset_start_id,
             (float)width, (float)height,
@@ -187,9 +187,9 @@ void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngi
 
     std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-    engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
-    int width = engine->asset_manager.textures.at(".."+relative_path).width;
-    int height = engine->asset_manager.textures.at(".."+relative_path).height;
+    engine->asset_manager.LoadTexture(_path, relative_path, true);
+    int width = engine->asset_manager.textures.at(relative_path).width;
+    int height = engine->asset_manager.textures.at(relative_path).height;
 
     int columns = (int)width/16;
 
@@ -200,7 +200,7 @@ void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngi
     tileset_start_id = tileset_data[_index].tileset_start_id;
 
     tileset_data[_index] = TilesetData{
-            ".."+relative_path,
+            relative_path,
             columns,
             tileset_start_id,
             (float)width, (float)height,

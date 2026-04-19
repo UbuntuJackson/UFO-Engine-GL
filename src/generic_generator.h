@@ -9,6 +9,8 @@
 
 namespace ufo{
 
+class Engine;
+
 class GenericGenerator : public ufo::gc::Root{
 public:
     GenericGenerator(){
@@ -17,6 +19,8 @@ public:
 
     std::map<std::string, ufo::gc::JsonMap*> actor_jsons_with_unaltered_default_properties;
     std::map<std::string, ufo::gc::JsonMap*> class_jsons;
+
+    void InitialiseActorClassJsons(ufo::Engine* _engine);
 
     void OnMark() {
         for(const auto& [k,v] : actor_jsons_with_unaltered_default_properties){

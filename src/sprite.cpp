@@ -300,6 +300,8 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     // Son of a biscuit this has been redundant.
     // Writing of custom properties handled in generated.h.
 
+    //if(import_mode == Actor::ImportModes::UNWRAPPED){
+
     try{
         key = _json->map.at("key")->AsString();
         offset.x = _json->map.at("offset_x")->AsFloat();
@@ -313,6 +315,8 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
     }
+
+    //}
 }
 
 void Sprite::OnResourcesEdited(){

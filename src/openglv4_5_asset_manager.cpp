@@ -92,9 +92,9 @@ void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineSt
 
     Console::PrintLine("OnAddTexture",relative_path);
 
-    _level_editor_tab->engine->asset_manager.LoadTexture(_path, ".."+relative_path, true);
+    _level_editor_tab->engine->asset_manager.LoadTexture(_path, relative_path, true);
 
-    _level_editor_tab->engine->asset_manager.textures.at(".."+relative_path).permanent = true;
+    _level_editor_tab->engine->asset_manager.textures.at(relative_path).permanent = true;
 
 }
 

@@ -19,17 +19,9 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
 
     default_properties_string = ""
 
-    if _actor_json["base_class_name"] == "ufo::Sprite":
-        default_properties_string += get_sprite_loading_code(actor_name, _actor_json)
-
-    if _actor_json["base_class_name"] == "ufo::Animation":
-        default_properties_string += get_animation_loading_code(actor_name, _actor_json)
-
-    if _actor_json["base_class_name"] == "ufo::Widget":
-        default_properties_string += get_widget_loading_code(actor_name, _actor_json)
-
-    if _actor_json["base_class_name"] == "ufo::Button":
-        default_properties_string += get_button_loading_code(actor_name, _actor_json)
+    default_properties_string += get_actor_loading_code(
+        _actor_json["base_class_name"], actor_name, _actor_json
+    )
 
     # Declaration of this component
     code += (
@@ -96,25 +88,10 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
 
     # I'm considering using _actor_json to get the base_class_name. This code has been faulty and bottlenecking the toolchain by erroring
     # and not letting make_generated_file finish.
-    if klass["extends"][0] == "ufo::Sprite":
-        default_properties_string += get_sprite_loading_code(
-            "instance" + str(this_actor_id), _actor_json
-        )
 
-    if klass["extends"][0] == "ufo::Animation":
-        default_properties_string += get_animation_loading_code(
-            "instance" + str(this_actor_id), _actor_json
-        )
-
-    if klass["extends"][0] == "ufo::Widget":
-        default_properties_string += get_widget_loading_code(
-            "instance" + str(this_actor_id), _actor_json
-        )
-
-    if klass["extends"][0] == "ufo::Button":
-        default_properties_string += get_button_loading_code(
-            "instance" + str(this_actor_id), _actor_json
-        )
+    default_properties_string += get_actor_loading_code(
+        klass["extends"][0], "instance" + str(this_actor_id), _actor_json
+    )
 
     custom_properties_string = ""
 
@@ -398,6 +375,53 @@ def get_button_loading_code(_instance, _actor_json):
     return default_properties_string
 
 
+def get_camera_loading_code(_instance, _actor_json):
+    default_properties_string = ""
+
+    scale = _actor_json["scale"]
+
+    default_properties_string += "    " + _instance + "->scale = " + str(scale) + ";\n"
+
+    clamp = _actor_json["clamp"]
+
+    default_properties_string += (
+        "    " + _instance + "->clamp = bool(" + str(clamp) + ");\n"
+    )
+
+    return default_properties_string
+
+
+def get_tilemap_loading_code(_instance, _actor_json):
+    return ""
+
+
+def get_background_sprite_loading_code(_instance, _actor_json):
+    return ""
+
+
+def get_platformer_rectangle_collision_loading_code(_instance, _actor_json):
+    return ""
+
+
+def get_actor_loading_code(_base_class_name, _instance_, actor_json):
+    if _base_class_name == "ufo::Sprite":
+        return get_sprite_loading_code(_instance_, actor_json)
+
+    if _base_class_name == "ufo::Animation":
+        return get_animation_loading_code(_instance_, actor_json)
+
+    if _base_class_name == "ufo::Widget":
+        return get_widget_loading_code(_instance_, actor_json)
+
+    if _base_class_name == "ufo::Button":
+        return get_button_loading_code(_instance_, actor_json)
+
+    if _base_class_name == "ufo::Camera":
+        return get_camera_loading_code(_instance_, actor_json)
+
+    return ""
+
+
 # Entry point for this feature. This is called from function ufo_engine_header_tool.make_generated_file
 def main(_working_directory):
 
@@ -471,25 +495,9 @@ def main(_working_directory):
                     )
                     sys.exit()
 
-                if main["base_class_name"] == "ufo::Sprite":
-                    default_properties_string += get_sprite_loading_code(
-                        "instance" + str(this_actor_id), main
-                    )
-
-                if main["base_class_name"] == "ufo::Animation":
-                    default_properties_string += get_animation_loading_code(
-                        "instance" + str(this_actor_id), main
-                    )
-
-                if main["base_class_name"] == "ufo::Widget":
-                    default_properties_string += get_widget_loading_code(
-                        "instance" + str(this_actor_id), main
-                    )
-
-                if main["base_class_name"] == "ufo::Button":
-                    default_properties_string += get_button_loading_code(
-                        "instance" + str(this_actor_id), main
-                    )
+                default_properties_string += get_actor_loading_code(
+                    main["base_class_name"], "instance" + str(this_actor_id), main
+                )
 
                 # Evertything from here is just components, so there will be some loading of further .ason files
                 # to get those default attributes too
