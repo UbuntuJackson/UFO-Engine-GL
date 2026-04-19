@@ -7,12 +7,16 @@ import generate_actor_spawner_functions
 
 
 def make_generated_file(_path, _classes):
-    includes = "#include <functional>\n"
+    includes = "#pragma once\n#include <functional>\n"
     includes += "#include <memory>\n"
-    includes = "#include <ufo_maths.h>\n\n"
+    includes += "#include <ufo_maths.h>\n\n"
     includes += '#include "UFO-Engine/ufo_garbage_collector/gc_json.h"\n'
     includes += '#include "UFO-Engine/src/generic_generator.h"\n'
     includes += '#include "UFO-Engine/src/actor.h"\n'
+    includes += '#include "UFO-Engine/src/sprite.h"\n'
+    includes += '#include "UFO-Engine/src/animation.h"\n'
+    includes += '#include "UFO-Engine/src/widget.h"\n'
+    includes += '#include "UFO-Engine/src/button.h"\n'
 
     header_files = []
 

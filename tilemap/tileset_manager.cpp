@@ -29,7 +29,7 @@ TilesetManager::TilesetManager(){
 void TilesetManager::InitialiseTextures(){
     if(!engine->in_editor){
         for(const auto& tileset : tileset_data){
-            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(tileset.name,tileset.name,true);
+            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(tileset.name,"../"+tileset.name,true);
         }
     }
     else{
