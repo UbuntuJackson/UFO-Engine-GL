@@ -8,7 +8,7 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
     auto arr = j->map.at("assets")->AsArray();
     for(const auto& a : arr){
         Console::PrintLine("AssetJson::Read:",_opened_directory_path+"/"+a->AsString());
-        _asset_manager->LoadTexture(_opened_directory_path+a->AsString(),a->AsString(),true);
+        _asset_manager->LoadTexture(_opened_directory_path+"/"+a->AsString(),a->AsString(),true);
         _asset_manager->textures.at(a->AsString()).permanent = true;
     }
 }
