@@ -40,16 +40,8 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
                 //for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
 
                 actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
+                act = std::move(actor_from_file);
 
-                std::string base_class_of_actor_config = j_actor->AsMap().at("base_class_name")->AsString();
-                if(base_class_of_actor_config != act->base_class_name){
-                    Console::PrintLine("[UFO-Engine Studio] AdvancedActorSpawner base of this", act->class_name, "does not match base of actor_config",
-                        actor_config, "Baseclass of actor config:", base_class_of_actor_config, "Baseclass of this", act->base_class_name
-                    );
-                }
-                else{
-                    act = std::move(actor_from_file);
-                }
             }
         }
     }

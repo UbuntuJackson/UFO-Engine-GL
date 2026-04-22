@@ -305,6 +305,7 @@ void Editor::OnUpdate(float _delta_time){
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
     if(refresh_entire_project){
+        engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
 
         //Here I'm forcing an update on the new actor queue to make sure there are actors in level are loaded before
         // making potential modifications to them, like adding or removing ufo-variables.

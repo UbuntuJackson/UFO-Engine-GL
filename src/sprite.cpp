@@ -264,6 +264,8 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
+    if(import_mode == WRAPPED) return parent_class_as_json;
+
     //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
     // However they need to be recovered.
 

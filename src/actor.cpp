@@ -303,13 +303,6 @@ void Actor::SortActors(){
     should_be_sorted = false;
 }
 
-void Actor::DeclareImportedRecursive(){
-    is_imported = true;
-    for(auto& actor : new_actor_queue){
-        actor->DeclareImportedRecursive();
-    }
-}
-
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
 
     Console::PrintLine("UpdateActorStructure",editor_name, actors.size(), import_mode == ImportModes::WRAPPED);
@@ -1096,10 +1089,8 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStu
 
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
-    this_actor->map.emplace("is_imported", _gc->New<ufo::gc::JsonNumber>(int(is_imported)));
     this_actor->map.emplace("import_mode", _gc->New<ufo::gc::JsonNumber>(int(import_mode)));
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
-    this_actor->map.emplace("base_class_name", _gc->New<ufo::gc::JsonString>(base_class_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
     auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);

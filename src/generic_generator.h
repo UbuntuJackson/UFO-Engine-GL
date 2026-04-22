@@ -19,8 +19,11 @@ public:
 
     std::map<std::string, ufo::gc::JsonMap*> actor_jsons_with_unaltered_default_properties;
     std::map<std::string, ufo::gc::JsonMap*> class_jsons;
+    std::map<std::string, std::string> inheritence_map;
 
-    void InitialiseActorClassJsons(ufo::Engine* _engine);
+    std::string GetBaseClassOf(std::string _class_name);
+
+    void InitialiseActorClassJsons(const std::string& _game_directory);
 
     void OnMark() {
         for(const auto& [k,v] : actor_jsons_with_unaltered_default_properties){
@@ -57,11 +60,6 @@ public:
         }
 
      */
-
-    //Only for custom objects.
-    std::unique_ptr<Actor> FromMinimalJson(ufo::gc::JsonMap* _json);
-
-    std::unique_ptr<Actor> FromMinimalJsonInGame(ufo::gc::JsonMap* _json);
 
     std::unique_ptr<Actor> FromJsonInGame(ufo::gc::JsonMap* _json);
 

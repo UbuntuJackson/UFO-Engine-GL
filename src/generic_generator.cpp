@@ -24,26 +24,41 @@
 
 namespace ufo{
 
-void GenericGenerator::InitialiseActorClassJsons(ufo::Engine* _engine){
+std::string GenericGenerator::GetBaseClassOf(std::string _class_name){
+    if(!inheritence_map.count(_class_name)){
+        return _class_name;
+    }
 
-    auto structured_classes = gc::JsonRead(&gc, _engine->game_directory+"/structured_classes.json")->AsMap().at("contents")->AsArray();
+    return GetBaseClassOf(inheritence_map.at(_class_name));
+}
 
-    for(const auto& cl : structured_classes){
-        std::string class_name = cl->AsMap().at("class")->AsMap().at("name")->AsString();
+void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_directory){
 
-        for(const auto& mac : cl->AsMap().at("macros")->AsArray()){
+    auto structured_classes = gc::JsonRead(&gc, _game_directory+"/structured_classes.json")->AsMap().at("contents")->AsArray();
+
+    for(const auto& entry : structured_classes){
+        std::string class_name = entry->AsMap().at("class")->AsMap().at("name")->AsString();
+
+        const auto extends_classes = entry->AsMap().at("class")->AsMap().at("extends")->AsArray();
+
+        if(extends_classes.size() > 0){
+            std::string extends_class = extends_classes[0]->AsString();
+            inheritence_map.emplace(class_name,extends_class);
+        }
+
+        for(const auto& mac : entry->AsMap().at("macros")->AsArray()){
             if(mac->AsMap().at("name")->AsString() == "ufo_actor_config"){
                 const auto args = mac->AsMap().at("args")->AsArray();
 
                 if(args.size() == 1){
-                    std::string class_path = args[0]->AsString();
+                    std::string actor_config_path = args[0]->AsString();
 
-                    const auto& actor_config_json = gc::JsonRead(&gc, _engine->game_directory+"/"+class_path)->AsMap().at("actors")->AsArray();
+                    const auto& actor_config_json = gc::JsonRead(&gc, _game_directory+"/"+actor_config_path)->AsMap().at("actors")->AsArray();
 
                     for(const auto actor_json : actor_config_json){
                         if(actor_json->AsMap().at("name")->AsString() == "Main"){
                             actor_jsons_with_unaltered_default_properties.emplace(class_name, actor_json->AsJsonMap());
-                            Console::PrintLine("Found class",class_name,class_path);
+                            Console::PrintLine("Found class",class_name,actor_config_path);
                         }
                     }
 
@@ -303,16 +318,18 @@ void GenericGenerator::OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json)
 }
 
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
-	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
+    std::string class_name = _json->map.at("class_name")->AsString();
+	std::string editor_name = _json->map.at("name")->AsString();
+
+	if(factory_map.count(GetBaseClassOf(class_name))){
 	    //float local_position_x = _json->map.at("x")->AsFloat();
 		//float local_position_y = _json->map.at("y")->AsFloat();
 
-	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
+	    std::unique_ptr<Actor> instance = factory_map.at(GetBaseClassOf(class_name))(_json);
 
-		instance->class_name = _json->map.at("class_name")->AsString();
-		instance->editor_name = _json->map.at("name")->AsString();
+		instance->class_name = class_name;
+		instance->editor_name = editor_name;
 		try{
-		    instance->is_imported = (bool)_json->map.at("is_imported")->AsFloat();
 			instance->import_mode = _json->map.at("import_mode")->AsFloat();
 		}catch(const std::exception& _error){
 		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
@@ -410,115 +427,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	    return std::move(instance);
 	}
 	else{
-	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("base_class_name")->AsString());
-					return std::move(factory_map.at("ufo::Actor")(_json));
-	}
-}
-
-std::unique_ptr<Actor> GenericGenerator::FromMinimalJson(ufo::gc::JsonMap* _json){
-	if(factory_map.count(_json->map.at("base_class_name")->AsString())){
-	    //float local_position_x = _json->map.at("x")->AsFloat();
-		//float local_position_y = _json->map.at("y")->AsFloat();
-
-	    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("base_class_name")->AsString())(_json);
-
-		instance->class_name = _json->map.at("class_name")->AsString();
-		instance->editor_name = _json->map.at("name")->AsString();
-		try{
-		    instance->is_imported = (bool)_json->map.at("is_imported")->AsFloat();
-			instance->import_mode = _json->map.at("import_mode")->AsFloat();
-		}catch(const std::exception& _error){
-		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
-		}
-
-		ufo::gc::JsonMap* actor_json_with_default_properties = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
-
-		//Using the stuctured_classes.json classes to load default properties
-		instance->OnLoadDefaultProperties(actor_json_with_default_properties);
-
-		auto custom_properties = _json->map.at("custom_editor_properties")->AsMap();
-
-		for(const auto& [k,v] : custom_properties){
-		    //Iterate through custom properties
-
-			if(!v->AsMap().count("hint")) continue;
-
-			std::string hint = v->AsMap().at("hint")->AsString();
-			if(hint == "EditorPropertyCheckBox"){
-
-			    try{
-    			    std::string name = v->AsMap().at("name")->AsString();
-    				bool value = (bool)v->AsMap().at("value")->AsFloat();
-
-                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name, name, value));
-				} catch(const std::exception& _error){
-				    Console::PrintLine(
-								"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyCheckBox of type",
-								instance->class_name, "and name",
-								instance->editor_name);
-				}
-			}
-			else if(hint == "EditorPropertyInt"){
-                try{
-     			    std::string name = v->AsMap().at("name")->AsString();
-    				int value = v->AsMap().at("value")->AsFloat();
-
-                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name, name, value));
-                } catch(const std::exception& _error){
-                    Console::PrintLine(
-                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
-                				instance->class_name, "and name",
-                				instance->editor_name);
-                }
-			}
-			/*else if(hint == "EditorPropertyFloatSlider"){
-                try{
-     			    std::string name = v->AsMap().at("name")->AsString();
-    				int value = v->AsMap().at("value")->AsFloat();
-
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyFloatSlider>(name, name, value));
-                } catch(const std::exception& _error){
-                    Console::PrintLine(
-                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
-                				instance->class_name, "and name",
-                				instance->editor_name);
-                }
-                }*/
-			else if(hint == "EditorPropertyFloat"){
-                try{
-     			    std::string name = v->AsMap().at("name")->AsString();
-    				float value = v->AsMap().at("value")->AsFloat();
-
-                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name, name, value));
-                } catch(const std::exception& _error){
-                    Console::PrintLine(
-                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
-                				instance->class_name, "and name",
-                				instance->editor_name);
-                }
-			}
-			else if(hint == "EditorPropertyString"){
-                try{
-     			    std::string name = v->AsMap().at("name")->AsString();
-    				std::string value = v->AsMap().at("value")->AsString();
-
-                    instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyString>(name, name, value));
-                } catch(const std::exception& _error){
-                    Console::PrintLine(
-                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
-                				instance->class_name, "and name",
-                				instance->editor_name);
-                }
-			}
-			else{
-
-			}
-		}
-
-	    return std::move(instance);
-	}
-	else{
-	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("base_class_name")->AsString());
+	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at(GetBaseClassOf(class_name))->AsString());
 					return std::move(factory_map.at("ufo::Actor")(_json));
 	}
 }
@@ -558,20 +467,6 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("class_name")->AsString());
 					return std::move(factory_map.at("Actor")(_json));
 	}
-}
-
-std::unique_ptr<Actor> GenericGenerator::FromMinimalJsonInGame(ufo::gc::JsonMap* _json){
-    std::unique_ptr<Actor> instance = factory_map.at(_json->map.at("class_name")->AsString())(_json);
-
-	instance->class_name = _json->map.at("class_name")->AsString();
-	instance->editor_name = _json->AsMap().at("name")->AsString();
-
-	ufo::gc::JsonMap* actor_json_with_default_properties = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
-
-	//Using the stuctured_classes.json classes to load default properties
-	instance->OnLoadDefaultProperties(actor_json_with_default_properties);
-
-    return std::move(instance);
 }
 
 void GenericGenerator::JsonToActorTreeInGameComponentLoad(Actor* _actor, ufo::gc::JsonMap* _json){
