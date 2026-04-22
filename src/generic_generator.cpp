@@ -6,6 +6,7 @@
 #include <string>
 #include "actor.h"
 #include "animation.h"
+#include "console.h"
 #include "sprite.h"
 #include "camera.h"
 #include "../ufo_garbage_collector/gc_json.h"
@@ -507,8 +508,15 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 
 		instance->class_name = _json->map.at("class_name")->AsString();
 		instance->editor_name = _json->AsMap().at("name")->AsString();
+		try{
 
-		instance->OnLoadDefaultProperties(_json);
+    		ufo::gc::JsonMap* class_json = class_jsons.at(instance->class_name);
+    		instance->OnLoadDefaultProperties(class_json);
+
+		}
+		catch(const std::exception& _error){
+            Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson:","Could not find class json for class",instance->class_name);
+		}
 
 	    return std::move(instance);
 	}
