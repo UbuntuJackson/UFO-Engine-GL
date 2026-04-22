@@ -329,12 +329,15 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		instance->class_name = class_name;
 		instance->editor_name = editor_name;
+
+		bool is_custom_class = class_name != GetBaseClassOf(class_name);
+
 		try{
-			instance->import_mode = _json->map.at("import_mode")->AsFloat();
+			instance->import_mode = is_custom_class ? Actor::ImportModes::WRAPPED : Actor::ImportModes::UNWRAPPED;
 		}catch(const std::exception& _error){
 		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
 		}
-		/* if(instance->import_mode == Actor::ImportModes::UNWRAPPED) */ instance->OnLoadDefaultProperties(_json);
+		instance->OnLoadDefaultProperties(_json);
 
 		if(instance->import_mode == Actor::ImportModes::UNWRAPPED){
             for(ufo::gc::Json* j : _json->AsMap().at("actors")->AsArray()){
@@ -438,7 +441,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 
 		instance->class_name = _json->map.at("class_name")->AsString();
 		instance->editor_name = _json->AsMap().at("name")->AsString();
-		instance->import_mode = _json->map.at("import_mode")->AsFloat();
+		//instance->import_mode = _json->map.at("import_mode")->AsFloat();
 
 		try{
 		    if(instance->class_name != instance->base_class_name){

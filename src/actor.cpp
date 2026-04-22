@@ -1089,7 +1089,6 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStu
 
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
-    this_actor->map.emplace("import_mode", _gc->New<ufo::gc::JsonNumber>(int(import_mode)));
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
     auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();

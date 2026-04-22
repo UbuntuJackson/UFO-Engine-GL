@@ -6,8 +6,41 @@ IMPORT_MODE_UNWRAPPED = 2
 IMPORT_MODE_WRAPPED = 0
 
 
+def get_inheritence_map(_working_directory):
+    inheritence_map = {}
+
+    f_structured_classes = open(_working_directory + "/structured_classes.json")
+
+    j_strucured_classes = json.loads(f_structured_classes.read())
+
+    for entry in j_strucured_classes["contents"]:
+        class_name = entry["class"]["name"]
+
+        extends_classes = entry["class"]["extends"]
+
+        if len(entry["class"]["extends"]) > 0:
+            inheritence_map[class_name] = extends_classes[0]
+
+    f_structured_classes.close()
+
+    return inheritence_map
+
+
+def get_base_class_of(_inheritence_map, _class_name):
+    if _class_name not in _inheritence_map:
+        return _class_name
+
+    return get_base_class_of(_inheritence_map, _inheritence_map[_class_name])
+
+
+def is_custom_class(_inheritence_map, _actor_name):
+    return _actor_name != get_base_class_of(_inheritence_map, _actor_name)
+
+
 # For non-imported actor components, i.e components that don't have their own .ufo.h files and by extension no .ason file
-def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
+def add_actor(
+    _inheritence_map, _working_directory, _counter, _parent_actor_name, _actor_json
+):
     code = ""
 
     # The identifier of this component, will look something like instance1, instance2, instance300, etc.
@@ -20,7 +53,9 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
     default_properties_string = ""
 
     default_properties_string += get_actor_loading_code(
-        _actor_json["base_class_name"], actor_name, _actor_json
+        get_base_class_of(_inheritence_map, _actor_json["class_name"]),
+        actor_name,
+        _actor_json,
     )
 
     # Declaration of this component
@@ -48,15 +83,21 @@ def add_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
 
     # Recurse to generate more code for more components if there are any. These can also be imported.
     for actor in _actor_json["actors"]:
-        if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
-            code += add_actor(_working_directory, _counter, actor_name, actor)
-        if actor["import_mode"] == IMPORT_MODE_WRAPPED:
-            code += add_imported_actor(_working_directory, _counter, actor_name, actor)
+        if not is_custom_class(_inheritence_map, actor["class_name"]):
+            code += add_actor(
+                _inheritence_map, _working_directory, _counter, actor_name, actor
+            )
+        else:
+            code += add_imported_actor(
+                _inheritence_map, _working_directory, _counter, actor_name, actor
+            )
 
     return code
 
 
-def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_json):
+def add_imported_actor(
+    _inheritence_map, _working_directory, _counter, _parent_actor_name, _actor_json
+):
 
     code = ""
 
@@ -174,16 +215,17 @@ def add_imported_actor(_working_directory, _counter, _parent_actor_name, _actor_
             # Iterate through all components of this actor
             for actor in main["actors"]:
                 # If actor is not imported
-                if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
+                if not is_custom_class(_inheritence_map, actor["class_name"]):
                     actors_string += add_actor(
+                        _inheritence_map,
                         _working_directory,
                         _counter,
                         "instance" + str(this_actor_id),
                         actor,
                     )
-                # If actor is imported
-                if actor["import_mode"] == IMPORT_MODE_WRAPPED:
+                else:
                     actors_string += add_imported_actor(
+                        _inheritence_map,
                         _working_directory,
                         _counter,
                         "instance" + str(this_actor_id),
@@ -424,6 +466,7 @@ def get_actor_loading_code(_base_class_name, _instance_, actor_json):
 
 # Entry point for this feature. This is called from function ufo_engine_header_tool.make_generated_file
 def main(_working_directory):
+    inheritence_map = get_inheritence_map(_working_directory)
 
     # Counter to generate unique identifiers present in <project>/generated.h, inside namespace ufo::Generated
     class ActorCounter:
@@ -496,22 +539,26 @@ def main(_working_directory):
                     sys.exit()
 
                 default_properties_string += get_actor_loading_code(
-                    main["base_class_name"], "instance" + str(this_actor_id), main
+                    get_base_class_of(inheritence_map, main["class_name"]),
+                    "instance" + str(this_actor_id),
+                    main,
                 )
 
                 # Evertything from here is just components, so there will be some loading of further .ason files
                 # to get those default attributes too
 
                 for actor in main["actors"]:
-                    if actor["import_mode"] == IMPORT_MODE_UNWRAPPED:
+                    if not is_custom_class(inheritence_map, actor["class_name"]):
                         actors_string += add_actor(
+                            inheritence_map,
                             _working_directory,
                             actor_counter,
                             "instance" + str(this_actor_id),
                             actor,
                         )
-                    if actor["import_mode"] == IMPORT_MODE_WRAPPED:
+                    else:
                         actors_string += add_imported_actor(
+                            inheritence_map,
                             _working_directory,
                             actor_counter,
                             "instance" + str(this_actor_id),
