@@ -1119,9 +1119,8 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
         for(const auto& actor : actors){
             if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
         }
+        this_actor->map.emplace("actors", children);
     }
-
-    this_actor->map.emplace("actors", children);
 
     return this_actor;
 }

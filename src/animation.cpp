@@ -297,6 +297,8 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
+    if(import_mode == WRAPPED) return parent_class_as_json;
+
     auto j_costumes = _gc->New<ufo::gc::JsonArray>();
 
     for(const auto& [k,v] : costumes){

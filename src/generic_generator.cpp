@@ -292,11 +292,13 @@ std::unique_ptr<Actor> GenericGenerator::JsonToActorTree(ufo::GarbageCollector* 
 
     std::unique_ptr<Actor> actor = FromJson(_json);
 
-    for(ufo::gc::Json* j : _json->AsMap().at("actors")->AsArray()){
-        auto j_map = dynamic_cast<ufo::gc::JsonMap*>(j);
+    if(actor->import_mode != ufo::Actor::ImportModes::WRAPPED){
+        for(ufo::gc::Json* j : _json->AsMap().at("actors")->AsArray()){
+            auto j_map = dynamic_cast<ufo::gc::JsonMap*>(j);
 
-        if(j_map) actor->AddActorUniquePtr(JsonToActorTree(_gc, j_map));
-        else Console::PrintLine("std::unique_ptr<Actor> Actor::FromJsonToActor: Non-JsonMap item found in json");
+            if(j_map) actor->AddActorUniquePtr(JsonToActorTree(_gc, j_map));
+            else Console::PrintLine("std::unique_ptr<Actor> Actor::FromJsonToActor: Non-JsonMap item found in json");
+        }
     }
 
     OnJsonToActorTree(actor.get(), _json);
@@ -528,7 +530,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 		instance->class_name = _json->map.at("class_name")->AsString();
 		instance->editor_name = _json->AsMap().at("name")->AsString();
 		try{
-		    if(instance->class_name != instance->base_class_name){
+		    if(instance->import_mode == ufo::Actor::ImportModes::WRAPPED){
           		ufo::gc::JsonMap* class_json = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
           		instance->OnLoadDefaultProperties(class_json);
 
