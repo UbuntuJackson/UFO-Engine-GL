@@ -22,6 +22,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/object.h"
 #include "level_loader.h"
+#include "../utils/ufo_benchmarker.h"
 
 //Imgui
 #include "../imgui/imgui.h"
@@ -389,15 +390,20 @@ void Engine::StartWithImGui(){
 bool Engine::GoToLevel(const std::string& _path){
 
     try{
+        ufo::BenchMarker level_loading_time;
+
+        auto loaded_level = ufo::LevelLoader().LoadLevel(this, _path);
+
         //Pushes the loaded level to loaded_levels just to make it not go out of memory.
-        loaded_levels.push_back(std::move(ufo::LevelLoader().LoadLevel(this, _path)));
-        Console::PrintLine("[UFO-Engine Studio] Engine::GoToLevel",loaded_levels.back()->editor_name);
+        loaded_levels.push_back(std::move(loaded_level));
+        Console::PrintLine("Engine::GoToLevel",loaded_levels.back()->editor_name, "loaded in", level_loading_time.Stop()/1000000000.0f, "seconds");
 
         pending_levels.push_back(loaded_levels.back().get());
     }
     catch(const std::exception& _error){
-        Console::Print("[UFO-Engine Studio] Engine::GoToLevel\n");
+        Console::PrintLine(_error.what());
         return false;
+
     }
 
     return true;
