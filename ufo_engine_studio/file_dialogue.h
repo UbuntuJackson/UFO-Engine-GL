@@ -10,6 +10,7 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter);
 void OnRecoverTileset(void *_userdata, const char * const *_filelist, int _filter);
 void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter);
 void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter);
+void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, int _filter);
 std::string GetFilenameFromPath(const std::string& _path);
 bool IsExtension(const std::string& _path, const std::string& _ext);
 }

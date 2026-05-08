@@ -5,7 +5,6 @@ project(UFO)
 option(HAS_TERMINAL "Show a terminal window for STDOUT/STDERR" ON)
 option(USE_ALSA       "Force using ALSA as audio backend (Linux-only)")
 option(USE_PULSEAUDIO "Force using PulseAudio as audio backend (Linux-only)")
-option(USE_SDL2_MIXER "Force using SDL2_mixer as audio backend")
 
 # Set C++ Standards
 set(CMAKE_CXX_STANDARD 17)
@@ -34,6 +33,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 add_subdirectory(SDL)
 add_subdirectory(freetype-2.14.1)
 add_subdirectory(SDL_ttf-release-3.2.x)
+add_subdirectory(SDL_mixer)
 add_subdirectory(glm-1.0.1)
 
 set(
@@ -127,6 +127,10 @@ target_include_directories(UFO PUBLIC utils)
 target_include_directories(UFO PUBLIC ufo_engine_studio)
 target_include_directories(UFO PUBLIC tilemap)
 
+if(DEFINED UFO_ENGINE_STUDIO)
+    target_compile_definitions(UFO PUBLIC UFO_ENGINE_STUDIO)
+endif()
+
 target_compile_definitions(UFO PRIVATE GLM_ENABLE_EXPERIMENTAL=1)
 
 if(NOT WIN32)
@@ -184,18 +188,9 @@ if(NOT WIN32)  # Only consider ALSA or PulseAudio on Linux
     endif()
 endif()
 
-if(USE_SDL2_MIXER AND NOT EMSCRIPTEN)
-
-    # SDL2_mixer
-    find_package(SDL2_mixer REQUIRED)
-    target_link_libraries(UFO PUBLIC SDL2_mixer::SDL2_mixer)
-
-    add_compile_definitions(SOUNDWAVE_USING_SDLMIXER=1)
-
-endif()
-
 # Link to the actual SDL3 library.
 target_link_libraries(UFO PUBLIC SDL3::SDL3)
 target_link_libraries(UFO PUBLIC SDL3_ttf::SDL3_ttf)
+target_link_libraries(UFO PUBLIC SDL3_mixer::SDL3_mixer)
 target_link_libraries(UFO PUBLIC glm)
 target_include_directories(UFO PUBLIC glad/include)

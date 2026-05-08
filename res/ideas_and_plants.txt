@@ -109,3 +109,23 @@ I need to rethink the various files the editor will be looking for in a project.
 2.) <Project>/structured_classes.json
 3.) <Project>/settings.json
 4.) <Project>/loaded_assets.json
+
+### Optimization ###
+
+Backgrounds don't need to have flexible positioning, they don't need to be polymorphic either, and might not even have to inherit from Actor.
+
+Some or all actor trees could be flattened since actor trees hold references to their parents.
+
+Actors which there will supposedly be a lot of could be preloaded at startup, and positioned wherever needed. If they need to be reset thoroughly that would add some performance cost though.
+
+Most actors don't need names.
+
+### Graphical User Interface ###
+
+Instances of custom classes shouldn not be editable composition wise
+
+Manually specify which TileMap the viewport is dedicated to?
+
+Visual guide for the viewport of the actual game, like a rectangle hovering over the viewport?
+
+

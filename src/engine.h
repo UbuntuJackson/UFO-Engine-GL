@@ -87,9 +87,6 @@ public:
     void Start();
     void StartWithImGui();
 
-    //It might be better to use the destructor, but that's a pending investigation
-    void Quit();
-
     //returns false on fail
     bool GoToLevel(const std::string& _path);
 

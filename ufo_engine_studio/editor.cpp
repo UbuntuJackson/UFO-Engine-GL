@@ -3,6 +3,7 @@
 #include <string>
 #include <camera.h>
 #include <filesystem>
+#include "SDL3/SDL_dialog.h"
 #include "console.h"
 #include "file_node.h"
 #include "../imgui/imgui.h"
@@ -196,6 +197,10 @@ void Editor::OnUpdate(float _delta_time){
 
             if(ImGui::MenuItem("Settings")){
                 project_settings_open = true;
+            }
+
+            if(ImGui::MenuItem("Make release build")){
+                SDL_ShowOpenFolderDialog(&OnSelectDirectoryForDebugBuild, (void*)this, engine->window, "/home", false);
             }
 
             ImGui::EndMenu();

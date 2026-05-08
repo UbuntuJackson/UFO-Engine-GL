@@ -127,6 +127,48 @@ void Actor::CleanUpDeadActors(){
 
 }
 
+void Actor::InsertActors(){
+    for(auto&& inserted_actor : inserted_actor_queue){
+        actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
+    }
+
+    for(int i = 0; i < actors.size(); i++){
+        actors[i]->order_index = i;
+    }
+
+    inserted_actor_queue.clear();
+
+    for(const auto& actor : actors){
+        actor->InsertActors();
+    }
+}
+
+void Actor::InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index){
+    _ptr->parent = this;
+
+    //_ptr->order_index = _index;
+
+    inserted_actor_queue.push_back(InsertedActor{_index,std::move(_ptr)});
+}
+
+void Actor::SetOrderIndex(int _index){
+    if(parent) parent->should_be_sorted = true;
+    order_index = _index;
+}
+
+void Actor::SortActors(){
+    std::sort(actors.begin(), actors.end(), [this](const auto& _a, const auto& _b){
+        return _a->order_index < _b->order_index;
+    });
+
+    //Not sure why I'm doing it like this. I don't remember
+    for(int i = 0; i < actors.size(); i++){
+        actors[i]->order_index = i;
+    }
+
+    should_be_sorted = false;
+}
+
 void Actor::StashActors(){
 
     for(int i = actors.size()-1; i != -1; i--){
@@ -221,6 +263,39 @@ void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
 }
 
+ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
+    ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
+    this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
+    this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
+    auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
+    this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
+
+    for(const auto& property : editor_properties){
+
+        j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
+
+    }
+
+    this_actor->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(local_position.x));
+    this_actor->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(local_position.y));
+
+    ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
+
+    if(import_mode == ImportModes::UNWRAPPED){
+        for(const auto& actor : actors){
+            if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
+        }
+        this_actor->map.emplace("actors", children);
+    }
+
+    return this_actor;
+}
+
+//Actor generator calls this.
+void Actor::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+
+}
+
 void Actor::OnInvokeGarbageCollector(){
 
 }
@@ -232,7 +307,19 @@ void Actor::InvokeGarbageCollector(){
     }
 }
 
+TileMap* Actor::IsInTileMap(){
+    if(parent == nullptr) return nullptr;
+    else{
+        if(parent->class_name == "ufo::TileMap") return parent->DynamicCast<TileMap>();
+        else{
+            return parent->IsInTileMap();
+        }
+    }
+    return nullptr;
+}
+
 // UFO-Engine Studio
+#ifdef UFO_ENGINE_STUDIO
 
 void Actor::SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value){
     Vector2f former_value = *_ptr;
@@ -259,48 +346,6 @@ void Actor::ResetSelectionStatus(){
     for(const auto& actor : actors){
         actor->ResetSelectionStatus();
     }
-}
-
-void Actor::InsertActors(){
-    for(auto&& inserted_actor : inserted_actor_queue){
-        actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
-    }
-
-    for(int i = 0; i < actors.size(); i++){
-        actors[i]->order_index = i;
-    }
-
-    inserted_actor_queue.clear();
-
-    for(const auto& actor : actors){
-        actor->InsertActors();
-    }
-}
-
-void Actor::InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index){
-    _ptr->parent = this;
-
-    //_ptr->order_index = _index;
-
-    inserted_actor_queue.push_back(InsertedActor{_index,std::move(_ptr)});
-}
-
-void Actor::SetOrderIndex(int _index){
-    if(parent) parent->should_be_sorted = true;
-    order_index = _index;
-}
-
-void Actor::SortActors(){
-    std::sort(actors.begin(), actors.end(), [this](const auto& _a, const auto& _b){
-        return _a->order_index < _b->order_index;
-    });
-
-    //Not sure why I'm doing it like this. I don't remember
-    for(int i = 0; i < actors.size(); i++){
-        actors[i]->order_index = i;
-    }
-
-    should_be_sorted = false;
 }
 
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
@@ -466,9 +511,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     std::string imported_or_not_str = (import_mode != ImportModes::WRAPPED) ? "" : "(.ason)";
 
+    std::string visible_text = std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
+
     std::string unique_id_actor = editing_name ?
         std::string("###Actor"+std::to_string(editor_id)).c_str() :
-        std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str+"###Actor"+std::to_string(editor_id)).c_str();
+        (visible_text+"###Actor"+std::to_string(editor_id)).c_str();
 
     bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
 
@@ -483,7 +530,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         }
     }
     else{
-        bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None);
+        bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None, ImVec2(ImGui::CalcTextSize(visible_text.c_str()).x,ImGui::GetFontSize()));
 
         if(selectable_text){
 
@@ -1065,17 +1112,6 @@ void Actor::OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_
 
 }
 
-TileMap* Actor::IsInTileMap(){
-    if(parent == nullptr) return nullptr;
-    else{
-        if(parent->class_name == "ufo::TileMap") return parent->DynamicCast<TileMap>();
-        else{
-            return parent->IsInTileMap();
-        }
-    }
-    return nullptr;
-}
-
 void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     OnDrawGizmos(_graphics, _camera, _level_editor_tab);
     for(const auto& actor : actors){
@@ -1087,37 +1123,6 @@ void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStu
 
 }
 
-ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
-    ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
-    this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
-    this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
-    auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
-    this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
-
-    for(const auto& property : editor_properties){
-
-        j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
-
-    }
-
-    this_actor->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(local_position.x));
-    this_actor->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(local_position.y));
-
-    ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
-
-    if(import_mode == ImportModes::UNWRAPPED){
-        for(const auto& actor : actors){
-            if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
-        }
-        this_actor->map.emplace("actors", children);
-    }
-
-    return this_actor;
-}
-
-//Actor generator calls this.
-void Actor::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-
-}
+#endif //UFO-Engine Studio
 
 }

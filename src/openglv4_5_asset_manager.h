@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <string>
+#include <SDL3_mixer/SDL_mixer.h>
 #include "texture_2d.h"
 #include "shader.h"
 #include "../file/file_utils.h"
@@ -51,6 +52,10 @@ public:
     ufo::Shader GetShader(const std::string& _name);
 
     ufo::Shader LoadShaderFromFile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path);
+
+
+     std::unordered_map<std::string, MIX_Audio*> audio;
+     void LoadAudio(const std::string& _path, const std::string& _name){}
 
     //Editor only. Todo: When the editor refreshes or closes I want the assets to be saved in the project folder. However,
     // right now it only does so upon closing the editor.

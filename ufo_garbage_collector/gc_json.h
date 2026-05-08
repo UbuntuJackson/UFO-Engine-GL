@@ -161,6 +161,30 @@ public:
         return std::string(string_to_return);
     }
 
+    std::string GetJsonAsUnformattedString(){
+        cJSON* json_obj = GetObject();
+
+        char* json_as_string = cJSON_PrintUnformatted(json_obj);
+
+        std::string string_to_return = json_as_string;
+
+        free(json_as_string);
+
+        cJSON_Delete(json_obj);
+
+        return std::string(string_to_return);
+    }
+
+    void WriteUnformatted(const std::string& _path){
+        std::string json_as_string = GetJsonAsUnformattedString();
+        try{
+            FileSystem::Write(_path, json_as_string);
+        }
+        catch(const std::exception& _error){
+            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
+        }
+    }
+
     void Write(const std::string& _path){
         std::string json_as_string = GetJsonAsString();
         try{

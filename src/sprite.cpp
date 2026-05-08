@@ -253,8 +253,12 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
 
 void Sprite::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
+
     std::string visible_or_not_string = visible ? "<o>###" : "</>###";
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str())){
+
+    ImGuiStyle style = ImGui::GetStyle();
+
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetItemRectSize().y))){
         visible = !visible;
     }
 }

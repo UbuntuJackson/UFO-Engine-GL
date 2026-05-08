@@ -10,6 +10,8 @@
 #include "editor_property.h"
 #include "../shapes/rectangle.h"
 
+//#define UFO_ENGINE_STUDIO
+
 namespace UFOEngineStudio{
     class Editor;
     class LevelEditorTab;
@@ -31,6 +33,10 @@ class Camera;
 //Using rule of 0 3 and 5 for all actors
 class Actor{
 public:
+
+    std::string editor_name = "Actor";
+    std::string class_name = "ufo::Actor";
+    std::string base_class_name = "ufo::Actor";
 
     Vector2f local_position;
     Vector2f former_local_position;
@@ -152,7 +158,34 @@ public:
 
     }
 
+    struct InsertedActor{
+        int index;
+        std::unique_ptr<Actor> actor;
+    };
+
+    std::vector<InsertedActor> inserted_actor_queue;
+
+    void InsertActors();
+
+    void InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index);
+
+    int order_index = 0;
+    bool should_be_sorted = false;
+
+    void SetOrderIndex(int _index);
+
+    void SortActors();
+
+    virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
+
     //For UFO-Engine Studio Editor actor tree widget
+
+    bool adding_new_actor = false;
+
+    TileMap* IsInTileMap();
+
+#ifdef UFO_ENGINE_STUDIO
 
     virtual void OnResourcesEdited(){
 
@@ -180,11 +213,6 @@ public:
     static inline int editor_id_counter = 0;
     int editor_id = 0;
 
-    struct InsertedActor{
-        int index;
-        std::unique_ptr<Actor> actor;
-    };
-
     bool is_selected_in_viewport = false;
 
     //Rename this is_selected_in_actor_tree ?
@@ -196,25 +224,8 @@ public:
 
     void ResetSelectionStatus();
 
-    std::vector<InsertedActor> inserted_actor_queue;
-
-    void InsertActors();
-
-    void InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index);
-
-    int order_index = 0;
-    bool should_be_sorted = false;
-
-    void SetOrderIndex(int _index);
-
-    void SortActors();
-
     bool to_replace = false;
     void ReplaceActors(UFOEngineStudio::Editor* _editor);
-
-    std::string editor_name = "Actor";
-    std::string class_name = "ufo::Actor";
-    std::string base_class_name = "ufo::Actor";
 
     bool marked_for_drag = false;
     bool marked_for_drop = false;
@@ -236,10 +247,6 @@ public:
     std::string GetImportStatus();
 
     void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
-
-    bool adding_new_actor = false;
-
-    TileMap* IsInTileMap();
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
@@ -299,9 +306,6 @@ public:
 
     void DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
-    virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
-    virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
-
     //stashing the actor means you basically get the actor out of the tree but keeping it in memory
     bool stash = false;
 
@@ -310,6 +314,8 @@ protected:
     bool is_top_actor_in_editor = false;
     bool unremovable = false;
     friend class UFOEngineStudio::LevelEditorTab;
+
+#endif //UFO_ENGINE_STUDIO
 
 };
 

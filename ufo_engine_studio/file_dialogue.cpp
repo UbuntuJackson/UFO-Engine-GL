@@ -9,6 +9,7 @@
 #include "text_editor_tab.h"
 #include "../tilemap/tileset_manager.h"
 #include "../src/openglv4_5_asset_manager.h"
+#include "make_release_build.h"
 
 namespace UFOEngineStudio{
 
@@ -89,6 +90,15 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter){
     f.Write(tab->path);
 
     tab->Refresh();
+
+}
+
+void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, int _filter){
+
+    if(*_filelist == nullptr) return; //Should file not have been selected
+    UFOEngineStudio::Editor* editor = (UFOEngineStudio::Editor*)_editor;
+
+    MakeReleaseBuild(editor->opened_directory_path, std::string(*_filelist));
 
 }
 
