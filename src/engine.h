@@ -85,7 +85,9 @@ public:
     //New methods to get rid of Main class.
     void InitIndependant();
     void Start();
+#ifdef UFO_ENGINE_STUDIO
     void StartWithImGui();
+#endif
 
     //returns false on fail
     bool GoToLevel(const std::string& _path);

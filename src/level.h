@@ -4,8 +4,11 @@
 #include <memory>
 #include "actor.h"
 #include "../tilemap/tileset_manager.h"
-#include "actor_undo_and_redo.h"
 #include "widget.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "actor_undo_and_redo.h"
+#endif
 
 namespace ufo{
 
@@ -68,20 +71,6 @@ public:
 
     void UpdatePhase(float _delta_time);
 
-    std::vector<std::unique_ptr<Actor>> stashed_actors;
-
-    void Undo();
-    void Redo();
-    void RemoveFutureChanges();
-
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
-
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
-    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
     void DrawPhase(ufo::Graphics* _graphics);
 
     virtual void EditorUpdatePhase(float _delta_time){
@@ -119,11 +108,29 @@ public:
         return parent_class_as_json;
     }
 
+#ifdef UFO_ENGINE_STUDIO
+
+    std::vector<std::unique_ptr<Actor>> stashed_actors;
+
+    void Undo();
+    void Redo();
+    void RemoveFutureChanges();
+
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
     void DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     int current_level_change = -1;
 
     std::vector<std::unique_ptr<ufo::ActorChange>> level_changes;
+
+#endif
 
 };
 

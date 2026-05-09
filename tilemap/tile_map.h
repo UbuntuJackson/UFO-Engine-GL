@@ -18,6 +18,59 @@ namespace ufo{
 class TileMap : public Actor{
 public:
 
+    bool visible = true;
+
+    std::vector<int> tilemap_data;
+    int number_of_columns = 50;
+    int number_of_rows = 10;
+    int tile_width = 16;
+    int tile_height = 16;
+
+    TileMap(Vector2f _);
+
+    void OnSpawn();
+
+    static std::unique_ptr<TileMap> Load(ufo::gc::JsonMap* _layer);
+
+    int GetTileID_AtLevelPosition(Vector2f _position);
+
+    ufo::Rectangle GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size);
+
+    struct TileData{
+        int x;
+        int y;
+        bool within_bounds;
+        int tile_number;
+        int tile_identifier;
+    };
+
+    TileData GetTileID_AtLevelPosition_Advanced(int _x, int _y){
+        bool within_bounds = false;
+        bool tile_identifier = false;
+
+        int clicked_tile_x = _x/tile_width;
+        int clicked_tile_y = _y/tile_height;
+
+        int tile_number = clicked_tile_y*number_of_columns + clicked_tile_x;
+        if(clicked_tile_x < number_of_columns && clicked_tile_x >= 0 && clicked_tile_y < number_of_rows && clicked_tile_y >= 0){
+            tile_identifier = tilemap_data[tile_number];
+            within_bounds = true;
+        }
+
+        return TileData{
+            clicked_tile_x, clicked_tile_y, within_bounds, tile_number, tile_identifier
+        };
+
+    }
+
+    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
+
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+
+    ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
+
+#ifdef UFO_ENGINE_STUDIO
+
     class TileMapChange_TileMapSize : public ufo::ActorChange{
     public:
         TileMap* tile_map = nullptr;
@@ -146,14 +199,6 @@ public:
     int left_bound_tile;
     int right_bound_tile;
 
-    bool visible = true;
-
-    std::vector<int> tilemap_data;
-    int number_of_columns = 50;
-    int number_of_rows = 10;
-    int tile_width = 16;
-    int tile_height = 16;
-
     bool resize_right = false;
     bool resize_left = false;
     bool resize_bottom = false;
@@ -165,54 +210,13 @@ public:
     int current_world_mouse_x = 0;
     int current_world_mouse_y = 0;
 
-    TileMap(Vector2f _);
-
-    void OnSpawn();
-
-    static std::unique_ptr<TileMap> Load(ufo::gc::JsonMap* _layer);
-
-    int GetTileID_AtLevelPosition(Vector2f _position);
-
-    ufo::Rectangle GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size);
-
     void ResizeRight(int _number_of_tiles_to_insert);
     void ResizeLeft(int _number_of_tiles_to_insert);
     void ResizeTop(int _number_of_tiles_to_insert);
     void ResizeBottom(int _number_of_tiles_to_insert);
     void CancelAllResizeDialogues();
 
-    struct TileData{
-        int x;
-        int y;
-        bool within_bounds;
-        int tile_number;
-        int tile_identifier;
-    };
-
-    TileData GetTileID_AtLevelPosition_Advanced(int _x, int _y){
-        bool within_bounds = false;
-        bool tile_identifier = false;
-
-        int clicked_tile_x = _x/tile_width;
-        int clicked_tile_y = _y/tile_height;
-
-        int tile_number = clicked_tile_y*number_of_columns + clicked_tile_x;
-        if(clicked_tile_x < number_of_columns && clicked_tile_x >= 0 && clicked_tile_y < number_of_rows && clicked_tile_y >= 0){
-            tile_identifier = tilemap_data[tile_number];
-            within_bounds = true;
-        }
-
-        return TileData{
-            clicked_tile_x, clicked_tile_y, within_bounds, tile_number, tile_identifier
-        };
-
-    }
-
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
-
-    void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
-
-    ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
@@ -220,7 +224,8 @@ public:
 
     void OnAdditionalButtonsForTreeItem() override;
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+#endif //UFO_ENGINE_STUDIO
+
 };
 
 }

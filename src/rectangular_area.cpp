@@ -1,11 +1,14 @@
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "../shapes/rectangle.h"
+#include "rectangular_area.h"
+#include "camera.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "im_vec.h"
 #include "viewport_editing_utils.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
-#include "rectangular_area.h"
-#include "camera.h"
+#endif
 
 namespace ufo{
 
@@ -17,6 +20,44 @@ RectangularArea::RectangularArea(Vector2f _) : Actor(_){
 ufo::Rectangle RectangularArea::GetRectangle(){
     return ufo::Rectangle(GetGlobalPosition()+rectangle.position,rectangle.size);
 }
+
+void RectangularArea::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    //A good example of large amount of properties being written to an object
+    // Potential solution, have an additional map which handles writing of default properties.
+    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
+    // Son of a biscuit this has been redundant.
+    // Writing of custom properties handled in generated.h.
+
+    try{
+        auto j_rectangle = _json->map.at("rectangle")->AsMap();
+        float rectangle_x = j_rectangle.at("x")->AsFloat();
+        float rectangle_y = j_rectangle.at("y")->AsFloat();
+        float rectangle_w = j_rectangle.at("w")->AsFloat();
+        float rectangle_h = j_rectangle.at("h")->AsFloat();
+        rectangle.position.x = rectangle_x;
+        rectangle.position.y = rectangle_y;
+        rectangle.size.x = rectangle_w;
+        rectangle.size.y = rectangle_h;
+    } catch(const std::exception& _error){
+        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::RectangularArea instance");
+    }
+}
+
+ufo::gc::JsonMap* RectangularArea::GetAsJson(ufo::GarbageCollector* _gc){
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+
+    auto j_rectangle = _gc->New<ufo::gc::JsonMap>();
+    j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(rectangle.position.x));
+    j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(rectangle.position.y));
+    j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(rectangle.size.x));
+    j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
+
+    parent_class_as_json->map.emplace("rectangle", j_rectangle);
+    return parent_class_as_json;
+}
+
+#ifdef UFO_ENGINE_STUDIO
 
 void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
@@ -68,40 +109,6 @@ void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, U
 
 }
 
-void RectangularArea::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-    //A good example of large amount of properties being written to an object
-    // Potential solution, have an additional map which handles writing of default properties.
-    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
-    // Son of a biscuit this has been redundant.
-    // Writing of custom properties handled in generated.h.
-
-    try{
-        auto j_rectangle = _json->map.at("rectangle")->AsMap();
-        float rectangle_x = j_rectangle.at("x")->AsFloat();
-        float rectangle_y = j_rectangle.at("y")->AsFloat();
-        float rectangle_w = j_rectangle.at("w")->AsFloat();
-        float rectangle_h = j_rectangle.at("h")->AsFloat();
-        rectangle.position.x = rectangle_x;
-        rectangle.position.y = rectangle_y;
-        rectangle.size.x = rectangle_w;
-        rectangle.size.y = rectangle_h;
-    } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::RectangularArea instance");
-    }
-}
-
-ufo::gc::JsonMap* RectangularArea::GetAsJson(ufo::GarbageCollector* _gc){
-
-    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
-
-    auto j_rectangle = _gc->New<ufo::gc::JsonMap>();
-    j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(rectangle.position.x));
-    j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(rectangle.position.y));
-    j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(rectangle.size.x));
-    j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
-
-    parent_class_as_json->map.emplace("rectangle", j_rectangle);
-    return parent_class_as_json;
-}
+#endif
 
 }

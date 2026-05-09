@@ -3,12 +3,15 @@
 #include <vector>
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
-#include "../imgui/imgui.h"
-#include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "../shapes/rectangle.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
-#include "../shapes/rectangle.h"
+#include "../imgui/imgui.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
+#endif //UFO_ENGINE_STUDIO
 
 //#define UFO_ENGINE_STUDIO
 
@@ -185,6 +188,17 @@ public:
 
     TileMap* IsInTileMap();
 
+    enum ImportModes{
+        WRAPPED,
+        MODIFIABLE,
+        UNWRAPPED
+    };
+
+    int import_mode = ImportModes::UNWRAPPED;
+
+    static inline int editor_id_counter = 0;
+    int editor_id = 0;
+
 #ifdef UFO_ENGINE_STUDIO
 
     virtual void OnResourcesEdited(){
@@ -200,18 +214,7 @@ public:
 
     void SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value);
 
-    enum ImportModes{
-        WRAPPED,
-        MODIFIABLE,
-        UNWRAPPED
-    };
-
-    int import_mode = ImportModes::UNWRAPPED;
-
     bool is_savable = true;
-
-    static inline int editor_id_counter = 0;
-    int editor_id = 0;
 
     bool is_selected_in_viewport = false;
 

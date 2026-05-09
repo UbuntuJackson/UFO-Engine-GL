@@ -13,12 +13,15 @@
 #include "../utils/console.h"
 #include "../json/json.h"
 #include "../shapes/rectangle.h"
-#include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../file/file_utils.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
+#endif
 
 namespace ufo{
 
@@ -32,6 +35,7 @@ void TilesetManager::InitialiseTextures(){
             if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture("../"+tileset.name,tileset.name,true);
         }
     }
+#ifdef UFO_ENGINE_STUDIO
     else{
         //This might break at some point.
         UFOEngineStudio::Editor* editor = engine->level_handle->DynamicCast<UFOEngineStudio::Editor>();
@@ -45,34 +49,8 @@ void TilesetManager::InitialiseTextures(){
             }
         }
     }
+#endif
 
-}
-
-void TilesetManager::UpdateSelectedTilesetTile(const TilesetData& _tileset){
-    ImVec2 mouse_pos = ImGui::GetMousePos();
-    ImVec2 item_rect_pos = ImGui::GetItemRectMin();
-
-    int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/_tileset.tile_width;
-    int clicked_pos_y = (mouse_pos.y-item_rect_pos.y)/_tileset.tile_height;
-
-    if(clicked_pos_x < 0) clicked_pos_x = 0;
-    if(clicked_pos_x > _tileset.columns-1) clicked_pos_x = _tileset.columns-1;
-    if(clicked_pos_y < 0) clicked_pos_y = 0;
-
-    int tileset_rows = _tileset.tile_count/_tileset.columns;
-
-    if(clicked_pos_y > tileset_rows-1) clicked_pos_y = tileset_rows-1;
-
-    currently_selected_tile = clicked_pos_y*_tileset.columns + clicked_pos_x + _tileset.tileset_start_id;
-
-}
-
-void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
-    for(const auto& tileset : tileset_data){
-        std::string path = _editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
-        Console::PrintLine("Full Tileset Path",path);
-        if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
-    }
 }
 
 void TilesetManager::Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json){
@@ -149,6 +127,35 @@ TilesetData TilesetManager::GetTilesetData(std::string _name){
         0,
         0
     };
+}
+
+#ifdef UFO_ENGINE_STUDIO
+
+void TilesetManager::UpdateSelectedTilesetTile(const TilesetData& _tileset){
+    ImVec2 mouse_pos = ImGui::GetMousePos();
+    ImVec2 item_rect_pos = ImGui::GetItemRectMin();
+
+    int clicked_pos_x = (mouse_pos.x-item_rect_pos.x)/_tileset.tile_width;
+    int clicked_pos_y = (mouse_pos.y-item_rect_pos.y)/_tileset.tile_height;
+
+    if(clicked_pos_x < 0) clicked_pos_x = 0;
+    if(clicked_pos_x > _tileset.columns-1) clicked_pos_x = _tileset.columns-1;
+    if(clicked_pos_y < 0) clicked_pos_y = 0;
+
+    int tileset_rows = _tileset.tile_count/_tileset.columns;
+
+    if(clicked_pos_y > tileset_rows-1) clicked_pos_y = tileset_rows-1;
+
+    currently_selected_tile = clicked_pos_y*_tileset.columns + clicked_pos_x + _tileset.tileset_start_id;
+
+}
+
+void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
+    for(const auto& tileset : tileset_data){
+        std::string path = _editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
+        Console::PrintLine("Full Tileset Path",path);
+        if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+    }
 }
 
 void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -334,5 +341,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     }
 
 }
+
+#endif //UFO_ENGINE_STUDIO
 
 }

@@ -22,11 +22,14 @@ public:
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
-
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+#ifdef UFO_ENGINE_STUDIO
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
+
+#endif //UFO_ENGINE_STUDIO
 
 };
 

@@ -39,6 +39,12 @@ public:
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+#ifdef UFO_ENGINE_STUDIO
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
@@ -49,13 +55,10 @@ public:
 
     void OnAdditionalButtonsForTreeItem() override;
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
-
-    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
-
     //For UFO-Engine Studio
 
     void OnResourcesEdited() override;
+#endif //UFO_ENGINE_STUDIO
 };
 
 }

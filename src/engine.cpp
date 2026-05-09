@@ -24,10 +24,12 @@
 #include "level_loader.h"
 #include "../utils/ufo_benchmarker.h"
 
+#ifdef UFO_ENGINE_STUDIO
 //Imgui
 #include "../imgui/imgui.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../imgui/backends/imgui_impl_sdl3.h"
+#endif
 
 namespace ufo{
 
@@ -228,6 +230,8 @@ void Engine::Start(){
 
 }
 
+#ifdef UFO_ENGINE_STUDIO
+
 void Engine::StartWithImGui(){
 
     level_handle = loaded_levels[0]->DynamicCast<Level>();
@@ -386,6 +390,8 @@ void Engine::StartWithImGui(){
     asset_manager.SaveAssets();
 
 }
+
+#endif //UFO_ENGINE_STUDIO
 
 bool Engine::GoToLevel(const std::string& _path){
 

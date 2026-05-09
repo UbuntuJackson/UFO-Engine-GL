@@ -10,9 +10,12 @@
 #include "../shapes/rectangle.h"
 #include "../tilemap/tileset_manager.h"
 #include "text.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include "actor_undo_and_redo.h"
+#endif
 
 namespace ufo{
 
@@ -89,55 +92,12 @@ void Level::UpdatePhase(float _delta_time){
     }
 
     CleanUpDeadActors();
+
+#ifdef UFO_ENGINE_STUDIO
     StashActors();
+#endif
 
     //widget->Update();
-}
-
-void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-    Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-    Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
-
-    ImGui::GetWindowDrawList()->AddRect(
-        ImVec2(min.x, min.y),
-        ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
-
-
-
-    if(is_selected){
-        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
-            if(_editor->currently_selected_actor_type != ""){
-                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
-                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
-
-                    inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
-
-                    //Undo&redo
-
-                    while((int)level_changes.size()-1 > current_level_change){
-                        level_changes.pop_back();
-                    }
-
-                    level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
-
-                    current_level_change++;
-                    Console::PrintLine("Actor current change",current_level_change);
-
-                    AddActorUniquePtr(std::move(inst));
-                }
-            }
-        }
-    }
-
-}
-
-bool Level::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    return false;
-}
-
-void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
 }
 
 void Level::DrawPhase(ufo::Graphics* _graphics){
@@ -215,6 +175,54 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
 
 }
 
+#ifdef UFO_ENGINE_STUDIO
+
+void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+    Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
+
+    ImGui::GetWindowDrawList()->AddRect(
+        ImVec2(min.x, min.y),
+        ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
+
+
+
+    if(is_selected){
+        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+            if(_editor->currently_selected_actor_type != ""){
+                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
+                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
+
+                    inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+
+                    //Undo&redo
+
+                    while((int)level_changes.size()-1 > current_level_change){
+                        level_changes.pop_back();
+                    }
+
+                    level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+
+                    current_level_change++;
+                    Console::PrintLine("Actor current change",current_level_change);
+
+                    AddActorUniquePtr(std::move(inst));
+                }
+            }
+        }
+    }
+
+}
+
+bool Level::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    return false;
+}
+
+void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+}
+
 void Level::Undo(){
     if(!(current_level_change < 0)){
 
@@ -254,5 +262,7 @@ void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEdit
     DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
 
 }
+
+#endif //UFO_ENGINE_STUDIO
 
 }

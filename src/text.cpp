@@ -5,10 +5,13 @@
 #include <unordered_map>
 #include "texture_2d.h"
 #include "font.h"
-#include "../ufo_engine_studio/level_editor_tab.h"
 #include "actor.h"
 #include "text.h"
 #include "engine.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/level_editor_tab.h"
+#endif
 
 namespace ufo{
 
@@ -99,6 +102,36 @@ void Text::OnIrregularUpdate(){
 
 }
 
+void Text::OnWidgetDraw(ufo::Graphics* _graphics){
+    if(language_to_text[engine->language] == "") return;
+    _graphics->DrawPartialSprite(
+        texture,
+        GetGlobalPosition(),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(1.0f, 1.0f),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(texture.width, texture.height),
+        0.0f,
+        ufo::Colour(255,255,255,255)
+    );
+}
+
+ufo::gc::JsonMap* Text::GetAsJson(ufo::GarbageCollector* _gc){
+    Console::PrintLine("Does this even run?");
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+
+    parent_class_as_json->map.emplace("is_wrapping", _gc->New<ufo::gc::JsonNumber>(is_wrapping));
+
+    auto j_language_to_text = _gc->New<ufo::gc::JsonMap>();
+    for(const auto& [k,v] : language_to_text) j_language_to_text->map.emplace(k,_gc->New<ufo::gc::JsonString>(v));
+
+    parent_class_as_json->map.emplace("language_to_text", j_language_to_text);
+    return parent_class_as_json;
+}
+
+#ifdef UFO_ENGINE_STUDIO
+
 void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Widget::OnViewProperties(_level_editor_tab, _index);
 
@@ -124,20 +157,6 @@ void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, 
 
         ImGui::EndCombo();
     }
-}
-
-void Text::OnWidgetDraw(ufo::Graphics* _graphics){
-    if(language_to_text[engine->language] == "") return;
-    _graphics->DrawPartialSprite(
-        texture,
-        GetGlobalPosition(),
-        Vector2f(0.0f, 0.0f),
-        Vector2f(1.0f, 1.0f),
-        Vector2f(0.0f, 0.0f),
-        Vector2f(texture.width, texture.height),
-        0.0f,
-        ufo::Colour(255,255,255,255)
-    );
 }
 
 void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -184,18 +203,6 @@ void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStud
 
 }
 
-ufo::gc::JsonMap* Text::GetAsJson(ufo::GarbageCollector* _gc){
-    Console::PrintLine("Does this even run?");
-
-    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
-
-    parent_class_as_json->map.emplace("is_wrapping", _gc->New<ufo::gc::JsonNumber>(is_wrapping));
-
-    auto j_language_to_text = _gc->New<ufo::gc::JsonMap>();
-    for(const auto& [k,v] : language_to_text) j_language_to_text->map.emplace(k,_gc->New<ufo::gc::JsonString>(v));
-
-    parent_class_as_json->map.emplace("language_to_text", j_language_to_text);
-    return parent_class_as_json;
-}
+#endif //UFO_ENGINE_STUDIO
 
 }

@@ -3,10 +3,13 @@
 #include "camera.h"
 #include "level.h"
 #include "engine.h"
-#include "../ufo_engine_studio/level_editor_tab.h"
-#include "../imgui/imgui.h"
 #include <garbage_collector.h>
 #include <gc_json.h>
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../imgui/imgui.h"
+#endif
 
 namespace ufo{
 
@@ -136,15 +139,6 @@ Camera::GetOnScreenRectangleInWorld(olc::vf2d _offset){
     return ufo::Rectangle({x0, y0}, {x1-x0, y1-y0});
 }
 
-void Camera::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-
-    Actor::OnViewProperties(_level_editor_tab, _index);
-
-    ImGui::Checkbox("Clamp", &clamp);
-    ImGui::InputFloat("Scale", &scale);
-
-}
-
 ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
@@ -154,5 +148,18 @@ ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
 
     return parent_class_as_json;
 }
+
+#ifdef UFO_ENGINE_STUDIO
+
+void Camera::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+
+    Actor::OnViewProperties(_level_editor_tab, _index);
+
+    ImGui::Checkbox("Clamp", &clamp);
+    ImGui::InputFloat("Scale", &scale);
+
+}
+
+#endif
 
 }

@@ -7,12 +7,16 @@
 #include "animation.h"
 #include "console.h"
 #include "sprite.h"
-#include "../ufo_engine_studio/file_dialogue.h"
-#include "../ufo_engine_studio/editor.h"
-#include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "texture_2d.h"
+#include "engine.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/file_dialogue.h"
+#include "../ufo_engine_studio/editor.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
@@ -84,6 +88,80 @@ void Animation::OnSpawn(){
     SetCostume(key);
 
 }
+
+void Animation::OnUpdate(float _delta_time){
+    if(preview){
+        current_frame_index += animation_speed * _delta_time;
+        //current_frame_index = ufoMaths::Wrap(frame_counter, 0.0f, number_of_frames);
+    }
+}
+
+ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
+    Console::PrintLine("Does this even run?");
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+
+    if(import_mode == WRAPPED) return parent_class_as_json;
+
+    auto j_costumes = _gc->New<ufo::gc::JsonArray>();
+
+    for(const auto& [k,v] : costumes){
+
+        auto j_costume = _gc->New<ufo::gc::JsonMap>();
+
+        j_costume->map.emplace("key", _gc->New<ufo::gc::JsonString>(v.key));
+        j_costume->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(v.offset.x));
+        j_costume->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(v.offset.y));
+        j_costume->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(v.frame_size.x));
+        j_costume->map.emplace("frame_size_y", _gc->New<ufo::gc::JsonNumber>(v.frame_size.y));
+        j_costume->map.emplace("scale_x", _gc->New<ufo::gc::JsonNumber>(v.scale.x));
+        j_costume->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(v.scale.y));
+        j_costume->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(v.rotation));
+        j_costume->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(v.frame_index));
+        j_costume->map.emplace("animation_speed", _gc->New<ufo::gc::JsonNumber>(v.animation_speed));
+
+        j_costumes->array.push_back(j_costume);
+    }
+
+    parent_class_as_json->map.emplace("costumes",j_costumes);
+    parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(key));
+    parent_class_as_json->map.emplace("preview",_gc->New<ufo::gc::JsonNumber>(preview));
+
+
+    return parent_class_as_json;
+}
+
+void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+
+    //if(import_mode == Actor::ImportModes::UNWRAPPED){
+
+    try{
+
+        for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
+            Animation::Costume costume;
+            costume.key = j_costume->AsMap().at("key")->AsString();
+            costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
+            costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
+            costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
+            costume.frame_size.y = j_costume->AsMap().at("frame_size_y")->AsFloat();
+            costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
+            costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
+            costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
+            costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
+            costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
+
+            costumes.emplace(costume.key, costume);
+        }
+        key = _json->map.at("current_costume")->AsString();
+        preview = _json->map.at("preview")->AsFloat();
+    } catch(const std::exception& _error){
+        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
+    }
+
+    //}
+}
+
+#ifdef UFO_ENGINE_STUDIO
 
 void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
@@ -285,76 +363,6 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
 
 }
 
-void Animation::OnUpdate(float _delta_time){
-    if(preview){
-        current_frame_index += animation_speed * _delta_time;
-        //current_frame_index = ufoMaths::Wrap(frame_counter, 0.0f, number_of_frames);
-    }
-}
-
-ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
-    Console::PrintLine("Does this even run?");
-
-    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
-
-    if(import_mode == WRAPPED) return parent_class_as_json;
-
-    auto j_costumes = _gc->New<ufo::gc::JsonArray>();
-
-    for(const auto& [k,v] : costumes){
-
-        auto j_costume = _gc->New<ufo::gc::JsonMap>();
-
-        j_costume->map.emplace("key", _gc->New<ufo::gc::JsonString>(v.key));
-        j_costume->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(v.offset.x));
-        j_costume->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(v.offset.y));
-        j_costume->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(v.frame_size.x));
-        j_costume->map.emplace("frame_size_y", _gc->New<ufo::gc::JsonNumber>(v.frame_size.y));
-        j_costume->map.emplace("scale_x", _gc->New<ufo::gc::JsonNumber>(v.scale.x));
-        j_costume->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(v.scale.y));
-        j_costume->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(v.rotation));
-        j_costume->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(v.frame_index));
-        j_costume->map.emplace("animation_speed", _gc->New<ufo::gc::JsonNumber>(v.animation_speed));
-
-        j_costumes->array.push_back(j_costume);
-    }
-
-    parent_class_as_json->map.emplace("costumes",j_costumes);
-    parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(key));
-    parent_class_as_json->map.emplace("preview",_gc->New<ufo::gc::JsonNumber>(preview));
-
-
-    return parent_class_as_json;
-}
-
-void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-
-    //if(import_mode == Actor::ImportModes::UNWRAPPED){
-
-    try{
-
-        for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
-            Animation::Costume costume;
-            costume.key = j_costume->AsMap().at("key")->AsString();
-            costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
-            costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
-            costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
-            costume.frame_size.y = j_costume->AsMap().at("frame_size_y")->AsFloat();
-            costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
-            costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
-            costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
-            costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
-            costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
-
-            costumes.emplace(costume.key, costume);
-        }
-        key = _json->map.at("current_costume")->AsString();
-        preview = _json->map.at("preview")->AsFloat();
-    } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
-    }
-
-    //}
-}
+#endif //UFO_ENGINE_STUDIO
 
 }

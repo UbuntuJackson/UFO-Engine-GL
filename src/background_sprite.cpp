@@ -5,7 +5,10 @@
 #include "camera.h"
 #include "engine.h"
 #include "background_sprite.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
+#endif
 
 namespace ufo{
 
@@ -42,14 +45,6 @@ void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     }
 }
 
-void BackgroundSprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-    Sprite::OnViewProperties(_level_editor_tab, _index);
-
-    InputFloatWithUndoAndRedo("parallax.x", &parallax.x);
-    InputFloatWithUndoAndRedo("parallax.y", &parallax.y);
-
-}
-
 ufo::gc::JsonMap* BackgroundSprite::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* parent_class_as_json = Sprite::GetAsJson(_gc);
 
@@ -70,5 +65,15 @@ void BackgroundSprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
     }
 }
+
+#ifdef UFO_ENGINE_STUDIO
+void BackgroundSprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    Sprite::OnViewProperties(_level_editor_tab, _index);
+
+    InputFloatWithUndoAndRedo("parallax.x", &parallax.x);
+    InputFloatWithUndoAndRedo("parallax.y", &parallax.y);
+
+}
+#endif
 
 }

@@ -10,19 +10,22 @@
 #include "../tilemap/tile_map.h"
 #include "../utils/console.h"
 #include "sprite.h"
-#include "../imgui/imgui.h"
 #include "../utils/console.h"
-#include "../imgui/misc/cpp/imgui_stdlib.h"
 #include <garbage_collector.h>
 #include <gc_json.h>
 #include "../ufo_garbage_collector/object.h"
+#include "../utils/conversion.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/advanced_actor_spawner.h"
+#include "../imgui/imgui.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/im_vec.h"
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
-#include "../ufo_engine_studio/advanced_actor_spawner.h"
-#include "../utils/conversion.h"
+#endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
@@ -169,36 +172,11 @@ void Actor::SortActors(){
     should_be_sorted = false;
 }
 
-void Actor::StashActors(){
-
-    for(int i = actors.size()-1; i != -1; i--){
-        if(actors[i]->stash){
-            Console::PrintLine("Stashed", actors[i]->editing_name);
-            level->stashed_actors.push_back(std::move(actors[i]));
-            actors.erase(actors.begin()+i);
-        }
-        else{
-            actors[i]->StashActors();
-        }
-    }
-
-}
-
 void Actor::OnSpawn(){
 
 }
 
 void Actor::OnAddActor(Actor* _actor){}
-
-void Actor::ReplaceActors(UFOEngineStudio::Editor* _editor){
-    /*for(int i = 0; i < actors.size(); i++){
-        actors[i]->ReplaceActors(_editor);
-
-        if(actors[i]->to_replace){
-            actors.at(i) = _editor->replace_with_actor;
-        }
-    }*/
-}
 
 void Actor::Update(float _delta_time){
     former_rectangle = GetRectangle();
@@ -270,23 +248,27 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
 
+#ifdef UFO_ENGINE_STUDIO
     for(const auto& property : editor_properties){
 
         j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
 
     }
+#endif
 
     this_actor->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(local_position.x));
     this_actor->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(local_position.y));
 
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 
+#ifdef UFO_ENGINE_STUDIO
     if(import_mode == ImportModes::UNWRAPPED){
         for(const auto& actor : actors){
             if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
         }
         this_actor->map.emplace("actors", children);
     }
+#endif
 
     return this_actor;
 }
@@ -320,6 +302,31 @@ TileMap* Actor::IsInTileMap(){
 
 // UFO-Engine Studio
 #ifdef UFO_ENGINE_STUDIO
+
+void Actor::ReplaceActors(UFOEngineStudio::Editor* _editor){
+    /*for(int i = 0; i < actors.size(); i++){
+        actors[i]->ReplaceActors(_editor);
+
+        if(actors[i]->to_replace){
+            actors.at(i) = _editor->replace_with_actor;
+        }
+    }*/
+}
+
+void Actor::StashActors(){
+
+    for(int i = actors.size()-1; i != -1; i--){
+        if(actors[i]->stash){
+            Console::PrintLine("Stashed", actors[i]->editing_name);
+            level->stashed_actors.push_back(std::move(actors[i]));
+            actors.erase(actors.begin()+i);
+        }
+        else{
+            actors[i]->StashActors();
+        }
+    }
+
+}
 
 void Actor::SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value){
     Vector2f former_value = *_ptr;

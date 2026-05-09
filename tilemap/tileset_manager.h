@@ -83,24 +83,27 @@ public:
     //  firstgid, key
     std::vector<TilesetData> tileset_data;
 
+    TilesetManager();
+
     void InitialiseTextures();
+
+    TilesetData GetTilesetData(std::string _name);
+
+    void Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json);
+
+#ifdef UFO_ENGINE_STUDIO
 
     std::string current_tileset;
     void UpdateSelectedTilesetTile(const TilesetData& _tileset);
 
     void InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor);
 
-    TilesetData GetTilesetData(std::string _name);
-
-    void Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json);
-
     void AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void RecoverTileset(int _index,const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-
-    TilesetManager();
+#endif
 
 };
 

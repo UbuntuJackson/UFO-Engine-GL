@@ -7,10 +7,13 @@
 #include "camera.h"
 #include "../../shapes/rectangle.h"
 #include "sprite.h"
-#include "../ufo_engine_studio/file_dialogue.h"
+#include "../ufo_garbage_collector/gc_json.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
-#include "../ufo_garbage_collector/gc_json.h"
+#include "../ufo_engine_studio/file_dialogue.h"
+#endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
@@ -87,6 +90,70 @@ void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
         tint
     );
 }
+
+ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
+    Console::PrintLine("Does this even run?");
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+
+    if(import_mode == WRAPPED) return parent_class_as_json;
+
+    //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
+    // However they need to be recovered.
+
+    //I'm gonna make it so all default properties are excluded if the object is wrapped
+
+    //if(import_mode == ImportModes::UNWRAPPED){
+    parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
+    parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
+    parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));
+    parent_class_as_json->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(frame_size.x));
+    parent_class_as_json->map.emplace("frame_size_y", _gc->New<ufo::gc::JsonNumber>(frame_size.y));
+    parent_class_as_json->map.emplace("scale_x", _gc->New<ufo::gc::JsonNumber>(scale.x));
+    parent_class_as_json->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(scale.y));
+    parent_class_as_json->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(rotation));
+    parent_class_as_json->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(current_frame_index));
+
+    ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.g));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
+
+    parent_class_as_json->map.emplace("colour", j_colour);
+
+    //}
+
+    return parent_class_as_json;
+}
+
+void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    //A good example of large amount of properties being written to an object
+    // Potential solution, have an additional map which handles writing of default properties.
+    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
+    // Son of a biscuit this has been redundant.
+    // Writing of custom properties handled in generated.h.
+
+    //if(import_mode == Actor::ImportModes::UNWRAPPED){
+
+    try{
+        key = _json->map.at("key")->AsString();
+        offset.x = _json->map.at("offset_x")->AsFloat();
+        offset.y = _json->map.at("offset_y")->AsFloat();
+        frame_size.x = _json->map.at("frame_size_x")->AsFloat();
+        frame_size.y = _json->map.at("frame_size_y")->AsFloat();
+        scale.x = _json->map.at("scale_x")->AsFloat();
+        scale.y = _json->map.at("scale_y")->AsFloat();
+        rotation = _json->map.at("rotation")->AsFloat();
+        current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
+    } catch(const std::exception& _error){
+        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
+    }
+
+    //}
+}
+
+#ifdef UFO_ENGINE_STUDIO
 
 void Sprite::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
@@ -263,72 +330,12 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
     }
 }
 
-ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
-    Console::PrintLine("Does this even run?");
-
-    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
-
-    if(import_mode == WRAPPED) return parent_class_as_json;
-
-    //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
-    // However they need to be recovered.
-
-    //I'm gonna make it so all default properties are excluded if the object is wrapped
-
-    //if(import_mode == ImportModes::UNWRAPPED){
-    parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
-    parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
-    parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));
-    parent_class_as_json->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(frame_size.x));
-    parent_class_as_json->map.emplace("frame_size_y", _gc->New<ufo::gc::JsonNumber>(frame_size.y));
-    parent_class_as_json->map.emplace("scale_x", _gc->New<ufo::gc::JsonNumber>(scale.x));
-    parent_class_as_json->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(scale.y));
-    parent_class_as_json->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(rotation));
-    parent_class_as_json->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(current_frame_index));
-
-    ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
-    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
-    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.g));
-    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
-    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
-
-    parent_class_as_json->map.emplace("colour", j_colour);
-
-    //}
-
-    return parent_class_as_json;
-}
-
-void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-    //A good example of large amount of properties being written to an object
-    // Potential solution, have an additional map which handles writing of default properties.
-    // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
-    // Son of a biscuit this has been redundant.
-    // Writing of custom properties handled in generated.h.
-
-    //if(import_mode == Actor::ImportModes::UNWRAPPED){
-
-    try{
-        key = _json->map.at("key")->AsString();
-        offset.x = _json->map.at("offset_x")->AsFloat();
-        offset.y = _json->map.at("offset_y")->AsFloat();
-        frame_size.x = _json->map.at("frame_size_x")->AsFloat();
-        frame_size.y = _json->map.at("frame_size_y")->AsFloat();
-        scale.x = _json->map.at("scale_x")->AsFloat();
-        scale.y = _json->map.at("scale_y")->AsFloat();
-        rotation = _json->map.at("rotation")->AsFloat();
-        current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
-    } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
-    }
-
-    //}
-}
-
 void Sprite::OnResourcesEdited(){
     if(!engine->asset_manager.textures.count(key)){
         key = "placeholder_icon";
     }
 }
+
+#endif //UFO_ENGINE_STUDIO
 
 }

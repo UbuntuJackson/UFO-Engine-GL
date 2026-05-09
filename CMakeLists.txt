@@ -6,6 +6,8 @@ option(HAS_TERMINAL "Show a terminal window for STDOUT/STDERR" ON)
 option(USE_ALSA       "Force using ALSA as audio backend (Linux-only)")
 option(USE_PULSEAUDIO "Force using PulseAudio as audio backend (Linux-only)")
 
+option(UFO_ENGINE_STUDIO "..." OFF)
+
 # Set C++ Standards
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -47,8 +49,6 @@ set(
     src/level.cpp
     src/input.cpp
     src/actor.cpp
-    src/actor_undo_and_redo.cpp
-    src/editor_property.cpp
     src/camera.cpp
     src/shader.cpp
     src/openglv4_5_graphics.cpp
@@ -90,6 +90,18 @@ set(
     ufo_garbage_collector/object.cpp
     ufo_garbage_collector/gc_json.cpp
 
+)
+
+if(UFO_ENGINE_STUDIO)
+
+set(
+
+    UFO_ENGINE_STUDIO_SRC
+
+    #Actor utils
+    src/actor_undo_and_redo.cpp
+    src/editor_property.cpp
+
     #ImGui
 
     imgui/imgui_demo.cpp
@@ -113,12 +125,12 @@ set(
     ufo_engine_studio/level_editor_tab.cpp
     ufo_engine_studio/file_dialogue.cpp
     ufo_engine_studio/text_editor_tab.cpp
-    ufo_engine_studio/imgui_utils.cpp
+    ufo_engine_studio/imgui_utils.cpp)
 
-)
+endif()
 
 # Create your game executable target as usual
-add_library(UFO ${SRC})
+add_library(UFO ${SRC} ${UFO_ENGINE_STUDIO_SRC})
 
 target_include_directories(UFO PUBLIC src)
 target_include_directories(UFO PUBLIC ufo_maths)
@@ -127,7 +139,7 @@ target_include_directories(UFO PUBLIC utils)
 target_include_directories(UFO PUBLIC ufo_engine_studio)
 target_include_directories(UFO PUBLIC tilemap)
 
-if(DEFINED UFO_ENGINE_STUDIO)
+if(UFO_ENGINE_STUDIO)
     target_compile_definitions(UFO PUBLIC UFO_ENGINE_STUDIO)
 endif()
 

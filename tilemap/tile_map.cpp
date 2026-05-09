@@ -12,11 +12,14 @@
 #include "../src/engine.h"
 #include "../src/graphics.h"
 #include "../src/engine.h"
-#include "../ufo_engine_studio/level_editor_tab.h"
 #include "console.h"
 #include "tileset_manager.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../src/actor_undo_and_redo.h"
+#endif
 
 namespace ufo{
 
@@ -30,6 +33,117 @@ void TileMap::OnSpawn(){
     Actor::OnSpawn();
 
 }
+
+std::unique_ptr<TileMap>
+TileMap::Load(ufo::gc::JsonMap* _layer){
+    std::unique_ptr<TileMap> u_tilemap = std::make_unique<TileMap>(Vector2f(0.0f,0.0f));
+
+    if(_layer->map.at("type")->AsString() == "tilelayer"){
+        std::vector<int> data;
+        auto layer_data = _layer->map.at("data")->AsArray();
+
+        for(const auto& _json : layer_data){
+            int id = (float)_json->AsFloat();
+            u_tilemap->tilemap_data.push_back(id);
+        }
+
+    }
+
+    return std::move(u_tilemap);
+}
+
+int TileMap::GetTileID_AtLevelPosition(Vector2f _position){
+    int tile_id = tilemap_data[int(_position.y/tile_height) * number_of_columns + (_position.x/tile_width)];
+    return tile_id;
+}
+
+ufo::Rectangle
+TileMap::GetRectangle(int _x, int _y, Vector2f _frame_size){
+    ufo::Rectangle rect = ufo::Rectangle({(float)(_x * _frame_size.x), (float)(_y * _frame_size.y)}, _frame_size);
+    return rect;
+}
+
+ufo::Rectangle
+TileMap::GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size){
+    return GetRectangle(
+        (int)_frame % (_sprite_width/(int)_frame_size.x), //1 can only give me x = 0
+        (int)_frame / (_sprite_width/(int)_frame_size.x),
+        _frame_size); //1 can only give y = 1
+}
+
+void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
+    if(!visible) return;
+
+    float scale = _camera->scale;
+    Bounds world_bounds = _camera->world;
+
+    //Haven't made a TilesetManager yet.
+    for(auto&& tileset : level->tileset_manager.tileset_data){
+        ufo::Rectangle screen_rectangle = _camera->GetOnScreenRectangleInWorld({tileset.tile_width, tileset.tile_height});
+
+        int tile_start_x = int(std::floor(screen_rectangle.position.x/tileset.tile_width));
+        int tile_end_x = int(std::floor((screen_rectangle.position.x + screen_rectangle.size.x)/tileset.tile_width));
+        int tile_start_y = int(std::floor(screen_rectangle.position.y/tileset.tile_height));
+        int tile_end_y = int(std::floor((screen_rectangle.position.y + screen_rectangle.size.y)/tileset.tile_height));
+
+        tile_start_x = std::max(tile_start_x, 0);
+        tile_end_x = std::min(tile_end_x, number_of_columns);
+        tile_start_y = std::max(tile_start_y, 0);
+        tile_end_y = std::min(tile_end_y, number_of_rows);
+
+        for(int index_y = tile_start_y; index_y < tile_end_y; index_y++){
+            for(int index_x = tile_start_x; index_x < tile_end_x; index_x++){
+                int tile_id = tilemap_data[index_y*number_of_columns + index_x];
+
+                olc::vd2d tile_position = {index_x*tileset.tile_width, index_y*tileset.tile_height};
+
+                if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
+
+                    int sprite_width = 0;
+                    try{
+                        sprite_width = engine->asset_manager.textures.at(tileset.name).width;
+
+                        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(sprite_width,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
+                        //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
+                        _graphics->DrawPartialSprite(
+                            tileset.name,
+                            _camera->Transform(tile_position),
+                            {0.0f, 0.0f},
+                            {scale, scale},
+                            sample_rectangle.position,
+                            sample_rectangle.size,
+                            0.0f,
+                            ufo::Colour(255,255,255,255)
+                        );
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("[UFO-Engine] TileMap::OnDraw Error, missing asset:",tileset.name);
+                        continue;
+                    }
+                }
+
+            }
+        }
+
+    }
+
+}
+
+ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
+    Console::PrintLine("Does this even run?");
+
+    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+    ufo::gc::JsonArray* tiles = _gc->New<ufo::gc::JsonArray>();
+
+    for(const auto& i : tilemap_data) tiles->array.push_back(_gc->New<ufo::gc::JsonNumber>(i));
+    parent_class_as_json->map.emplace("tiles",tiles);
+    parent_class_as_json->map.emplace("number_of_columns", _gc->New<ufo::gc::JsonNumber>(number_of_columns));
+    parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
+    parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
+    return parent_class_as_json;
+}
+
+#ifdef UFO_ENGINE_STUDIO
 
 void TileMap::Do(){
     //change the course of changes
@@ -68,43 +182,6 @@ void TileMap::DoResize(int _left, int _right, int _bottom, int _top){
         std::make_unique<TileMapChange_TileMapSize>(this, _left, _right, _bottom, _top)
     );
     level->current_level_change++;
-}
-
-std::unique_ptr<TileMap>
-TileMap::Load(ufo::gc::JsonMap* _layer){
-    std::unique_ptr<TileMap> u_tilemap = std::make_unique<TileMap>(Vector2f(0.0f,0.0f));
-
-    if(_layer->map.at("type")->AsString() == "tilelayer"){
-        std::vector<int> data;
-        auto layer_data = _layer->map.at("data")->AsArray();
-
-        for(const auto& _json : layer_data){
-            int id = (float)_json->AsFloat();
-            u_tilemap->tilemap_data.push_back(id);
-        }
-
-    }
-
-    return std::move(u_tilemap);
-}
-
-int TileMap::GetTileID_AtLevelPosition(Vector2f _position){
-    int tile_id = tilemap_data[int(_position.y/tile_height) * number_of_columns + (_position.x/tile_width)];
-    return tile_id;
-}
-
-ufo::Rectangle
-TileMap::GetRectangle(int _x, int _y, Vector2f _frame_size){
-    ufo::Rectangle rect = ufo::Rectangle({(float)(_x * _frame_size.x), (float)(_y * _frame_size.y)}, _frame_size);
-    return rect;
-}
-
-ufo::Rectangle
-TileMap::GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size){
-    return GetRectangle(
-        (int)_frame % (_sprite_width/(int)_frame_size.x), //1 can only give me x = 0
-        (int)_frame / (_sprite_width/(int)_frame_size.x),
-        _frame_size); //1 can only give y = 1
 }
 
 void TileMap::ResizeRight(int _number_of_tiles_to_insert){
@@ -264,64 +341,6 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 
         }
     }
-}
-
-void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
-    if(!visible) return;
-
-    float scale = _camera->scale;
-    Bounds world_bounds = _camera->world;
-
-    //Haven't made a TilesetManager yet.
-    for(auto&& tileset : level->tileset_manager.tileset_data){
-        ufo::Rectangle screen_rectangle = _camera->GetOnScreenRectangleInWorld({tileset.tile_width, tileset.tile_height});
-
-        int tile_start_x = int(std::floor(screen_rectangle.position.x/tileset.tile_width));
-        int tile_end_x = int(std::floor((screen_rectangle.position.x + screen_rectangle.size.x)/tileset.tile_width));
-        int tile_start_y = int(std::floor(screen_rectangle.position.y/tileset.tile_height));
-        int tile_end_y = int(std::floor((screen_rectangle.position.y + screen_rectangle.size.y)/tileset.tile_height));
-
-        tile_start_x = std::max(tile_start_x, 0);
-        tile_end_x = std::min(tile_end_x, number_of_columns);
-        tile_start_y = std::max(tile_start_y, 0);
-        tile_end_y = std::min(tile_end_y, number_of_rows);
-
-        for(int index_y = tile_start_y; index_y < tile_end_y; index_y++){
-            for(int index_x = tile_start_x; index_x < tile_end_x; index_x++){
-                int tile_id = tilemap_data[index_y*number_of_columns + index_x];
-
-                olc::vd2d tile_position = {index_x*tileset.tile_width, index_y*tileset.tile_height};
-
-                if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
-
-                    int sprite_width = 0;
-                    try{
-                        sprite_width = engine->asset_manager.textures.at(tileset.name).width;
-
-                        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(sprite_width,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
-                        //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
-                        _graphics->DrawPartialSprite(
-                            tileset.name,
-                            _camera->Transform(tile_position),
-                            {0.0f, 0.0f},
-                            {scale, scale},
-                            sample_rectangle.position,
-                            sample_rectangle.size,
-                            0.0f,
-                            ufo::Colour(255,255,255,255)
-                        );
-                    }
-                    catch(const std::exception& _error){
-                        Console::PrintLine("[UFO-Engine] TileMap::OnDraw Error, missing asset:",tileset.name);
-                        continue;
-                    }
-                }
-
-            }
-        }
-
-    }
-
 }
 
 void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -646,18 +665,6 @@ void TileMap::OnAdditionalButtonsForTreeItem(){
     }
 }
 
-ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
-    Console::PrintLine("Does this even run?");
-
-    ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
-    ufo::gc::JsonArray* tiles = _gc->New<ufo::gc::JsonArray>();
-
-    for(const auto& i : tilemap_data) tiles->array.push_back(_gc->New<ufo::gc::JsonNumber>(i));
-    parent_class_as_json->map.emplace("tiles",tiles);
-    parent_class_as_json->map.emplace("number_of_columns", _gc->New<ufo::gc::JsonNumber>(number_of_columns));
-    parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
-    parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
-    return parent_class_as_json;
-}
+#endif //UFO_ENGINE_STUDIO
 
 }

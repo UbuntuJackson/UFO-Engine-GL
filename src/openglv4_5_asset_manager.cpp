@@ -6,11 +6,14 @@
 #include "../external/stb_image.h"
 #include "shader.h"
 #include "openglv4_5_asset_manager.h"
-#include "../ufo_engine_studio/level_editor_tab.h"
 #include "asset_json.h"
 #include "../src/engine.h"
-#include "../ufo_engine_studio/editor.h"
 #include <filesystem>
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/editor.h"
+#endif //UFO_ENGINE_STUDIO
 
 //Todo: Different intialise function for the Editor would be a lot cleaner, eventhough this isn't as bad as it seems.
 // What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
@@ -32,20 +35,6 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     save_path = "../loaded_assets.json";
     if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
     j.Read(save_path, "..", this);
-
-}
-
-void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
-    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
-    LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
-
-
-    save_path = _editor->opened_directory_path+"/loaded_assets.json";
-    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
-
-    Console::PrintLine(save_path);
-    AssetJson j;
-    j.ReadEditor(save_path,_editor->opened_directory_path, this);
 
 }
 
@@ -87,6 +76,21 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
     return texture;
 }
 
+#ifdef UFO_ENGINE_STUDIO
+void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
+    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
+
+
+    save_path = _editor->opened_directory_path+"/loaded_assets.json";
+    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+
+    Console::PrintLine(save_path);
+    AssetJson j;
+    j.ReadEditor(save_path,_editor->opened_directory_path, this);
+
+}
+
 void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
@@ -97,6 +101,7 @@ void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineSt
     _level_editor_tab->engine->asset_manager.textures.at(relative_path).permanent = true;
 
 }
+#endif
 
 /*ufo::Shader OpenGLv4_5_AssetManager::LoadShader(const std::string& _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
     return LoadShader(_vertex_shader_path.c_str(), _fragment_shader_path, _geometry_shader_path, _name);

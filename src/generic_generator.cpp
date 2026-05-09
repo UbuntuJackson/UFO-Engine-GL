@@ -10,7 +10,6 @@
 #include "sprite.h"
 #include "camera.h"
 #include "../ufo_garbage_collector/gc_json.h"
-#include "../ufo_engine_studio/utility_objects/controllable_camera.h"
 #include "../tilemap/tile_map.h"
 #include "text.h"
 #include "widget.h"
@@ -18,9 +17,13 @@
 #include "actor_component_loader.h"
 #include "platformer_rectangle_collision.h"
 #include "collision_grid.h"
-#include "../src/editor_property.h"
 #include "background_sprite.h"
 #include "rectangular_area.h"
+
+#ifdef UFO_ENGINE_STUDIO
+#include "../src/editor_property.h"
+#include "../ufo_engine_studio/utility_objects/controllable_camera.h"
+#endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
@@ -241,6 +244,7 @@ void GenericGenerator::Initialise(){
         }
     );
 
+#ifdef UFO_ENGINE_STUDIO
     factory_map.emplace(
         "ControllableCamera",
         [](ufo::gc::JsonMap* _json){
@@ -250,6 +254,8 @@ void GenericGenerator::Initialise(){
             return std::move(instance);
         }
     );
+#endif //UFO_ENGINE_STUDIO
+
     factory_map.emplace(
         "ufo::Sprite",
         [](ufo::gc::JsonMap* _json){
@@ -317,6 +323,7 @@ void GenericGenerator::OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json)
 
 }
 
+#ifdef UFO_ENGINE_STUDIO
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
     std::string class_name = _json->map.at("class_name")->AsString();
 	std::string editor_name = _json->map.at("name")->AsString();
@@ -434,6 +441,17 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 					return std::move(factory_map.at("ufo::Actor")(_json));
 	}
 }
+#else
+
+    std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
+
+        //Stupid ass placeholder
+
+        return std::make_unique<Actor>(Vector2f(0.0f, 0.0f));
+
+    }
+
+#endif
 
 std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json){
 	if(factory_map.count(_json->map.at("class_name")->AsString())){
