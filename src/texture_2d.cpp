@@ -31,7 +31,6 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
 
     //This creates the texture
     glBindTexture(GL_TEXTURE_2D, id);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -57,23 +56,17 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
         //This is the actual image data
         _data
     );
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapping_mode_s_axis);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapping_mode_t_axis);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter_mode_min);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter_mode_max);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
     //Resetting the currently bound texture
     glBindTexture(GL_TEXTURE_2D, 0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 }
 
 olc::Pixel Texture2D::GetPixel(Vector2i _position){

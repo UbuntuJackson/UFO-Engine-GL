@@ -27,7 +27,7 @@ Make it so you can set costumes with drop-down lists. Only view one costume at a
 
 Sprite:
 
-Should add more consistency and controll over how sprites are scaled and rotated. For example offsetting and rotating vs rotation and THEN offsetting.
+[DONE] Should add more consistency and controll over how sprites are scaled and rotated. For example offsetting and rotating vs rotation and THEN offsetting.
 
 [DONE] generated.h
 
@@ -128,4 +128,9 @@ Manually specify which TileMap the viewport is dedicated to?
 
 Visual guide for the viewport of the actual game, like a rectangle hovering over the viewport?
 
-
+### Agenda to get the editor more usable ###
+- Fix that thing with new tabs popping out of the sockets
+- All actors should have a bounds box, which is rectangle shape. This is so you can always approximate some sort of overlap, even if it doesn't have a concrete shape.
+-Remove gc_json completely.
+- Add icons
+- Style buttons

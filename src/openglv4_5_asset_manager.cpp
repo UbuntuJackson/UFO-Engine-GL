@@ -56,6 +56,10 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
         texture.internal_format = GL_RGBA;
         texture.image_format = GL_RGBA;
     }
+    else{
+        texture.internal_format = GL_RGB;
+        texture.image_format = GL_RGB;
+    }
 
     int width;
     int height;

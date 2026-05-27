@@ -23,6 +23,7 @@
 #include "../ufo_garbage_collector/object.h"
 #include "level_loader.h"
 #include "../utils/ufo_benchmarker.h"
+#include "error_dialogue.h"
 
 #ifdef UFO_ENGINE_STUDIO
 //Imgui

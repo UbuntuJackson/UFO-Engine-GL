@@ -12,6 +12,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../tilemap/tile_map.h"
 #include "text.h"
+#include "ufo_maths.h"
 #include "widget.h"
 #include "button.h"
 #include "actor_component_loader.h"
@@ -437,8 +438,9 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 	    return std::move(instance);
 	}
 	else{
-	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at(GetBaseClassOf(class_name))->AsString());
-					return std::move(factory_map.at("ufo::Actor")(_json));
+	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",class_name,"with base type",GetBaseClassOf(class_name));
+
+		return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
 	}
 }
 #else

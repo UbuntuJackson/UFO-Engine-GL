@@ -3,6 +3,10 @@
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
 
+namespace UFOEngineStudio{
+    class LevelEditorTab;
+}
+
 namespace ufo{
 
 class CollisionGrid : public Actor{
@@ -28,6 +32,9 @@ public:
     void OnSpawn();
 
     void OnUpdate(float _delta_time);
+#ifdef UFO_ENGINE_STUDIO
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+#endif
 
 };
 

@@ -17,9 +17,7 @@ inline void ImGuiDockSpaceFill(int _dock_space_id, ImVec2 _size, const std::stri
         ImGui::DockBuilderAddNode(_dock_space_id, ImGuiDockNodeFlags_DockSpace);
         ImGui::DockBuilderSetNodeSize(_dock_space_id,_size);
 
-        ImGuiID the_copy_assignment_everyone_does_for_some_reason = _dock_space_id;
-
-        ImGui::DockBuilderDockWindow(_first_sub_window_name.c_str(), the_copy_assignment_everyone_does_for_some_reason);
+        ImGui::DockBuilderDockWindow(_first_sub_window_name.c_str(), _dock_space_id);
         ImGui::DockBuilderFinish(_dock_space_id);
     }
 }
@@ -32,7 +30,7 @@ inline void ImGuiDockSpaceSplit(int _dock_space_id, ImVec2 _size, const std::str
                 ImGui::DockBuilderRemoveNode(_dock_space_id);
                 ImGui::DockBuilderAddNode(_dock_space_id, ImGuiDockNodeFlags_DockSpace);
                 ImGui::DockBuilderSetNodeSize(_dock_space_id,_size);
-                
+
                 ImGuiID the_copy_assignment_everyone_does_for_some_reason = _dock_space_id;
 
                 ImGuiID dock_id_file_tree_left = ImGui::DockBuilderSplitNode(the_copy_assignment_everyone_does_for_some_reason, ImGuiDir_Left, 0.5f, nullptr, &the_copy_assignment_everyone_does_for_some_reason);
@@ -48,7 +46,7 @@ inline void ImGuiDockSpaceSplit(int _dock_space_id, ImVec2 _size, const std::str
                 ImGui::DockBuilderRemoveNode(_dock_space_id);
                 ImGui::DockBuilderAddNode(_dock_space_id, ImGuiDockNodeFlags_DockSpace);
                 ImGui::DockBuilderSetNodeSize(_dock_space_id,_size);
-                
+
                 ImGuiID the_copy_assignment_everyone_does_for_some_reason = _dock_space_id;
 
                 ImGuiID dock_id_file_tree_left = ImGui::DockBuilderSplitNode(the_copy_assignment_everyone_does_for_some_reason, ImGuiDir_Up, 0.5f, nullptr, &the_copy_assignment_everyone_does_for_some_reason);

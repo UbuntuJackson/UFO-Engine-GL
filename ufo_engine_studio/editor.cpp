@@ -94,7 +94,7 @@ void Editor::RefreshFolder(){
 
 void
 Editor::Load(){
-    OpenFolder("/home/uj/Documents/C++/sta_replica");
+    //OpenFolder("/home/uj/Documents/C++/sta_replica");
 
 }
 
@@ -130,11 +130,11 @@ void Editor::OnUpdate(float _delta_time){
 
 
     ImGui::Begin("File Tree");
+    if(opened_directory != nullptr){
+        opened_directory->Update(0, nullptr, "", this);
 
-    opened_directory->Update(0, nullptr, "", this);
-
-    opened_directory->AddFileNodesRecursive();
-
+        opened_directory->AddFileNodesRecursive();
+    }
     ImGui::End();
 
     if (ImGui::BeginMainMenuBar())
@@ -306,6 +306,8 @@ void Editor::OnUpdate(float _delta_time){
 
         ImGui::End();
     }
+
+    error_dialogue->Update(this);
 
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 

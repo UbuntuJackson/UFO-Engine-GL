@@ -5,6 +5,10 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "collision_grid.h"
 
+#ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/level_editor_tab.h"
+#endif
+
 namespace ufo{
 
 CollisionGrid::CollisionGrid(Vector2f _) : Actor(_){
@@ -104,5 +108,14 @@ void CollisionGrid::OnUpdate(float _delta_time){
         }
     }
 }
+
+#ifdef UFO_ENGINE_STUDIO
+void CollisionGrid::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    if(ImGui::Button("Edit in viewport")){
+        _level_editor_tab->current_layer = this;
+    }
+
+}
+#endif
 
 }

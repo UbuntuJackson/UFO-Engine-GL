@@ -793,6 +793,7 @@ def analyse_class_or_variable(_object):
             print(
                 "[UFO Header Tool Warning] Error, unknown datatype: '" + data_type + "'"
             )
+            return VariableObject("std::string", name, "")
 
         return VariableObject(data_type, name, value)
 

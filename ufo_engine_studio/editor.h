@@ -30,6 +30,7 @@
 #include "../src/background_sprite.h"
 #include "../src/rectangular_area.h"
 #include "advanced_actor_spawner.h"
+#include "error_dialogue.h"
 
 namespace UFOEngineStudio{
 
@@ -43,6 +44,8 @@ struct ProjectSettings{
 
 class Editor : public ufo::Level, public ufo::gc::Root{
 public:
+
+    std::unique_ptr<ErrorDialogue> error_dialogue = std::make_unique<ErrorDialogueNoError>();
 
     std::string open_file_dialog_path = "";
     bool is_open_file_dialog_open = false;

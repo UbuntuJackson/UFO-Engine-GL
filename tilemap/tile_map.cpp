@@ -344,6 +344,11 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 }
 
 void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+    if(ImGui::Button("Edit in viewport")){
+        _level_editor_tab->current_layer = this;
+    }
+    ImGui::Separator();
+
     Actor::OnViewProperties(_level_editor_tab, _index);
 
     ImGui::Separator();

@@ -26,6 +26,8 @@
 //ufo_variable just exposes the variable with no modifications.
 #define ufo_variable()
 
+#define ufo_internal_component()
+
 //For interval based values like sliders. Assign variable with equal operator to set a default value, ex. ufo_int_range(0,20) int number = 15;
 #define ufo_int_range(_min, _max)
 #define ufo_int_slider(_min,_max)

@@ -7,11 +7,13 @@
 #include "shader.h"
 #include "../file/file_utils.h"
 
+#ifdef UFO_ENGINE_STUDIO
 namespace UFOEngineStudio{
     class LevelEditorTab;
     class Editor;
 
 }
+#endif
 
 namespace ufo{
     class Engine;
@@ -23,7 +25,14 @@ public:
 
     OpenGLv4_5_AssetManager() = default;
     void Initialise(ufo::Engine* _engine);
+
+#ifdef UFO_ENGINE_STUDIO
     void Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine);
+    //This is a callback function that is called upon reading a .png from an SDL file dialogue.
+    void OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+#endif
+
     ~OpenGLv4_5_AssetManager();
     OpenGLv4_5_AssetManager(OpenGLv4_5_AssetManager&&) = delete;
     OpenGLv4_5_AssetManager(OpenGLv4_5_AssetManager&) = delete;
@@ -36,9 +45,6 @@ public:
 
     //This one loads the texture from file.
     ufo::Texture2D LoadTextureFromFile(const std::string& _path, bool _alpha);
-
-    //This is a callback function that is called upon reading a .png from an SDL file dialogue.
-    void OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     //Here all shaders are stored and I want to keep it like that.
     std::unordered_map<std::string, ufo::Shader> shaders;

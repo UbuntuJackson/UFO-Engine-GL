@@ -12,6 +12,7 @@
 #include "../file/file_utils.h"
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
+#include "error_dialogue.h"
 
 namespace UFOEngineStudio{
 
@@ -81,16 +82,16 @@ namespace UFOEngineStudio{
             if(IsExtension(path+"/"+file_name, "ason")){
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
+                //add some sort of LevelOK flag here or something
                 ufo::Level* level = _editor->AddActorUniquePtr(
                         std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json))
                     )->DynamicCast<ufo::Level>();
 
                 if(!level){
-
+                    _editor->error_dialogue = std::make_unique<ErrorDialogueFailedToOpenFile>(_editor->opened_directory_path+"/"+path+"/"+file_name);
                     Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
                 }
                 else{
-
 
                     auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
                     level_editor_tab->this_level = level;
