@@ -5,7 +5,7 @@
 #include "dock_utils.h"
 #include "editor.h"
 #include "tab.h"
-#include "../file/file.h"
+#include "../utils/file_utils.h"
 #include "file_dialogue.h"
 
 namespace UFOEngineStudio{
@@ -40,9 +40,7 @@ void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _editor
 void TextEditorTab::OnSave(Editor* _editor){
     //File will have no name if it isn't read or created with respect to file system
     if(name != ""){
-        File f;
-        f.Insert(text);
-        f.Write(path);
+        ufo::FileSystem::Write(path,text);
 
         _editor->refresh_entire_project = true;
     }

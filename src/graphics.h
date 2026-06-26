@@ -44,7 +44,7 @@ public:
 
     virtual void UnbindFrameBuffer() = 0;
 
-    virtual void RescaleFrameBuffer() = 0;
+    virtual void RescaleFrameBuffer(int _width, int _height) = 0;
 
     virtual ~Graphics() = default;
 

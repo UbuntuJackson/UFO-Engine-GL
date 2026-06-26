@@ -556,7 +556,7 @@ void Engine::BrushTest(){
 
 void Engine::Render(){
 
-    level_handle->DrawPhase(graphics.get());
+    level_handle->DrawPhase(graphics.get(),width, height);
 
 }
 

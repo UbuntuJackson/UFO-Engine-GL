@@ -25,14 +25,6 @@ Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
 }
 
 void Level::OnSpawn(){
-    /*auto ut = std::make_unique<ufo::Text>();
-    ut->SetText("UFO-Engine 風船");
-    widget->AddWidgetUniquePtr(std::move(ut));
-
-    auto ut2 = std::make_unique<ufo::Text>();
-    ut2->local_position = Vector2f(200.0f, 300.0f);
-    ut2->SetText("すばらしい");
-    widget->AddWidgetUniquePtr(std::move(ut2));*/
 
     level = this;
 
@@ -97,15 +89,16 @@ void Level::UpdatePhase(float _delta_time){
     StashActors();
 #endif
 
-    //widget->Update();
 }
 
-void Level::DrawPhase(ufo::Graphics* _graphics){
+void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
+
+    float w_h_ratio = (float)engine->width/(float)engine->height;
 
     if(engine->multi_player){
         if(active_camera_handles.size() == 1){
-            active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width,(float)engine->height));
-            _graphics->SetProjection(0.0f, engine->width, engine->height, 0.0f);
+            active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)_width,(float)_height));
+            _graphics->SetProjection(0.0f, _width, _height, 0.0f);
         }
         else if(active_camera_handles.size() == 2){
 
@@ -114,24 +107,24 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
             if(delta_x > 200 || delta_y > 150){
                 if(delta_x >= delta_y){
                     if(active_camera_handles[0]->GetGlobalPosition().x < active_camera_handles[1]->GetGlobalPosition().x){
-                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width/2.0f,(float)engine->height));
-                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f((float)engine->width/2.0f,0.0f),Vector2f((float)engine->width/2.0f,(float)engine->height));
+                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)_width/2.0f,(float)_height));
+                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f((float)_width/2.0f,0.0f),Vector2f((float)_width/2.0f,(float)_height));
                     }
 
                     if(active_camera_handles[0]->GetGlobalPosition().x >= active_camera_handles[1]->GetGlobalPosition().x){
-                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width/2.0f,(float)engine->height));
-                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f((float)engine->width/2.0f,0.0f),Vector2f((float)engine->width/2.0f,(float)engine->height));
+                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)_width/2.0f,(float)_height));
+                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f((float)_width/2.0f,0.0f),Vector2f((float)_width/2.0f,(float)_height));
                     }
                 }
                 else{
                     if(active_camera_handles[0]->GetGlobalPosition().y > active_camera_handles[1]->GetGlobalPosition().y){
-                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f(engine->width,engine->height/2.0f));
-                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f,engine->height/2.0f),Vector2f(engine->width,engine->height/2.0f));
+                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f(_width,_height/2.0f));
+                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f,_height/2.0f),Vector2f(_width,_height/2.0f));
                     }
 
                     if(active_camera_handles[0]->GetGlobalPosition().y <= active_camera_handles[1]->GetGlobalPosition().y){
-                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f(engine->width,engine->height/2.0f));
-                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f,engine->height/2.0f),Vector2f(engine->width,engine->height/2.0f));
+                        active_camera_handles[1]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f(_width,_height/2.0f));
+                        active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f,_height/2.0f),Vector2f(_width,_height/2.0f));
                     }
                 }
 
@@ -144,8 +137,8 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
                 }
             }
             else{
-                active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width,(float)engine->height));
-                _graphics->SetProjection(0.0f, engine->width, engine->height, 0.0f);
+                active_camera_handles[0]->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)_width,(float)_height));
+                _graphics->SetProjection(0.0f, _width, _height, 0.0f);
 
                 for(const auto& actor : actors){
                     actor->Draw(_graphics,active_camera_handles[0]);
@@ -156,9 +149,9 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
     }
     else if(active_camera_handles.size() > 0){
 
-        active_camera_handles.back()->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)engine->width,(float)engine->height));
-        glViewport(0,0,engine->width,engine->height);
-        _graphics->SetProjection(0.0f, engine->width,engine->height, 0.0f);
+        active_camera_handles.back()->viewport = ufo::Rectangle(Vector2f(0.0f ,0.0f),Vector2f((float)_width,(float)_height));
+        glViewport(0,0,_width,_height);
+        _graphics->SetProjection(0.0f, _width,_height, 0.0f);
 
         for(const auto& actor : actors){
             actor->Draw(_graphics, active_camera_handles.back());
@@ -166,8 +159,8 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
 
     }
 
-    glViewport(0,0,engine->width,engine->height);
-    _graphics->SetProjection(0.0f, engine->width,engine->height, 0.0f);
+    glViewport(0,0,_width,_height);
+    _graphics->SetProjection(0.0f, _width,_height, 0.0f);
 
     for(const auto& actor : actors){
         actor->WidgetDraw(_graphics);
@@ -179,14 +172,12 @@ void Level::DrawPhase(ufo::Graphics* _graphics){
 
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+    /*Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
     Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
 
     ImGui::GetWindowDrawList()->AddRect(
         ImVec2(min.x, min.y),
         ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
-
-
 
     if(is_selected){
         if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
@@ -211,7 +202,7 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
                 }
             }
         }
-    }
+    }*/
 
 }
 
@@ -251,7 +242,7 @@ void Level::RemoveFutureChanges(){
 
 void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->current_layer = this;
+        _level_editor_tab->currently_edited_actor_in_viewport = this;
     }
     ImGui::Separator();
 

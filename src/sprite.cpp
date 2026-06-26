@@ -262,6 +262,11 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
     }
 }
 
+void Sprite::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    editor_hitbox.size = Vector2f(frame_size.x*scale.x,frame_size.y*scale.y);
+    editor_hitbox.position = -offset;
+}
+
 void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Actor::OnViewProperties(_level_editor_tab, _index);
 

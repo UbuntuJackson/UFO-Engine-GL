@@ -32,8 +32,6 @@ public:
         CYCLICAL
     };
 
-    std::unique_ptr<ufo::Widget> widget = std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
-
     std::vector<int> deletion_history;
 
     std::vector<Camera*> camera_handles;
@@ -71,7 +69,7 @@ public:
 
     void UpdatePhase(float _delta_time);
 
-    void DrawPhase(ufo::Graphics* _graphics);
+    void DrawPhase(ufo::Graphics* _graphics, int _width, int _height);
 
     virtual void EditorUpdatePhase(float _delta_time){
 

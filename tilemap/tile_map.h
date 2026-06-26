@@ -3,7 +3,6 @@
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
-#include "../json/json_variant.h"
 #include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
 

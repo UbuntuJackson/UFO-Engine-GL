@@ -3,7 +3,7 @@
 #include "gc_json.h"
 #include "../external/cJSON.h"
 #include "garbage_collector.h"
-#include "../json/json.h"
+#include "../utils/json.h"
 
 namespace ufo{
 

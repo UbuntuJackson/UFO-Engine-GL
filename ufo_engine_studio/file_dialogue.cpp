@@ -85,9 +85,7 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter){
 
     tab->path = *_filelist;
 
-    File f;
-    f.Insert(tab->text);
-    f.Write(tab->path);
+    ufo::FileSystem::Write(tab->path, tab->text);
 
     tab->Refresh();
 
@@ -103,7 +101,7 @@ void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist
 }
 
 std::string GetFilenameFromPath(const std::string& _path){
-    int last_slash_index = _path.find_last_of("/")+1;
+    size_t last_slash_index = _path.find_last_of("/")+1;
 
     std::string res = _path.substr(last_slash_index);
 

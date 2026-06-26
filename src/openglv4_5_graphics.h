@@ -60,7 +60,7 @@ public:
 
     void UnbindFrameBuffer();
 
-    void RescaleFrameBuffer();
+    void RescaleFrameBuffer(int _width, int _height);
 };
 
 }

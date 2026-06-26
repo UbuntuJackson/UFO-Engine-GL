@@ -38,6 +38,8 @@ std::string GenericGenerator::GetBaseClassOf(std::string _class_name){
 
 void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_directory){
 
+    actor_jsons_with_unaltered_default_properties.clear();
+
     auto structured_classes = gc::JsonRead(&gc, _game_directory+"/structured_classes.json")->AsMap().at("contents")->AsArray();
 
     for(const auto& entry : structured_classes){
@@ -313,7 +315,6 @@ void GenericGenerator::Initialise(){
 std::unique_ptr<Actor> GenericGenerator::JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
 
     std::unique_ptr<Actor> actor = FromJson(_json);
-
     OnJsonToActorTree(actor.get(), _json);
 
     return std::move(actor);
@@ -325,6 +326,20 @@ void GenericGenerator::OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json)
 }
 
 #ifdef UFO_ENGINE_STUDIO
+
+//Not done yet
+std::unique_ptr<Actor> GenericGenerator::SpawnAtRuntime(const std::string& _class_name, Vector2f _local_position){
+    if(factory_map_runtime.count(GetBaseClassOf(_class_name))){
+
+	    std::unique_ptr<Actor> instance = factory_map_runtime.at(GetBaseClassOf(_class_name))(_local_position);
+
+		return std::move(instance);
+    }
+
+
+    throw;
+}
+
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
     std::string class_name = _json->map.at("class_name")->AsString();
 	std::string editor_name = _json->map.at("name")->AsString();
@@ -340,11 +355,25 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		bool is_custom_class = class_name != GetBaseClassOf(class_name);
 
-		try{
-			instance->import_mode = is_custom_class ? Actor::ImportModes::WRAPPED : Actor::ImportModes::UNWRAPPED;
-		}catch(const std::exception& _error){
-		    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJson: Could not find data 'is_imported'");
+		instance->import_mode = is_custom_class ? Actor::ImportModes::WRAPPED : Actor::ImportModes::UNWRAPPED;
+
+		if(is_custom_class){
+
+            if(actor_jsons_with_unaltered_default_properties.count(instance->class_name)){
+                ufo::gc::JsonMap* class_json = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
+                if(class_json->map.count("editor_hitbox")){
+                    auto j_editor_hitbox = class_json->map.at("editor_hitbox")->AsMap();
+                    instance->editor_hitbox = ufo::Rectangle(
+                        Vector2f(j_editor_hitbox.at("x")->AsFloat(),
+                                 j_editor_hitbox.at("y")->AsFloat()),
+                        Vector2f(j_editor_hitbox.at("width")->AsFloat(),
+                                 j_editor_hitbox.at("height")->AsFloat()
+                        ));
+                }
+            }
+
 		}
+
 		instance->OnLoadDefaultProperties(_json);
 
 		if(instance->import_mode == Actor::ImportModes::UNWRAPPED){

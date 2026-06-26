@@ -6,6 +6,7 @@
 #include "../shared_json/shared_json.h"
 #include "level.h"
 #include "object.h"
+#include "ufo_maths.h"
 
 namespace ufo{
 
@@ -36,6 +37,7 @@ public:
     }
 
     std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;
+    std::map<std::string, std::function<std::unique_ptr<Actor>(Vector2f)>> factory_map_runtime;
 
     virtual void Initialise();
 
@@ -43,6 +45,13 @@ public:
 
     virtual void OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json);
 
+#ifdef UFO_ENGINE_STUDIO
+    //Not done yet
+    std::unique_ptr<Actor> SpawnAtRuntime(const std::string& _class_name, Vector2f _local_position);
+
+#endif
+
+    // Overridden in generated.h
     virtual std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json);
 
     /*

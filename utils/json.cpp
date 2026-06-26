@@ -36,14 +36,3 @@ namespace ujson{
         cJSON_AddItemToObject(_obj_a, _name.c_str(), _obj_b);
     }
 }
-
-Json Json::Read(std::string _path){
-    return Json(_path);
-}
-
-Json Json::New(std::string _path){
-    Json json = New();
-    json.path = _path;
-    json.is_top_node = true;
-    return json;
-}

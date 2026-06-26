@@ -13,8 +13,6 @@
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif //UFO_ENGINE_STUDIO
 
-//#define UFO_ENGINE_STUDIO
-
 namespace UFOEngineStudio{
     class Editor;
     class LevelEditorTab;
@@ -107,8 +105,8 @@ public:
         return actor_ptr;
     }
 
-    //Actor(const Actor&) = delete;
-    //Actor(Actor&&) = delete;
+    Actor(const Actor&) = delete;
+    Actor(Actor&&) = delete;
 
     void CleanUpDeadActors();
     void StashActors();
@@ -178,6 +176,8 @@ public:
     void SetOrderIndex(int _index);
 
     void SortActors();
+
+    ufo::Rectangle GetEditorHitBox();
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
     virtual void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
@@ -294,8 +294,6 @@ public:
     virtual Actor* OnGetFocusedActor(Vector2f _cursor_viewport_position);
     virtual void OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
     virtual void OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-    virtual bool OnGrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
-    bool GrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace);
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

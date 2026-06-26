@@ -63,7 +63,7 @@ void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, U
 
     //Actor::OnUpdateEditorViewport(_editor, _level_editor_tab);
 
-    ImU32 colour = 0xFFFFFFFF;
+    /*ImU32 colour = 0xFFFFFFFF;
     if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
 
     ImU32 line_clour =  0x66664422;
@@ -71,7 +71,7 @@ void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, U
     Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
 
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);*/
 
     //...
 

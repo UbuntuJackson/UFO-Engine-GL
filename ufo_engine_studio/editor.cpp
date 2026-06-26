@@ -16,7 +16,7 @@
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
 #include "file_dialogue.h"
-#include "../file/file_utils.h"
+#include "../utils/file_utils.h"
 #include "../imgui/imgui_internal.h"
 #include "../ufo_maths/math_parser.h"
 
@@ -94,7 +94,7 @@ void Editor::RefreshFolder(){
 
 void
 Editor::Load(){
-    //OpenFolder("/home/uj/Documents/C++/sta_replica");
+    OpenFolder("/home/uj/Documents/C++/sta_replica");
 
 }
 
@@ -312,8 +312,6 @@ void Editor::OnUpdate(float _delta_time){
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
     if(refresh_entire_project){
-        engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
-
         //Here I'm forcing an update on the new actor queue to make sure there are actors in level are loaded before
         // making potential modifications to them, like adding or removing ufo-variables.
         AddNewActors();
@@ -322,8 +320,10 @@ void Editor::OnUpdate(float _delta_time){
         std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
         //std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 generate_actor_spawner_functions.py" + std::string(" "))+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 
+        engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
         PopulateSpawnableActorMapWithBaseObjects();
         ReloadSpawnableActorMap();
+
         for(const auto& tab : tabs){
             tab->Refresh();
         }

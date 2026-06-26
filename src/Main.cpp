@@ -22,7 +22,7 @@
 #include "../imgui/backends/imgui_impl_sdl3.h"
 #include "../ufo_engine_studio/editor.h"
 #include "texture_2d.h"
-#include "../file/file_utils.h"
+#include "../utils/file_utils.h"
 
 #ifndef USE_PGE
 

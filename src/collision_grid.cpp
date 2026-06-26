@@ -112,7 +112,7 @@ void CollisionGrid::OnUpdate(float _delta_time){
 #ifdef UFO_ENGINE_STUDIO
 void CollisionGrid::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->current_layer = this;
+        _level_editor_tab->currently_edited_actor_in_viewport = this;
     }
 
 }

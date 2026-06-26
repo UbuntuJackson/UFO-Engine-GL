@@ -21,22 +21,19 @@ Tab::Tab(Editor* _editor) : editor{_editor}{
 }
 
 void Tab::Refresh(){
-    Console::PrintLine("Refresh Tab");
     name = GetFilenameFromPath(path);
 }
 
 void Tab::Update(Editor* _editor, float _delta_time){
     gc.Collect();
 
-    if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+"###Tab"+std::to_string(id)).c_str(), &opened, ImGuiTabItemFlags_None)){
+    if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+name_and_imgui_id).c_str(), &opened, ImGuiTabItemFlags_None)){
 
-        ImGuiID local_dockspace_id = ImGui::GetID(name_and_imgui_id.c_str());
+        ImGuiID local_dockspace_id = ImGui::GetID(("###TabDockSpace"+std::to_string(id)).c_str());
 
         OnMakeDockSpace(local_dockspace_id, _editor);
 
         ImGui::DockSpace(local_dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_PassthruCentralNode | ImGuiDockNodeFlags_NoTabBar);
-
-        //ImGui::End();
 
         _editor->active_tab = this;
 

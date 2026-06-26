@@ -5,7 +5,7 @@
 #include <SDL3_mixer/SDL_mixer.h>
 #include "texture_2d.h"
 #include "shader.h"
-#include "../file/file_utils.h"
+#include "../utils/file_utils.h"
 
 #ifdef UFO_ENGINE_STUDIO
 namespace UFOEngineStudio{

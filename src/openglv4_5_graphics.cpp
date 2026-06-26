@@ -68,8 +68,8 @@ OpenGLv4_5_Graphics::OpenGLv4_5_Graphics(Engine* _engine) : engine{_engine}{
 
 void OpenGLv4_5_Graphics::SetProjection(float _left, float _right, float _bottom, float _top){
     glm::mat4 projection = glm::ortho(
-        0.0f, static_cast<float>(_right),
-        static_cast<float>(_bottom), 0.0f,
+        _left, static_cast<float>(_right),
+        static_cast<float>(_bottom), _top,
         -1.0f, 0.0f
     );
 
@@ -84,6 +84,10 @@ void OpenGLv4_5_Graphics::SetProjection(float _left, float _right, float _bottom
     shader.Use();
     shader.SetInt("image", 0);
     shader.SetMatrix4("projection", projection);
+
+    partial_sprite_shader.Use();
+    partial_sprite_shader.SetInt("image", 0);
+    partial_sprite_shader.SetMatrix4("projection", projection);
 }
 
 OpenGLv4_5_Graphics::~OpenGLv4_5_Graphics(){
@@ -285,16 +289,6 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     //Change vertecies
 
     unsigned int VBO;
-    /*float verticies[] = {
-        //position  //texture
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
-
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f
-    };*/
 
     unsigned int texture_width = _texture.width;
     unsigned int texture_height = _texture.height;
@@ -340,17 +334,15 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     glBindVertexArray(0);
     GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
 
-    //Change vertecies
-
     partial_sprite_shader.Use();
 
-    //Are these all ones?
+    //The model is for like, one point.
+    //It is then applied to all points with the sample size and position
     glm::mat4 model = glm::mat4(1.0f);
     //Moving the identity matrix to _position
     model = glm::translate(model, glm::vec3(_position, 0.0f));
 
     model = glm::scale(model, glm::vec3(_v_scale, 1.0f));
-    //model = glm::translate(model, glm::vec3(_centre.x, _centre.y, 0.0f));
 
     model = glm::rotate(model, glm::radians(_rotation), glm::vec3(0.0f, 0.0f, 1.0f));
     model = glm::translate(model, glm::vec3(-_centre.x, -_centre.y, 0.0f));
@@ -432,9 +424,9 @@ void OpenGLv4_5_Graphics::UnbindFrameBuffer(){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void OpenGLv4_5_Graphics::RescaleFrameBuffer(){
+void OpenGLv4_5_Graphics::RescaleFrameBuffer(int _width, int _height){
     glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, engine->width, engine->height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id,0);
@@ -442,7 +434,9 @@ void OpenGLv4_5_Graphics::RescaleFrameBuffer(){
     glGenRenderbuffers(1, &RBO);
     glBindRenderbuffer(GL_RENDERBUFFER, RBO);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
-        engine->width, engine->height);
+        _width, _height);
+
+    glDeleteRenderbuffers(1, &RBO);
 }
 
 }

@@ -3,8 +3,8 @@
 #include <vector>
 #include <memory>
 #include "../external/cJSON.h"
-#include "../file/file.h"
-#include "../json/json.h"
+#include "../utils/file_utils.h"
+#include "../utils/json.h"
 #include "shared_json.h"
 
 namespace ufo::SharedMemory{
@@ -98,7 +98,7 @@ std::shared_ptr<JsonArray> cJSON_ToArray(cJSON* member){
 }
 
 std::shared_ptr<JsonMap> JsonRead(std::string _path){
-    std::string s = File(_path).GetAsString();
+    std::string s = FileSystem::Read(_path);
     cJSON* member = ujson::JsonParse(s);
     bool invalid_cjson = false;
     if(!member){

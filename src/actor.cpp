@@ -241,7 +241,21 @@ void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
 }
 
+ufo::Rectangle Actor::GetEditorHitBox(){
+
+    for(const auto& actor : actors){
+        if(actor->class_name == "ufo::Sprite" || actor->class_name == "ufo::Animation" || actor->class_name == "ufo::PlatformerRectangleCollision"){
+            ufo::Rectangle main_editor_hitbox = actor->editor_hitbox;
+            main_editor_hitbox.position+=actor->GetGlobalPosition();
+            return main_editor_hitbox;
+        }
+    }
+
+    return editor_hitbox;
+}
+
 ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
+
     ufo::gc::JsonMap* this_actor = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("name", _gc->New<ufo::gc::JsonString>(editor_name));
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
@@ -249,6 +263,18 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
 
 #ifdef UFO_ENGINE_STUDIO
+    if(editor_name == "Main"){
+        ufo::Rectangle main_editor_hitbox = GetEditorHitBox();
+
+        auto j_hitbox = _gc->New<ufo::gc::JsonMap>();
+
+        this_actor->map.emplace("editor_hitbox", j_hitbox);
+        j_hitbox->map.emplace("x",_gc->New<ufo::gc::JsonNumber>(main_editor_hitbox.position.x));
+        j_hitbox->map.emplace("y",_gc->New<ufo::gc::JsonNumber>(main_editor_hitbox.position.y));
+        j_hitbox->map.emplace("width",_gc->New<ufo::gc::JsonNumber>(main_editor_hitbox.size.x));
+        j_hitbox->map.emplace("height",_gc->New<ufo::gc::JsonNumber>(main_editor_hitbox.size.y));
+    }
+
     for(const auto& property : editor_properties){
 
         j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
@@ -357,8 +383,6 @@ void Actor::ResetSelectionStatus(){
 
 void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
 
-    Console::PrintLine("UpdateActorStructure",editor_name, actors.size(), import_mode == ImportModes::WRAPPED);
-
     for(int a = 0; a < (int)actors.size(); a++){
         if(actors[a]->import_mode == ImportModes::WRAPPED){
             Console::PrintLine("UpdateActorStructure actors",actors[a]->editor_name);
@@ -388,7 +412,6 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
 
     for(int a = 0; a < (int)new_actor_queue.size(); a++){
         if(new_actor_queue[a]->import_mode == ImportModes::WRAPPED){
-            Console::PrintLine("UpdateActorStructure new_actor_queue",new_actor_queue[a]->editor_name);
 
             auto old_actor = std::move(new_actor_queue[a]);
 
@@ -469,7 +492,6 @@ void Actor::OnAdditionalButtonsForTreeItem(){
 }
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-    //if(ImGui::GetMousePos().y > _index * ImGui::GetStyle().ItemSpacing.y * )
 
     bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
 
@@ -524,9 +546,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         std::string("###Actor"+std::to_string(editor_id)).c_str() :
         (visible_text+"###Actor"+std::to_string(editor_id)).c_str();
 
-    bool tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
-
-    ImGui::SameLine();
+    bool tree_node_opened = false;
+    if(import_mode == ImportModes::UNWRAPPED){
+        tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
+        ImGui::SameLine();
+    }
 
     if(editing_name){
         ImGui::SameLine();
@@ -727,11 +751,12 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
         OnUpdateEditorTree(_index);
 
-        for(int i = 0; i < actors.size(); i++){
+        for(int i = 0; i < (int)actors.size(); i++){
 
             actors[i]->UpdateEditorTree(_editor,_level_editor_tab,i);
 
         }
+
 
         ImGui::TreePop();
     }
@@ -757,10 +782,8 @@ void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectan
         ufo::Maths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
         && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
     ){
-
         _selected_actors.push_back(this);
         return;
-        //Console::PrintLine(editor_name,class_name);
     }
 
     for(const auto& actor : actors){
@@ -783,6 +806,7 @@ void Actor::GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, u
         actor->GetPreviouslySelectedActors(_selected_actors, _selection_rectangle_world_space);
     }
 }
+
 void Actor::SetActorsUnselectedInViewport(){
     is_selected_in_viewport = false;
 
@@ -930,15 +954,17 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    if(is_selected_in_viewport){
+
+
+    /*if(is_selected_in_viewport){
         const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position;
         const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
 
         ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
-    }
+    }*/
 
     //Adjusting the spawn-cursor to not make usage too disorienting
-    if(properties_open){
+    /*if(properties_open){
 
         auto local_tile_map = IsInTileMap();
         if(local_tile_map){
@@ -959,14 +985,6 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
     ImU32 line_clour =  0x66664422;
 
     Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-
-    /*for(const auto& child : actors){
-
-        Vector2f child_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(child->GetGlobalPosition());
-
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y), ImVec2(this_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, child_screen_pos.y), ImVec2(child_screen_pos.x, child_screen_pos.y), line_clour, 1.0f);
-        }*/
 
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
     ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
@@ -990,7 +1008,7 @@ void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
                 }
             }
         }
-    }
+    }*/
 
 }
 
@@ -1049,56 +1067,6 @@ void Actor::OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
         level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&local_position, local_position, Vector2f(0.0f, 0.0f)));
 
     }
-
-}
-
-bool Actor::OnGrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace){
-
-    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_mouse_position_over_screenspace);
-    Vector2f former_world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_former_mouse_position_over_screenspace);
-
-    if(is_grabbed_by_cursor){
-        Vector2f dp = world_mouse - former_world_mouse;
-
-        local_position += dp;
-
-        if(engine->mouse.is_left_button_released){
-
-            is_grabbed_by_cursor = false;
-            TileMap* tile_map = IsInTileMap();
-            if(tile_map){
-                local_position = Vector2f(
-                    std::floor(local_position.x/tile_map->tile_width)*tile_map->tile_width,
-                    std::floor(local_position.y/tile_map->tile_height)*tile_map->tile_height);
-            }
-
-            //This looks extremely error prone.
-            ufo::ActorChange_CustomVariableVector2fHandle* position_change = dynamic_cast<ufo::ActorChange_CustomVariableVector2fHandle*>(level->level_changes.back().get());
-
-            if(position_change){
-                position_change->current_value = local_position;
-
-            }
-            else{
-                Console::PrintLine("[UFO-Engine Studio] Actor::OnUpdateEditorViewportFocus: Undo & Redo action was added while ufo::ActorChange_CustomVariableVector2fHandle* was handled");
-                throw;
-            }
-        }
-
-        return true;
-    }
-
-    return false;
-}
-
-bool Actor::GrabbedByCursor(Vector2f _mouse_position_over_screenspace, Vector2f _former_mouse_position_over_screenspace){
-
-    for(const auto& actor : actors){
-        bool act_is_grabbed_by_cursor = actor->GrabbedByCursor(_mouse_position_over_screenspace, _former_mouse_position_over_screenspace);
-        if(act_is_grabbed_by_cursor) return true;
-    }
-
-    return OnGrabbedByCursor(_mouse_position_over_screenspace, _former_mouse_position_over_screenspace);
 
 }
 

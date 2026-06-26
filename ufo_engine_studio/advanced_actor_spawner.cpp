@@ -36,9 +36,6 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
                 act->editor_name = "@" + act->class_name;
                 auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
 
-                //Need to somehow know if these actors are imported
-                //for(auto& actor : actor_from_file->new_actor_queue) actor->DeclareImportedRecursive();
-
                 actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
                 act = std::move(actor_from_file);
 
@@ -46,13 +43,25 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
         }
     }
 
-
     for(const auto& property : custom_properties){
         act->editor_properties.push_back(property->Copy());
     }
 
     act->class_name = class_name;
     act->editor_name = act->class_name+std::to_string(_editor->actor_count_for_naming_purposes++);
+
+    if(_editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(act->class_name)){
+        ufo::gc::JsonMap* class_json = _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(act->class_name);
+        if(class_json->map.count("editor_hitbox")){
+            auto j_editor_hitbox = class_json->map.at("editor_hitbox")->AsMap();
+            act->editor_hitbox = ufo::Rectangle(
+                Vector2f(j_editor_hitbox.at("x")->AsFloat(),
+                         j_editor_hitbox.at("y")->AsFloat()),
+                Vector2f(j_editor_hitbox.at("width")->AsFloat(),
+                         j_editor_hitbox.at("height")->AsFloat()
+                ));
+        }
+    }
 
     return std::move(act);
 }

@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "../utils/console.h"
-#include "../file/file.h"
+#include "../utils/file_utils.h"
 #include "shader.h"
 #include "../utils/opengl_utils.h"
 #include "ufo_macros.h"
@@ -28,12 +28,12 @@ void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
     unsigned int fragment_shader;
     unsigned int geometry_shader;
 
-    if(!File::Exists(_vertex_shader_path) || !File::Exists(_fragment_shader_path)){
+    if(!FileSystem::FileExists(_vertex_shader_path) || !FileSystem::FileExists(_fragment_shader_path)){
         Console::PrintLine("One of the shaders don't exist");
     }
 
-    std::string vertex_shader_source_str = File(_vertex_shader_path).GetAsString();
-    std::string fragment_shader_source_str = File(_fragment_shader_path).GetAsString();
+    std::string vertex_shader_source_str = FileSystem::Read(_vertex_shader_path);
+    std::string fragment_shader_source_str = FileSystem::Read(_fragment_shader_path);
 
     const char* vertex_shader_source = vertex_shader_source_str.c_str();
     const char* fragment_shader_source = fragment_shader_source_str.c_str();
@@ -62,13 +62,13 @@ void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
 
 void Shader::AttachVertexShader(std::string _path){
 
-    if(!File::Exists(_path)){
+    if(!ufo::FileSystem::FileExists(_path)){
         Console::PrintLine("Shader does not exist at path:", _path);
         return;
     }
 
     //Comiling vertex shader
-    std::string vertex_shader_source = File(_path).GetAsString();
+    std::string vertex_shader_source = ufo::FileSystem::Read(_path);
 
     const char* vertex_shader_source_as_c_str = vertex_shader_source.c_str();
     unsigned int vertex_shader;
@@ -88,13 +88,13 @@ void Shader::AttachVertexShader(std::string _path){
 
 void Shader::AttachFragmentShader(std::string _path){
 
-    if(!File::Exists(_path)){
+    if(!ufo::FileSystem::FileExists(_path)){
         Console::PrintLine("Shader does not exist at path:", _path);
         return;
     }
 
     //Comiling fragment shader
-    std::string fragment_shader_source = File(_path).GetAsString();
+    std::string fragment_shader_source = ufo::FileSystem::Read(_path);
 
     const char* fragment_shader_source_as_c_str = fragment_shader_source.c_str();
 
@@ -115,12 +115,12 @@ void Shader::AttachFragmentShader(std::string _path){
 
 void Shader::AttachGeometryShader(std::string _path){
     //Comiling geometry shader
-    if(!File::Exists(_path)){
+    if(!ufo::FileSystem::FileExists(_path)){
         Console::PrintLine("Shader does not exist at path:", _path);
         return;
     }
 
-    std::string geometry_shader_source = File(_path).GetAsString();
+    std::string geometry_shader_source = ufo::FileSystem::Read(_path);
 
     const char* geometry_shader_source_as_c_str = geometry_shader_source.c_str();
 

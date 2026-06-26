@@ -20,7 +20,7 @@ class LevelEditorTab : public Tab{
 public:
 
     // This is the actor currently used as the layer. It can be of type ufo::Level, ufo::CollisionGrid, and ufo::TileMap
-    ufo::Actor* current_layer = nullptr;
+    ufo::Actor* currently_edited_actor_in_viewport = nullptr;
     std::vector<ufo::Actor*> selected_actors;
 
     enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER, MULTI_SELECT,ESTABLISH_MULTI_SELECT };
@@ -80,7 +80,7 @@ public:
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
-    void MultiSelect(ufo::Actor* _actor);
+    void SelectionUpdate();
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);
 

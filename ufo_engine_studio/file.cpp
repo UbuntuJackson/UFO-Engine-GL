@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <memory>
 #include "file_dialogue.h"
-#include "../file/file_utils.h"
+#include "../utils/file_utils.h"
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
 #include "error_dialogue.h"
@@ -148,9 +148,7 @@ namespace UFOEngineStudio{
             editing_name = false;
 
             if(is_new_file){
-                File f = File::New();
-                f.Insert("");
-                f.Write(_editor->opened_directory_path + path+"/"+file_name);
+                ufo::FileSystem::Write(_editor->opened_directory_path + path+"/"+file_name,"");
 
                 is_new_file = false;
             }

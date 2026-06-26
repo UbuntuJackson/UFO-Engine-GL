@@ -14,10 +14,64 @@ typedef olc::vi2d Vector2i;
 
 namespace ufo::Maths{
 
-Vector2f RotateVector(Vector2f _v,float _angle_in_radians);
+//Matrices and their transformations
 
-//#define SIN(a) std::sin(a)
-//#define COS(a) std::cos(a)
+/*template<size_t rows, size_t columns>
+class Matrix{
+public:
+
+    float matrix [rows][columns] = {0};
+
+    Matrix operator+(const Matrix& _other){
+        Matrix result;
+
+        for(size_t row = 0; row < rows; row++){
+            for(size_t column = 0; column < columns; column++){
+                result.matrix[column][row] = matrix[column][row] + _other.matrix[column][row];
+            }
+        }
+
+        return result;
+    }
+
+    Matrix operator-(const Matrix& _other){
+        Matrix result;
+
+        for(size_t row = 0; row < rows; row++){
+            for(size_t column = 0; column < columns; column++){
+                result.matrix[column][row] = matrix[column][row] - _other.matrix[column][row];
+            }
+        }
+
+        return result;
+    }
+
+    template<size_t other_rows>
+    Matrix<columns, other_rows> operator*(const Matrix<columns, other_rows>& _other){
+        Matrix result;
+
+        for(size_t row = 0; row < 4; row++){
+            for(size_t column = 0; column < 4; column++){
+                result.matrix[column][row] = matrix[column][row] - _other.matrix[column][row];
+            }
+        }
+
+        return result;
+    }
+
+};*/
+
+
+
+//Collision detection, and similar utilities
+
+inline bool PointVsRotatedRectangle(Vector2f _point, const ufo::Rectangle& _rectangle, float _rotation){
+
+
+    return false;
+}
+
+Vector2f RotateVector(Vector2f _v,float _angle_in_radians);
 
 ufo::Rectangle UnsignedRectangle(const ufo::Rectangle& _rectangle);
 

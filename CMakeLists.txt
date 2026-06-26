@@ -67,10 +67,8 @@ set(
     src/timer.cpp
     glad/src/glad.c
     utils/stb_image_implementation.cpp
-    file/file.cpp #To be deprecated.
-    file/file_utils.cpp
-    json/json_variant.cpp
-    json/json.cpp
+    utils/file_utils.cpp
+    utils/json.cpp
     external/cJSON.c
 
     tilemap/tile_map.cpp

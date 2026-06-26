@@ -6,9 +6,9 @@
 #include <memory>
 #include <exception>
 #include "../external/cJSON.h"
-#include "../file/file.h"
-#include "../json/json.h"
-#include "../file/file_utils.h"
+#include "../utils/file_utils.h"
+#include "../utils/json.h"
+#include "../utils/file_utils.h"
 
 //Work in progress: Json holder class supporting shared_ptr
 
