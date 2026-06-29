@@ -83,6 +83,7 @@ void Actor::AddNewActors(){
         auto actor_ptr = actor.get();
 
         actor->level = level; // Will be overwritten if *this* is of type Level.
+        level->actors_with_stable_id.emplace(actor_ptr->editor_id, actor_ptr);
         OnAddActor(actor.get());
         actor->engine = engine;
         newly_added_actors.push_back(actor_ptr);
@@ -315,12 +316,13 @@ void Actor::InvokeGarbageCollector(){
     }
 }
 
-TileMap* Actor::IsInTileMap(){
+TileMap* Actor::GetTileMap(){
+    if(class_name == "ufo::TileMap") return this->DynamicCast<TileMap>();
     if(parent == nullptr) return nullptr;
     else{
         if(parent->class_name == "ufo::TileMap") return parent->DynamicCast<TileMap>();
         else{
-            return parent->IsInTileMap();
+            return parent->GetTileMap();
         }
     }
     return nullptr;
@@ -397,6 +399,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             actors[a]->engine = old_actor->engine;
             actors[a]->properties_open = old_actor->properties_open;
             actors[a]->editor_name = old_actor->editor_name;
+            actors[a]->editor_id = old_actor->editor_id;
 
             actors[a]->OnSpawn();
 
@@ -423,6 +426,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             new_actor_queue[a]->engine = old_actor->engine;
             new_actor_queue[a]->properties_open = old_actor->properties_open;
             new_actor_queue[a]->editor_name = old_actor->editor_name;
+            new_actor_queue[a]->editor_id = old_actor->editor_id;
 
             new_actor_queue[a]->OnSpawn();
 
@@ -472,18 +476,6 @@ void Actor::TurnOnEditMode(){
 }
 
 void Actor::OnUpdateEditorTree(int _index){
-
-}
-
-std::string Actor::GetImportStatus(){
-    if(import_mode == ImportModes::MODIFIABLE){
-        return "Modifiable";
-    }
-    if(import_mode == ImportModes::WRAPPED){
-        return "Wrapped";
-    }
-
-    return "";
 
 }
 
@@ -564,6 +556,8 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None, ImVec2(ImGui::CalcTextSize(visible_text.c_str()).x,ImGui::GetFontSize()));
 
         if(selectable_text){
+            _level_editor_tab->actor_dedicated_to_viewport = this;
+            _level_editor_tab->selected_actors.clear();
 
             if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
                 if(_editor->active_tab){
@@ -574,8 +568,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
                 }
 
             }
-            _editor->set_all_actors_properties_open_to_false = true;
-            should_open_properties = true;
 
             if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP && base_class_name != "ufo::TileMap"){
                 _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::SELECT;
@@ -586,6 +578,12 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     }
 
     if(ImGui::BeginPopupContextItem(("Options###Options"+std::to_string(editor_id)).c_str())){
+
+        if(ImGui::MenuItem("Edit")){
+            _level_editor_tab->actor_dedicated_to_viewport = AddActor<ufo::Actor>(Vector2f(0.0f, 0.0f));
+            _level_editor_tab->actor_dedicated_to_viewport->editor_name = "...";
+
+        }
         if(ImGui::MenuItem("Rename")){
             TurnOnEditMode();
         }
@@ -608,23 +606,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         }
         ImGui::EndPopup();
     }
-
-    /*if(changing_actor_type){
-        ImGui::Begin("Changing Actor Type");
-        for(const auto& [k,v] : _editor->spawnable_actor_map){
-            if(ImGui::Button(std::string("Make "+k).c_str())){
-                auto inst = v->Spawn(_editor);
-                inst->class_name = k;
-                inst->base_class_name = v->base;
-                AddActorUniquePtr(std::move(inst));
-                adding_new_actor = false;
-            }
-        }
-        if(ImGui::Button("Cancel")){
-            changing_actor_type = false;
-        }
-        ImGui::End();
-    }*/
 
     if(adding_new_actor){
         //Read from json somehow to add the attributes, however tf that is gonna happen
@@ -688,18 +669,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     if(ImGui::BeginDragDropTarget()){
 
-        /*const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
-        if(payload_data){
-            DraggedActorWhereAbouts* dragged_actor_where_abouts_ = (DraggedActorWhereAbouts*)(payload_data->Data);
-
-            dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]->parent = this;
-
-            new_actor_queue.push_back(std::move(dragged_actor_where_abouts_->parent->actors[dragged_actor_where_abouts_->index]));
-
-            dragged_actor_where_abouts_->parent->actors.erase(dragged_actor_where_abouts_->parent->actors.begin()+dragged_actor_where_abouts_->index);
-
-        }*/
-
         const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
         if(payload_data && !is_selected){
             if(_editor->active_tab){
@@ -743,10 +712,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     OnAdditionalButtonsForTreeItem();
 
-    /*if(ImGui::IsItemHovered()){
-        Console::PrintLine("ImGui::GetItemRectMin.y", ImGui::GetItemRectMin().y);
-    }*/
-
     if(tree_node_opened){
 
         OnUpdateEditorTree(_index);
@@ -760,19 +725,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
         ImGui::TreePop();
     }
-}
-
-void Actor::OpenProperties(){
-    properties_open = false;
-    if(should_open_properties){
-        properties_open = true;
-        should_open_properties = false;
-    }
-
-    for(const auto& actor : actors){
-        actor->OpenProperties();
-    }
-
 }
 
 void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
@@ -943,85 +895,14 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 }
 
 void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-    if(properties_open){
-        OnViewProperties(_level_editor_tab,_index);
-        _level_editor_tab->currently_viewed_properties_actor_name = editor_name;
-    }
-    for(int i = 0; i < actors.size(); i++){
-        actors[i]->ViewProperties(_level_editor_tab,i);
-    }
+
+    OnViewProperties(_level_editor_tab,_index);
+    _level_editor_tab->currently_viewed_properties_actor_name = editor_name;
+
 }
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-
-
-    /*if(is_selected_in_viewport){
-        const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position;
-        const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition())+editor_hitbox.position+editor_hitbox.size;
-
-        ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
-    }*/
-
-    //Adjusting the spawn-cursor to not make usage too disorienting
-    /*if(properties_open){
-
-        auto local_tile_map = IsInTileMap();
-        if(local_tile_map){
-            _level_editor_tab->spawn_cursor->local_position = Vector2f(
-                std::floor(_level_editor_tab->spawn_cursor->local_position.x/local_tile_map->tile_width)*local_tile_map->tile_width,
-                std::floor(_level_editor_tab->spawn_cursor->local_position.y/local_tile_map->tile_height)*local_tile_map->tile_height);
-        }
-    }
-
-    const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
-    const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
-
-    if(editor_viewport_text != "") ImGui::GetWindowDrawList()->AddText(ImVec2(pos_max.x, pos_max.y), 0xFFFFFFFF,editor_viewport_text.c_str());
-
-    ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
-
-    ImU32 line_clour =  0x66664422;
-
-    Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);
-
-    if(is_selected){
-        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
-            if(_editor->currently_selected_actor_type != ""){
-                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
-                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
-
-                    if(!IsInTileMap()) inst->local_position = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace) - GetGlobalPosition();
-                    else inst->local_position = _level_editor_tab->spawn_cursor->GetGlobalPosition() - GetGlobalPosition();
-
-                    //Undo&redo
-
-                    level->RemoveFutureChanges();
-
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
-
-                    AddActorUniquePtr(std::move(inst));
-                }
-            }
-        }
-    }*/
-
-}
-
-Actor* Actor::GetInspectedActor(){
-    if(import_mode != ImportModes::WRAPPED){
-        if(is_selected) return this;
-
-        for(const auto& actor : actors){
-            Actor* act = actor->GetInspectedActor();
-            if(act) return act;
-        }
-    }
-    return nullptr;
 }
 
 void Actor::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -1049,24 +930,6 @@ Actor* Actor::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace){
 }
 
 void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-}
-
-void Actor::OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    //Basically grab on click, ungrab on release. This does not make sense if you want to
-    // be able to spawn multiple actors in a row by holding the mouse button
-    if(!is_grabbed_by_cursor && engine->mouse.is_left_button_pressed){
-
-        is_grabbed_by_cursor = true;
-
-        should_open_properties = true;
-        _level_editor_tab->editor->set_all_actors_properties_open_to_false = true;
-
-        level->RemoveFutureChanges();
-
-        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&local_position, local_position, Vector2f(0.0f, 0.0f)));
-
-    }
 
 }
 

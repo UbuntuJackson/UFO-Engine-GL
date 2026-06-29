@@ -13,6 +13,7 @@ class Editor;
 
 class AdvancedActorSpawner : public ufo::gc::Object{
 public:
+
     std::string actor_config_path = "";
     std::string category = "UFO-Engine";
     std::string comment = "";

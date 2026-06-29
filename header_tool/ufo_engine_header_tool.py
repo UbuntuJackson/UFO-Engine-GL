@@ -6,17 +6,67 @@ import sys
 import generate_actor_spawner_functions
 
 
-def make_generated_file(_path, _classes):
-    includes = "#pragma once\n#include <functional>\n"
-    includes += "#include <memory>\n"
-    includes += "#include <ufo_maths.h>\n\n"
-    includes += '#include "UFO-Engine/ufo_garbage_collector/gc_json.h"\n'
-    includes += '#include "UFO-Engine/src/generic_generator.h"\n'
-    includes += '#include "UFO-Engine/src/actor.h"\n'
-    includes += '#include "UFO-Engine/src/sprite.h"\n'
-    includes += '#include "UFO-Engine/src/animation.h"\n'
-    includes += '#include "UFO-Engine/src/widget.h"\n'
-    includes += '#include "UFO-Engine/src/button.h"\n'
+def make_generated_base_classes_file(_path, _classes, _engine_includes):
+    pprint.pprint(_classes)
+
+    base_classes_file = "#pragma once\n"
+    base_classes_file += _engine_includes + "\n"
+    base_classes_file += "namespace ufo::Generated{\n"
+
+    inheritence_map = {}
+
+    for cl in _classes:
+        base_class = ""
+
+        if len(cl["class"]["extends"]):
+            base_class = cl["class"]["extends"][0]
+
+        for ufo_macro in cl["macros"]:
+            if ufo_macro["name"] == "ufo_actor_config":
+                if len(ufo_macro["args"]) != 0:
+                    actor_ason = json.load(open(_path + "/" + ufo_macro["args"][0]))
+
+                    for actor in actor_ason["actors"]:
+                        if actor["name"] == "Main":
+                            base_class = actor["class_name"]
+                            if len(cl["class"]["extends"]):
+                                # Replace class name only if using alias from generated file
+
+                                if (
+                                    "ufo::Generated::"
+                                    + cl["class"]["name"]
+                                    + "_BaseClass"
+                                    == cl["class"]["extends"][0]
+                                ):
+                                    cl["class"]["extends"][0] = base_class
+
+                    typedef = (
+                        "typedef "
+                        + " "
+                        + base_class
+                        + " "
+                        + cl["class"]["name"]
+                        + "_BaseClass;\n"
+                    )
+                    base_classes_file += typedef
+
+        inheritence_map[cl["class"]["name"]] = base_class
+
+    base_classes_file += "}\n"
+
+    print(base_classes_file)
+
+    f = open(_path + "/generated_base_classes.h", "w")
+    f.write(base_classes_file)
+    f.close()
+
+    f_inheritence_map = open(_path + "/inheritence_map.json", "w")
+    f_inheritence_map.write(json.dumps(inheritence_map))
+    f_inheritence_map.close()
+
+
+def make_generated_file(_path, _classes, _engine_includes):
+    includes = _engine_includes
 
     header_files = []
 
@@ -143,9 +193,24 @@ def main():
     grand_header_tool_log_f.write(grand_header_tool_log.obj)
     grand_header_tool_log_f.close()
 
-    classes_as_dictionary = {"contents": grand_class_list}
+    engine_includes = "#pragma once\n#include <functional>\n"
+    engine_includes += "#include <memory>\n"
+    engine_includes += "#include <ufo_maths.h>\n\n"
+    engine_includes += '#include "UFO-Engine/ufo_garbage_collector/gc_json.h"\n'
+    engine_includes += '#include "UFO-Engine/src/generic_generator.h"\n'
+    engine_includes += '#include "UFO-Engine/src/actor.h"\n'
+    engine_includes += '#include "UFO-Engine/src/sprite.h"\n'
+    engine_includes += '#include "UFO-Engine/src/animation.h"\n'
+    engine_includes += '#include "UFO-Engine/src/widget.h"\n'
+    engine_includes += '#include "UFO-Engine/src/button.h"\n'
+    engine_includes += '#include "UFO-Engine/src/camera.h"\n'
+    engine_includes += '#include "UFO-Engine/src/platformer_rectangle_collision.h"\n'
 
-    make_generated_file(arg_path, grand_class_list)
+    make_generated_base_classes_file(arg_path, grand_class_list, engine_includes)
+
+    make_generated_file(arg_path, grand_class_list, engine_includes)
+
+    classes_as_dictionary = {"contents": grand_class_list}
 
     structured_classes = json.dumps(classes_as_dictionary, indent=4)
     f_structured_classes = open(arg_path + "/structured_classes.json", "w")

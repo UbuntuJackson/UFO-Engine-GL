@@ -23,6 +23,11 @@ public:
     ufo::Actor* currently_edited_actor_in_viewport = nullptr;
     std::vector<ufo::Actor*> selected_actors;
 
+    ufo::Actor* actor_dedicated_to_viewport = nullptr;
+
+    //This is for multi-dragdropping and single dragdropping too
+    std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;
+
     enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER, MULTI_SELECT,ESTABLISH_MULTI_SELECT };
 
     std::string asset_browser_search;
@@ -39,8 +44,6 @@ public:
     ufo::Level* this_level = nullptr;
     std::string currently_viewed_properties_actor_name;
     float window_to_engine_ratio = 1.0f;
-    std::unique_ptr<ufo::Actor> replace_with_actor;
-    std::string header_file;
 
     //Important to note that this counts the distance from the 0,0 of the computer screen
     Vector2f level_viewport_position;
@@ -49,9 +52,6 @@ public:
     // in other words in-game screenspace
     Vector2f mouse_position_over_screenspace;
     Vector2f former_mouse_position_over_screenspace;
-
-    //This is for multi-dragdropping and single dragdropping too
-    std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;
 
     //So, this flag might not be needed, it's just a coding practice I've had for a while that I set a flag for things to be done later
     // It's just for resetting all actors to de-selected before selecting something else.
@@ -80,6 +80,7 @@ public:
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
+    void PlaceActors();
     void SelectionUpdate();
 
     void OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state);

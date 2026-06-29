@@ -108,13 +108,17 @@ public:
 
 #ifdef UFO_ENGINE_STUDIO
 
+    Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) override;
+
     std::vector<std::unique_ptr<Actor>> stashed_actors;
+
+    std::map<int, ufo::Actor*> actors_with_stable_id;
+
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void Undo();
     void Redo();
     void RemoveFutureChanges();
-
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

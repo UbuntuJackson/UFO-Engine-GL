@@ -170,6 +170,10 @@ void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
 
 #ifdef UFO_ENGINE_STUDIO
 
+Actor* Level::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) {
+    return nullptr;
+}
+
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     /*Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
@@ -210,10 +214,6 @@ bool Level::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEng
     return false;
 }
 
-void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-}
-
 void Level::Undo(){
     if(!(current_level_change < 0)){
 
@@ -250,6 +250,10 @@ void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
     ImGui::InputFloat(std::string("size.x###size.x"+editor_name+std::to_string(_index)).c_str(), &size.x);
     ImGui::InputFloat(std::string("size.y###size.y"+editor_name+std::to_string(_index)).c_str(), &size.y);
+}
+
+void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
 }
 
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

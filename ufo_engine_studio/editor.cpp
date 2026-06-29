@@ -5,6 +5,7 @@
 #include <filesystem>
 #include "SDL3/SDL_dialog.h"
 #include "console.h"
+#include "error_dialogue.h"
 #include "file_node.h"
 #include "../imgui/imgui.h"
 #include "../ufo_engine_studio/dock_utils.h"
@@ -624,6 +625,23 @@ void Editor::ReloadSpawnableActorMap(){
 
         );
 
+    }
+
+    for(const auto& [k_class_name,v_spawner] : spawnable_actor_map){
+
+        Console::PrintLine("spawnable_actor_map",k_class_name);
+
+        if(engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(k_class_name)){
+            ufo::gc::JsonMap* j_actor = engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(k_class_name);
+
+            if(engine->actor_generator->GetBaseClassOf(k_class_name) != j_actor->AsMap().at("class_name")->AsString()){
+                error_dialogue = std::make_unique<ErrorDialogueMismatchedClass>( opened_directory_path+"/"+v_spawner->actor_config_path, j_actor->AsMap().at("class_name")->AsString(), k_class_name, engine->actor_generator->GetBaseClassOf(k_class_name));
+            }
+        }
+
+        if(!spawnable_actor_map.count(v_spawner->base)){
+            error_dialogue = std::make_unique<InheritsFromUnknownClass>(k_class_name, v_spawner->base);
+        }
     }
 
 }

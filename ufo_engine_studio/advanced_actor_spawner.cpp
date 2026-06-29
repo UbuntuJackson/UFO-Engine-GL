@@ -6,6 +6,7 @@
 #include "../src/actor.h"
 #include "editor.h"
 #include "advanced_actor_spawner.h"
+#include "error_dialogue.h"
 
 namespace UFOEngineStudio{
 
@@ -28,19 +29,14 @@ void AdvancedActorSpawner::OnMark() {
 std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
     auto act = spawner_function(_editor,this);
 
-    if(actor_config_path != ""){
-        ufo::gc::JsonMap* actor_config = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+"/"+actor_config_path);
+    if(_editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(class_name)){
+        ufo::gc::JsonMap* j_actor = _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(class_name);
 
-        for(const auto& j_actor : actor_config->map.at("actors")->AsArray()){
-            if(j_actor->AsMap().at("name")->AsString() == "Main"){
-                act->editor_name = "@" + act->class_name;
-                auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
+        auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
 
-                actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
-                act = std::move(actor_from_file);
+        actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
+        act = std::move(actor_from_file);
 
-            }
-        }
     }
 
     for(const auto& property : custom_properties){

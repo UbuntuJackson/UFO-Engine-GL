@@ -39,6 +39,7 @@ std::string GenericGenerator::GetBaseClassOf(std::string _class_name){
 void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_directory){
 
     actor_jsons_with_unaltered_default_properties.clear();
+    inheritence_map.clear();
 
     auto structured_classes = gc::JsonRead(&gc, _game_directory+"/structured_classes.json")->AsMap().at("contents")->AsArray();
 
@@ -272,44 +273,44 @@ void GenericGenerator::Initialise(){
         }
         );
 
-        factory_map.emplace(
-            "ufo::Animation",
-            [](ufo::gc::JsonMap* _json){
-                float _x = _json->map.at("x")->AsFloat();
-                float _y = _json->map.at("y")->AsFloat();
+    factory_map.emplace(
+        "ufo::Animation",
+        [](ufo::gc::JsonMap* _json){
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
 
-                auto instance = std::make_unique<Animation>(
-                   	Vector2f(_x, _y));
+            auto instance = std::make_unique<Animation>(
+               	Vector2f(_x, _y));
 
-                return std::move(instance);
-            }
-        );
+            return std::move(instance);
+        }
+    );
 
-        factory_map.emplace(
-            "ufo::BackgroundSprite",
-            [](ufo::gc::JsonMap* _json){
-                float _x = _json->map.at("x")->AsFloat();
-                float _y = _json->map.at("y")->AsFloat();
+    factory_map.emplace(
+        "ufo::BackgroundSprite",
+        [](ufo::gc::JsonMap* _json){
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
 
-                auto instance = std::make_unique<ufo::BackgroundSprite>(
-                   	Vector2f(_x, _y));
+            auto instance = std::make_unique<ufo::BackgroundSprite>(
+               	Vector2f(_x, _y));
 
-                return std::move(instance);
-            }
-        );
+            return std::move(instance);
+        }
+    );
 
-        factory_map.emplace(
-            "ufo::RectangularArea",
-            [](ufo::gc::JsonMap* _json){
-                float _x = _json->map.at("x")->AsFloat();
-                float _y = _json->map.at("y")->AsFloat();
+    factory_map.emplace(
+        "ufo::RectangularArea",
+        [](ufo::gc::JsonMap* _json){
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
 
-                auto instance = std::make_unique<ufo::RectangularArea>(
-                   	Vector2f(_x, _y));
+            auto instance = std::make_unique<ufo::RectangularArea>(
+               	Vector2f(_x, _y));
 
-                return std::move(instance);
-            }
-        );
+            return std::move(instance);
+        }
+    );
 }
 
 std::unique_ptr<Actor> GenericGenerator::JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){

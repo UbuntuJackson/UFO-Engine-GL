@@ -186,7 +186,7 @@ public:
 
     bool adding_new_actor = false;
 
-    TileMap* IsInTileMap();
+    TileMap* GetTileMap();
 
     enum ImportModes{
         WRAPPED,
@@ -247,8 +247,6 @@ public:
 
     void TurnOnEditMode();
 
-    std::string GetImportStatus();
-
     void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
@@ -258,8 +256,6 @@ public:
     std::vector<std::unique_ptr<ufo::EditorProperty>> editor_properties;
 
     void RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _editor);
-
-    bool should_open_properties = false;
 
     bool properties_open = false;
 
@@ -277,15 +273,11 @@ public:
 
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
-    void OpenProperties();
-
     void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
     void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
     void SetActorsUnselectedInViewport();
 
     virtual void OnAdditionalButtonsForTreeItem();
-
-    Actor* GetInspectedActor();
 
     virtual void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
@@ -293,7 +285,6 @@ public:
     Actor* GetFocusedActor(Vector2f _cursor_viewport_position);
     virtual Actor* OnGetFocusedActor(Vector2f _cursor_viewport_position);
     virtual void OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
-    virtual void OnFocused(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);

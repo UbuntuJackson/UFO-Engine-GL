@@ -83,7 +83,6 @@ public:
     std::string header_tool_parser = "ufo_engine_header_tool.py";
 
     bool refresh_entire_project = false;
-    bool set_all_actors_properties_open_to_false = false;
 
     Editor();
     void ResetUFOEngineStudio();

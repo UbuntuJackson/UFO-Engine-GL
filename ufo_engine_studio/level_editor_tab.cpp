@@ -19,6 +19,7 @@
 #include "editor.h"
 #include "imgui_utils.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "tile_map.h"
 #include "utility_objects/spawn_cursor.h"
 #include "im_vec.h"
 
@@ -58,7 +59,8 @@ void  LevelEditorTab::Initialise(){
     spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
     spawn_cursor->unremovable = true;
 
-    currently_edited_actor_in_viewport = this_level;
+    actor_dedicated_to_viewport = this_level->AddActor<ufo::Actor>(Vector2f(0.0f, 0.0f));
+    actor_dedicated_to_viewport->editor_name = "...";
 
 }
 
@@ -70,12 +72,6 @@ void LevelEditorTab::Refresh(){
 }
 
 void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
-
-    if(_editor->set_all_actors_properties_open_to_false){
-        this_level->OpenProperties();
-    }
-
-    _editor->set_all_actors_properties_open_to_false = false;
 
     if(reset_selection_status){
         this_level->ResetSelectionStatus();
@@ -200,10 +196,8 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             ImGui::EndTabItem();
         }
 
-        ufo::Actor* inspected_actor = this_level->GetInspectedActor();
-
-        if(inspected_actor){
-            inspected_actor->OnUtiliseAssetManager(this);
+        if(selected_actors.size()){
+            selected_actors[0]->OnUtiliseAssetManager(this);
         }
 
         ImGui::EndTabBar();
@@ -214,15 +208,18 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     ImGui::Begin(std::string("ActorTree###ActorTree"+std::to_string(id)).c_str());
 
-    //I don't want a class to necessarily require a .ason, so for how you don't specity the header file in the .ason, but the .ason in the header file
-    //ImGui::Button("HeaderFile"); ImGui::SameLine(); ImGui::Text("%s", header_file.c_str());
-
     this_level->UpdateEditorTree(_editor, this, 0);
 
     ImGui::End();
 
     ImGui::Begin(std::string(currently_viewed_properties_actor_name+"###Properties"+std::to_string(id)).c_str());
-    this_level->ViewProperties(this, 0);
+    if(selected_actors.size() > 0){
+        //-1 is just a temporary index here to test things out, I don't think that value is actually used to anything.
+        selected_actors[0]->ViewProperties(this,-1);
+    }
+    else{
+        actor_dedicated_to_viewport->ViewProperties(this, -1);
+    }
     ImGui::End();
 
     ImGui::Begin(std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str(), nullptr);
@@ -293,9 +290,82 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
     }
 
-    if(is_viewport_hovered) SelectionUpdate();
+    if(is_viewport_hovered){
+
+        spawn_cursor->local_position = this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
+
+        if(current_tool == Tools::SELECT || current_tool == Tools::MOVE_ACTOR_CLUSTER){
+            SelectionUpdate();
+        }
+        if(current_tool == Tools::PLACE){
+            PlaceActors();
+        }
+    }
+
+    for(ufo::Actor* _actor : selected_actors){
+        const Vector2f pos_min = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position;
+        const Vector2f pos_max = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position+_actor->editor_hitbox.size;
+
+        ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
+    }
 
     ImGui::End();
+}
+
+void LevelEditorTab::PlaceActors(){
+
+    if(actor_dedicated_to_viewport){
+        ufo::Actor* place_inside_actor = nullptr;
+        place_inside_actor = actor_dedicated_to_viewport->parent;
+
+        if(place_inside_actor){
+            ufo::TileMap* tile_map = place_inside_actor->GetTileMap();
+
+            if(tile_map){
+
+                spawn_cursor->local_position = Vector2f(
+                    std::floor(spawn_cursor->local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                    std::floor(spawn_cursor->local_position.y/tile_map->tile_height)*tile_map->tile_height);
+
+                if(spawn_cursor->actors.size()){
+                    spawn_cursor->actors[0]->local_position = -spawn_cursor->actors[0]->editor_hitbox.position;
+                }
+            }
+
+            if(ImGui::IsItemClicked(0) && current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+                if(editor->currently_selected_actor_type != ""){
+                    if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
+                        auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);
+
+                        ufo::Actor* inst_ptr = inst.get();
+
+                        inst->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
+
+                        //Undo&redo
+
+                        while((int)this_level->level_changes.size()-1 > this_level->current_level_change){
+                            Console::PrintLine("loop change stack",this_level->current_level_change, this_level->level_changes.size());
+                            this_level->level_changes.pop_back();
+                        }
+
+                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+
+                        this_level->current_level_change++;
+                        Console::PrintLine("Actor current change",this_level->current_level_change);
+
+                        place_inside_actor->AddActorUniquePtr(std::move(inst));
+
+                        if(actor_dedicated_to_viewport->editor_name == "...") actor_dedicated_to_viewport->stash = true;
+
+                        actor_dedicated_to_viewport = inst_ptr;
+
+                    }
+                }
+            }
+
+        }
+    }
+
 }
 
 void LevelEditorTab::SelectionUpdate(){
@@ -365,7 +435,7 @@ void LevelEditorTab::SelectionUpdate(){
         }
 
         for(const auto& actor : selected_actors){
-            auto local_tile_map = actor->IsInTileMap();
+            auto local_tile_map = actor->GetTileMap();
 
             if(local_tile_map){
 
@@ -419,18 +489,6 @@ void LevelEditorTab::SelectionUpdate(){
             selected_actors.push_back(focused_actor);
         }
     }*/
-
-    for(ufo::Actor* _actor : selected_actors){
-        const Vector2f pos_min = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position;
-        const Vector2f pos_max = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position+_actor->editor_hitbox.size;
-
-        ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
-    }
-
-    if(selected_actors.size() > 0){
-        //-1 is just a temporary index here to test things out, I don't think that value is actually used to anything.
-        selected_actors[0]->ViewProperties(this,-1);
-    }
 }
 
 void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state){
