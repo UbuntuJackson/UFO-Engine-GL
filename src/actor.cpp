@@ -83,7 +83,9 @@ void Actor::AddNewActors(){
         auto actor_ptr = actor.get();
 
         actor->level = level; // Will be overwritten if *this* is of type Level.
+#ifdef UFO_ENGINE_STUDIO
         level->actors_with_stable_id.emplace(actor_ptr->editor_id, actor_ptr);
+#endif
         OnAddActor(actor.get());
         actor->engine = engine;
         newly_added_actors.push_back(actor_ptr);
