@@ -37,10 +37,10 @@ public:
     }
 
     void OnSpawn(){
-
         get_current_shape = [this](){
-            return ufo::Rectangle(GetGlobalPosition() + Vector2f(-8.0f, -8.0f),Vector2f(14.0f,14.0f));
+            return editor_hitbox;
         };
+
     }
 
     struct TileCollisionData{
@@ -162,7 +162,9 @@ public:
     }
 
     ufo::Rectangle GetRectangle(){
-        return get_current_shape();
+        ufo::Rectangle rect = get_current_shape();
+        rect.position+=GetGlobalPosition();
+        return rect;
     }
 
     std::function<ufo::Rectangle()> get_current_shape;
@@ -243,7 +245,7 @@ public:
     }
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera){
-        return;
+        //return;
 
             auto hit_box = GetRectangle();
             _graphics->DrawRectangleExtra(
@@ -263,9 +265,9 @@ public:
             float widget_y = j_rectangle.at("y")->AsFloat();
             float widget_w = j_rectangle.at("width")->AsFloat();
             float widget_h = j_rectangle.at("height")->AsFloat();
-            get_current_shape = [&](){return ufo::Rectangle(Vector2f(widget_x, widget_y), Vector2f(widget_w,widget_h));};
+            get_current_shape = [=](){return ufo::Rectangle(Vector2f(widget_x, widget_y), Vector2f(widget_w,widget_h));};
         } catch(const std::exception& _error){
-            Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::Widget instance");
+            Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for "+class_name);
         }
 
     }
