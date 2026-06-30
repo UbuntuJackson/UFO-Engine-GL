@@ -200,6 +200,8 @@ public:
     static inline int editor_id_counter = 0;
     int editor_id = 0;
 
+ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
+
 #ifdef UFO_ENGINE_STUDIO
 
     virtual void OnResourcesEdited(){
@@ -251,8 +253,6 @@ public:
     void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
-
-    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
 
     std::vector<std::unique_ptr<ufo::EditorProperty>> editor_properties;
 
