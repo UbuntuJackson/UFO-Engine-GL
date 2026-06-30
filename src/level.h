@@ -34,7 +34,6 @@ public:
 
     std::vector<int> deletion_history;
 
-    std::vector<Camera*> camera_handles;
     std::vector<Camera*> active_camera_handles;
 private:
     int clean_up_mode = CleanUpModes::EACH_FRAME;

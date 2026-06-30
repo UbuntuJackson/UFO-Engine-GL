@@ -49,7 +49,7 @@ Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
     return level_viewport_position + position;
 }
 
-void  LevelEditorTab::Initialise(){
+void LevelEditorTab::Initialise(){
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
     this_level->unremovable = true;
@@ -303,8 +303,8 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     }
 
     for(ufo::Actor* _actor : selected_actors){
-        const Vector2f pos_min = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position;
-        const Vector2f pos_max = TranslateToEditorScreenSpace(_actor->GetGlobalPosition())+_actor->editor_hitbox.position+_actor->editor_hitbox.size;
+        const Vector2f pos_min = TranslateToEditorScreenSpace(_actor->GetGlobalPosition()+_actor->editor_hitbox.position);
+        const Vector2f pos_max = TranslateToEditorScreenSpace(_actor->GetGlobalPosition()+_actor->editor_hitbox.position+_actor->editor_hitbox.size);
 
         ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFFFFFFFF);
     }
@@ -332,7 +332,7 @@ void LevelEditorTab::PlaceActors(){
                 }
             }
 
-            if(ImGui::IsItemClicked(0) && current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
+            if(ImGui::IsItemClicked(0)){
                 if(editor->currently_selected_actor_type != ""){
                     if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
                         auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);

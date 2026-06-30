@@ -36,9 +36,10 @@ void ResizeOrMove(Actor* _actor,
 
     if(_actor->engine->mouse.is_left_button_released) _part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
 
+    //MIDDLE section not necessary
     if(ufo::Maths::RectangleVsPoint(move_rectangle,_screen_space_mouse_position)){
-
-        if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::MIDDLE;
+        return;
+        //if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::MIDDLE;
 
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_left,_screen_space_mouse_position)){

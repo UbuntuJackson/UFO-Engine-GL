@@ -37,49 +37,10 @@ void Camera::OnUpdate(float _delta_time){
 
 void
 Camera::HandleUpdate(){ //Updates as a handle.
-    /*if(clamp){ //for clamping x in this case, the same applies for y
-        int scaled_width_half = (1.0f/scale)*view.GetWidthHalf(); //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
-        int scaled_height_half = (1.0f/scale)*view.GetHeightHalf();
-
-        position.x = std::max(world.x0 + scaled_width_half, position.x); //world-wise this is the middle of the screen.
-        position.x = std::min(world.x1 - scaled_width_half, position.x); //will subtract -view.GetWidthHalf() from here.
-        position.y = std::max(world.y0 + scaled_height_half, position.y); //world-wise this is the middle of the screen.
-        position.y = std::min(world.y1 - scaled_height_half, position.y); //will subtract -view.GetWidthHalf() from here.
-    }*/
-
-    /*if(clamp){
-        int scaled_width_half = (1.0f/scale)*view.GetWidthHalf(); //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
-        int scaled_height_half = (1.0f/scale)*view.GetHeightHalf();
-
-        //Console::Out(Engine::Get().current_level->camera_handles.size());
-
-        if(GetGlobalPosition().x < world.x0 + scaled_width_half){
-            local_position.x -= (GetGlobalPosition().x - (world.x0 + scaled_width_half));
-
-        }
-        else if(GetGlobalPosition().x > world.x1 - scaled_width_half){
-            local_position.x -= (GetGlobalPosition().x - (world.x1 - scaled_width_half));
-
-        }
-
-        if(GetGlobalPosition().y < world.y0 + scaled_height_half){
-            local_position.y -= (GetGlobalPosition().y - (world.y0 + scaled_height_half));
-
-        }
-        else if(GetGlobalPosition().y > world.y1 - scaled_height_half){
-            local_position.y -= (GetGlobalPosition().y - (world.y1 - scaled_height_half));
-
-        }
-
-        local_position_set_elsewhere = true;
-
-    }*/
 
     if(clamp){
         int scaled_width_half = (1.0f/scale)*viewport.size.x/2.0f; //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
         int scaled_height_half = (1.0f/scale)*viewport.size.y/2.0f;
-
-        //Console::Out(Engine::Get().current_level->camera_handles.size());
 
         if(GetGlobalPosition().x < world.x0 + scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x0 + scaled_width_half));

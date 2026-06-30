@@ -358,7 +358,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		instance->import_mode = is_custom_class ? Actor::ImportModes::WRAPPED : Actor::ImportModes::UNWRAPPED;
 
-		if(is_custom_class){
+		if(is_custom_class && !instance->is_editor_hit_box_unique_per_instance){
 
             if(actor_jsons_with_unaltered_default_properties.count(instance->class_name)){
                 ufo::gc::JsonMap* class_json = actor_jsons_with_unaltered_default_properties.at(instance->class_name);

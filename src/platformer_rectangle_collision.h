@@ -6,6 +6,13 @@
 #include "graphics.h"
 #include "../tilemap/tileset_data.h"
 
+#ifdef UFO_ENGINE_STUDIO
+#include "im_vec.h"
+#include "viewport_editing_utils.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/editor.h"
+#endif
+
 namespace ufo{
 
 class PlatformerRectangleCollision : public Actor{
@@ -236,7 +243,7 @@ public:
     }
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera){
-        //return;
+        return;
 
             auto hit_box = GetRectangle();
             _graphics->DrawRectangleExtra(
@@ -249,35 +256,39 @@ public:
     }
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-        /*
+
         try{
-            auto j_rectangle = _json->map.at("rectangle")->AsMap();
+            auto j_rectangle = _json->map.at("editor_hitbox")->AsMap();
             float widget_x = j_rectangle.at("x")->AsFloat();
             float widget_y = j_rectangle.at("y")->AsFloat();
-            float widget_w = j_rectangle.at("w")->AsFloat();
-            float widget_h = j_rectangle.at("h")->AsFloat();
+            float widget_w = j_rectangle.at("width")->AsFloat();
+            float widget_h = j_rectangle.at("height")->AsFloat();
             get_current_shape = [&](){return ufo::Rectangle(Vector2f(widget_x, widget_y), Vector2f(widget_w,widget_h));};
         } catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::Widget instance");
         }
-        */
+
     }
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc){
 
         ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
-        ufo::Rectangle rectangle = GetRectangle();
+        /*ufo::Rectangle rectangle = GetRectangle();
 
         auto j_rectangle = _gc->New<ufo::gc::JsonMap>();
-        j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(rectangle.position.x));
-        j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(rectangle.position.y));
-        j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(rectangle.size.x));
-        j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
+        j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.position.x));
+        j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.position.y));
+        j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.size.x));
+        j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.size.y));
 
-        parent_class_as_json->map.emplace("rectangle", j_rectangle);
+        parent_class_as_json->map.emplace("editor_hitbox", j_rectangle);*/
         return parent_class_as_json;
     }
+#ifdef UFO_ENGINE_STUDIO
+    PartsOfRectangle part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+#endif //UFO_ENGINE_STUDIO
 
 };
 }

@@ -177,6 +177,7 @@ public:
 
     void SortActors();
 
+    bool is_editor_hit_box_unique_per_instance = false;
     ufo::Rectangle GetEditorHitBox();
 
     virtual ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);

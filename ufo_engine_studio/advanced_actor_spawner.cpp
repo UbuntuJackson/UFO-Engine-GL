@@ -46,7 +46,7 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
     act->class_name = class_name;
     act->editor_name = act->class_name+std::to_string(_editor->actor_count_for_naming_purposes++);
 
-    if(_editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(act->class_name)){
+    if(!act->is_editor_hit_box_unique_per_instance && _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(act->class_name)){
         ufo::gc::JsonMap* class_json = _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(act->class_name);
         if(class_json->map.count("editor_hitbox")){
             auto j_editor_hitbox = class_json->map.at("editor_hitbox")->AsMap();

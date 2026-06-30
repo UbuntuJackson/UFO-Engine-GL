@@ -244,8 +244,22 @@ void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
 ufo::Rectangle Actor::GetEditorHitBox(){
 
+    if(class_name == "ufo::Sprite" ||
+        class_name == "ufo::Animation" ||
+        class_name == "ufo::PlatformerRectangleCollision" ||
+        class_name == "ufo::RectangularArea"
+    ){
+        ufo::Rectangle main_editor_hitbox = editor_hitbox;
+        main_editor_hitbox.position+=GetGlobalPosition();
+        return editor_hitbox;
+    }
+
     for(const auto& actor : actors){
-        if(actor->class_name == "ufo::Sprite" || actor->class_name == "ufo::Animation" || actor->class_name == "ufo::PlatformerRectangleCollision"){
+        if(actor->class_name == "ufo::Sprite" ||
+            actor->class_name == "ufo::Animation" ||
+            actor->class_name == "ufo::PlatformerRectangleCollision" ||
+            actor->class_name == "ufo::RectangularArea"
+        ){
             ufo::Rectangle main_editor_hitbox = actor->editor_hitbox;
             main_editor_hitbox.position+=actor->GetGlobalPosition();
             return main_editor_hitbox;
@@ -400,6 +414,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             actors[a]->properties_open = old_actor->properties_open;
             actors[a]->editor_name = old_actor->editor_name;
             actors[a]->editor_id = old_actor->editor_id;
+            if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
 
             actors[a]->OnSpawn();
 
@@ -427,6 +442,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             new_actor_queue[a]->properties_open = old_actor->properties_open;
             new_actor_queue[a]->editor_name = old_actor->editor_name;
             new_actor_queue[a]->editor_id = old_actor->editor_id;
+            if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
 
             new_actor_queue[a]->OnSpawn();
 
@@ -737,6 +753,8 @@ void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectan
         _selected_actors.push_back(this);
         return;
     }
+
+    if(import_mode == ImportModes::WRAPPED) return;
 
     for(const auto& actor : actors){
         actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);

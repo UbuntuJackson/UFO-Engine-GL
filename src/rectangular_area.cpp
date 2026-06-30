@@ -15,6 +15,7 @@ namespace ufo{
 RectangularArea::RectangularArea(Vector2f _) : Actor(_){
     class_name = "ufo::RectangularArea";
     base_class_name = class_name;
+    is_editor_hit_box_unique_per_instance = true;
 }
 
 ufo::Rectangle RectangularArea::GetRectangle(){
@@ -34,10 +35,11 @@ void RectangularArea::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         float rectangle_y = j_rectangle.at("y")->AsFloat();
         float rectangle_w = j_rectangle.at("w")->AsFloat();
         float rectangle_h = j_rectangle.at("h")->AsFloat();
-        rectangle.position.x = rectangle_x;
-        rectangle.position.y = rectangle_y;
-        rectangle.size.x = rectangle_w;
-        rectangle.size.y = rectangle_h;
+        editor_hitbox.position.x = rectangle_x;
+        editor_hitbox.position.y = rectangle_y;
+        editor_hitbox.size.x = rectangle_w;
+        editor_hitbox.size.y = rectangle_h;
+        editor_hitbox = rectangle;
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::RectangularArea instance");
     }
@@ -48,10 +50,10 @@ ufo::gc::JsonMap* RectangularArea::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
     auto j_rectangle = _gc->New<ufo::gc::JsonMap>();
-    j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(rectangle.position.x));
-    j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(rectangle.position.y));
-    j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(rectangle.size.x));
-    j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
+    j_rectangle->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.position.x));
+    j_rectangle->map.emplace("y", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.position.y));
+    j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.size.x));
+    j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(editor_hitbox.size.y));
 
     parent_class_as_json->map.emplace("rectangle", j_rectangle);
     return parent_class_as_json;
@@ -61,25 +63,11 @@ ufo::gc::JsonMap* RectangularArea::GetAsJson(ufo::GarbageCollector* _gc){
 
 void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    //Actor::OnUpdateEditorViewport(_editor, _level_editor_tab);
-
-    /*ImU32 colour = 0xFFFFFFFF;
-    if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
-
-    ImU32 line_clour =  0x66664422;
-
-    Vector2f this_screen_pos = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x, this_screen_pos.y-5.0f), ImVec2(this_screen_pos.x, this_screen_pos.y+5.0f), colour, 1.0f);
-    ImGui::GetWindowDrawList()->AddLine(ImVec2(this_screen_pos.x-5.0f, this_screen_pos.y), ImVec2(this_screen_pos.x+5.0f, this_screen_pos.y), colour, 1.0f);*/
-
-    //...
-
     auto cam = _level_editor_tab->this_level->active_camera_handles.back();
 
     {
-        Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+rectangle.position);
-        Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+rectangle.position+rectangle.size);
+        Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
+        Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
         Vector2f global_position = GetGlobalPosition();
 
         ImU32 colour = 0xFFFFFFFF;
@@ -101,11 +89,10 @@ void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, U
 
     ufo::ResizeOrMove(this,
         part_of_rectangle_resized_in_editor,
-        cam->Transform(GetGlobalPosition()+rectangle.position), cam->scale* rectangle.size,
-        rectangle.position, rectangle.size,
+        cam->Transform(GetGlobalPosition()+editor_hitbox.position), cam->scale* editor_hitbox.size,
+        editor_hitbox.position, editor_hitbox.size,
         _level_editor_tab->mouse_position_over_screenspace,
         scaled_delta_mouse_position);
-
 
 }
 

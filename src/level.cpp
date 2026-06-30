@@ -176,6 +176,11 @@ Actor* Level::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) {
 
 void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
+    const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+    const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
+
+    ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFF00FFFF);
+
     /*Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
     Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
 

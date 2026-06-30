@@ -463,7 +463,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     if(!is_selected && _level_editor_tab->actor_dedicated_to_viewport->parent->GetTileMap() != this) return;
 
-    if(is_selected){
+    if(is_selected && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP){
 
         Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
