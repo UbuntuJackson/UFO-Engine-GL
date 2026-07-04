@@ -2,6 +2,7 @@
 #include <memory>
 #include "actor.h"
 #include "level.h"
+#include "console.h"
 #include "engine.h"
 #include "graphics.h"
 #include "camera.h"
@@ -22,11 +23,11 @@ namespace ufo{
 Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     class_name = "ufo::Level";
     base_class_name = class_name;
+
+    level = this;
 }
 
 void Level::OnSpawn(){
-
-    level = this;
 
     tileset_manager.engine = engine;
 
@@ -247,7 +248,7 @@ void Level::RemoveFutureChanges(){
 
 void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->currently_edited_actor_in_viewport = this;
+        _level_editor_tab->currently_edited_actor_in_viewport = this->editor_id;
     }
     ImGui::Separator();
 

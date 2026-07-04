@@ -52,14 +52,9 @@ public:
 
     virtual void Load();
 
-    void OnAddActor(Actor* _actor){
-        _actor->level = this;
-    }
-
-    void LoadEngineObjects(/*JsonUnion _level_file*/){/**/}
-
-    virtual void LoadCustomObjects(/*JsonUnion _level_file*/){
-        //Generated::AssembleCustomActors(_level_file);
+    void OnAddActor(Actor* _actor) override {
+        level = this;
+        //_actor->level = this;
     }
 
     virtual ~Level(){}

@@ -89,9 +89,21 @@ public:
 
     TilesetData GetTilesetData(std::string _name);
 
-    void Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json);
-
 #ifdef UFO_ENGINE_STUDIO
+
+    ufo::Rectangle GetSelectionRectangle(){
+        float start_x = currently_selected_tiles.column;
+        float start_y = currently_selected_tiles.row;
+
+        float end_x = currently_selected_tiles.column + currently_selected_tiles.number_of_columns;
+        float end_y = currently_selected_tiles.row + currently_selected_tiles.number_of_rows;
+
+        if(start_y > end_y) std::swap(start_y, end_y);
+        if(start_x > end_x) std::swap(start_x, end_x);
+
+        return ufo::Rectangle(Vector2f(start_x,start_y), Vector2f(end_x-start_x, end_y-start_y));
+
+    }
 
     std::string current_tileset;
     void UpdateSelectedTilesetTile(const TilesetData& _tileset);

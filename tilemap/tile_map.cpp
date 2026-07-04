@@ -345,7 +345,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 
 void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->currently_edited_actor_in_viewport = this;
+        _level_editor_tab->currently_edited_actor_in_viewport = this->editor_id;
     }
     ImGui::Separator();
 
@@ -461,7 +461,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    if(!is_selected && _level_editor_tab->actor_dedicated_to_viewport->parent->GetTileMap() != this) return;
+    if(!is_selected && level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->GetTileMap() != this) return;
 
     if(is_selected && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP){
 

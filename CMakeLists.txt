@@ -115,6 +115,7 @@ set(
     #UFO Engine Studio
     ufo_engine_studio/utility_objects/controllable_camera.cpp
     ufo_engine_studio/utility_objects/spawn_cursor.cpp
+    ufo_engine_studio/utility_objects/new_actor_placeholder.cpp
     ufo_engine_studio/file_node.cpp
     ufo_engine_studio/file.cpp
     ufo_engine_studio/directory.cpp

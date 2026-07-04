@@ -4,6 +4,7 @@
 #include "engine.h"
 #include "input.h"
 #include "viewport_editing_utils.h"
+#include "../../imgui/imgui.h"
 
 namespace ufo{
 
@@ -16,7 +17,7 @@ void ResizeOrMove(Actor* _actor,
     Vector2f _screen_space_mouse_position,
     Vector2f _scaled_delta_mouse_position
 ){
-    const float margin = 20.0f; //Pixels.
+    const float margin = 10.0f; //Pixels.
     const Vector2f margin_vector = Vector2f(margin, margin);
 
     const ufo::Rectangle move_rectangle = ufo::Rectangle(_position_screen_space+margin_vector, _size_screen_space-margin_vector*2.0f);
@@ -43,7 +44,7 @@ void ResizeOrMove(Actor* _actor,
 
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_left,_screen_space_mouse_position)){
-
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
 
         if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::LEFT;
 
@@ -51,16 +52,21 @@ void ResizeOrMove(Actor* _actor,
         Console::PrintLine("Resize left");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_right,_screen_space_mouse_position)){
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
 
         if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::RIGHT;
 
         Console::PrintLine("Resize right");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_top,_screen_space_mouse_position)){
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+
         if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP;
         Console::PrintLine("Resize top");
     }
     if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom,_screen_space_mouse_position)){
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+
         if(_actor->engine->mouse.is_left_button_pressed) _part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM;
         Console::PrintLine("Resize bottom");
 

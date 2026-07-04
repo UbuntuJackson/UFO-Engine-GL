@@ -22,6 +22,7 @@
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "../ufo_engine_studio/utility_objects/new_actor_placeholder.h"
 #include "../ufo_engine_studio/im_vec.h"
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
@@ -82,12 +83,15 @@ void Actor::AddNewActors(){
     for(auto&& actor : new_actor_queue){
         auto actor_ptr = actor.get();
 
-        actor->level = level; // Will be overwritten if *this* is of type Level.
+        //actor->OnAddActor(actor_ptr);
+
+        //All levels are already preset, so if actor_ptr->level is not nullptr, then just let it be.
+        if(!actor_ptr->level) actor_ptr->level = level;
 #ifdef UFO_ENGINE_STUDIO
         level->actors_with_stable_id.emplace(actor_ptr->editor_id, actor_ptr);
 #endif
-        OnAddActor(actor.get());
-        actor->engine = engine;
+
+        actor_ptr->engine = engine;
         newly_added_actors.push_back(actor_ptr);
         actors.push_back(std::move(actor));
 
@@ -179,7 +183,11 @@ void Actor::OnSpawn(){
 
 }
 
-void Actor::OnAddActor(Actor* _actor){}
+void Actor::OnAddActor(Actor* _actor){
+
+
+
+}
 
 void Actor::Update(float _delta_time){
     former_rectangle = GetRectangle();
@@ -417,6 +425,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             actors[a]->editor_name = old_actor->editor_name;
             actors[a]->editor_id = old_actor->editor_id;
             if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
+            level->actors_with_stable_id.at(actors[a]->editor_id) = actors[a].get();
 
             actors[a]->OnSpawn();
 
@@ -445,6 +454,7 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
             new_actor_queue[a]->editor_name = old_actor->editor_name;
             new_actor_queue[a]->editor_id = old_actor->editor_id;
             if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
+            level->actors_with_stable_id.at(new_actor_queue[a]->editor_id) = new_actor_queue[a].get();
 
             new_actor_queue[a]->OnSpawn();
 
@@ -558,7 +568,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     bool tree_node_opened = false;
     if(import_mode == ImportModes::UNWRAPPED){
-        tree_node_opened = ImGui::TreeNodeEx(std::string("###ActorTree"+std::to_string(editor_id)).c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
+        std::string label = std::string("###ActorTree"+std::to_string(editor_id));
+
+        if(_level_editor_tab->actor_dedicated_to_viewport == this->editor_id) ImGui::SetNextItemOpen(true);
+        tree_node_opened = ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
+
         ImGui::SameLine();
     }
 
@@ -574,7 +588,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None, ImVec2(ImGui::CalcTextSize(visible_text.c_str()).x,ImGui::GetFontSize()));
 
         if(selectable_text){
-            _level_editor_tab->actor_dedicated_to_viewport = this;
+            _level_editor_tab->actor_dedicated_to_viewport = this->editor_id;
             _level_editor_tab->selected_actors.clear();
 
             if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
@@ -598,8 +612,9 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     if(ImGui::BeginPopupContextItem(("Options###Options"+std::to_string(editor_id)).c_str())){
 
         if(ImGui::MenuItem("Edit")){
-            _level_editor_tab->actor_dedicated_to_viewport = AddActor<ufo::Actor>(Vector2f(0.0f, 0.0f));
-            _level_editor_tab->actor_dedicated_to_viewport->editor_name = "...";
+            ufo::Actor* new_actor_place_holder = AddActor<UFOEngineStudio::NewActorPlaceHolder>(Vector2f(0.0f, 0.0f));
+
+            _level_editor_tab->actor_dedicated_to_viewport = new_actor_place_holder->editor_id;
 
         }
         if(ImGui::MenuItem("Rename")){
@@ -745,14 +760,14 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     }
 }
 
-void Actor::GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
+void Actor::GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
     if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
 
     if(
         ufo::Maths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
         && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
     ){
-        _selected_actors.push_back(this);
+        _selected_actors.push_back(this->editor_id);
         return;
     }
 

@@ -75,7 +75,7 @@ public:
         auto actor_ptr = u_actor.get();
         actor_ptr->parent = this;
         //actor_ptr->level = level;
-        OnAddActor(actor_ptr);
+        //OnAddActor(actor_ptr);
         //actor_ptr->engine = engine;
         //actor_ptr->OnSpawn();
         new_actor_queue.push_back(std::move(u_actor));
@@ -86,7 +86,7 @@ public:
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
         //actor_ptr->level = level;
-        OnAddActor(actor_ptr);
+        //OnAddActor(actor_ptr);
         //actor_ptr->engine = engine;
         //actor_ptr->OnSpawn();
         new_actor_queue.push_back(std::move(_u_actor));
@@ -97,7 +97,7 @@ public:
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
         //actor_ptr->level = level;
-        OnAddActor(actor_ptr);
+        //OnAddActor(actor_ptr);
         //actor_ptr->engine = engine;
         //actor_ptr->OnSpawn();
         actors.at(_index) = std::move(_u_actor);
@@ -274,7 +274,7 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
-    void GetSelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
+    void GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
     void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
     void SetActorsUnselectedInViewport();
 

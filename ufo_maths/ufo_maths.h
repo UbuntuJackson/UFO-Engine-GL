@@ -14,6 +14,8 @@ typedef olc::vi2d Vector2i;
 
 namespace ufo::Maths{
 
+const int NULL_ID = -1;
+
 //Matrices and their transformations
 
 /*template<size_t rows, size_t columns>

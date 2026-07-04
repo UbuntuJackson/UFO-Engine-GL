@@ -20,10 +20,10 @@ class LevelEditorTab : public Tab{
 public:
 
     // This is the actor currently used as the layer. It can be of type ufo::Level, ufo::CollisionGrid, and ufo::TileMap
-    ufo::Actor* currently_edited_actor_in_viewport = nullptr;
-    std::vector<ufo::Actor*> selected_actors;
+    int currently_edited_actor_in_viewport = ufo::Maths::NULL_ID;
+    std::vector<int> selected_actors;
 
-    ufo::Actor* actor_dedicated_to_viewport = nullptr;
+    int actor_dedicated_to_viewport = ufo::Maths::NULL_ID;
 
     //This is for multi-dragdropping and single dragdropping too
     std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;

@@ -53,64 +53,6 @@ void TilesetManager::InitialiseTextures(){
 
 }
 
-void TilesetManager::Load(ufo::GarbageCollector* _gc, const ufo::gc::JsonMap* _json){
-
-    Console::Out("[!]", "Currently loading tilesets");
-
-    for(auto&& tileset_json : _json->map.at("tilesets")->AsArray()){
-        auto tileset_json_dictionary = tileset_json->AsMap();
-
-        std::string image = tileset_json_dictionary.at("image")->AsString();
-        std::string name = tileset_json_dictionary.at("name")->AsString();
-
-        std::string relative_path;
-
-        std::string image_path = relative_path;
-
-        engine->asset_manager.LoadTexture(image_path+"/"+image, name, true);
-        keys_to_temporary_assets.push_back(name);
-
-        int columns = tileset_json_dictionary.at("columns")->AsFloat();
-        int first_gid = tileset_json_dictionary.at("firstgid")->AsFloat();
-        int image_height = tileset_json_dictionary.at("imageheight")->AsFloat();
-        int image_width = tileset_json_dictionary.at("imagewidth")->AsFloat();
-        int tile_count = tileset_json_dictionary.at("tilecount")->AsFloat();
-        int tileset_tile_size_x = tileset_json_dictionary.at("tilewidth")->AsFloat();
-        int tileset_tile_size_y = tileset_json_dictionary.at("tileheight")->AsFloat();
-        TilesetData local_tilset_data = TilesetData{
-            name,
-            columns,
-            first_gid,
-            (float)image_width,
-            (float)image_height,
-            (float)tileset_tile_size_x,
-            (float)tileset_tile_size_y,
-            tile_count
-        };
-
-        if(name == "actors"){
-
-            Console::Out(image_path+"/"+image);
-
-            Console::Out(
-                "[!] Tileset data:\n",
-                "name:", name, "\n",
-                "columns:",columns,"\n",
-                "image width:",image_width,"\n",
-                "image height:",image_height,"\n",
-                "tile width:",tileset_tile_size_x,"\n",
-                "tile height:",tileset_tile_size_y,"\n",
-                "tile count:",tile_count
-            );
-        }
-
-        tileset_data.push_back(
-            local_tilset_data
-        );
-    }
-
-}
-
 TilesetData TilesetManager::GetTilesetData(std::string _name){
     for(auto&& data : tileset_data){
         if(data.name == _name) return data;
@@ -244,7 +186,15 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         for(auto& tileset : tileset_data){
             if(!engine->asset_manager.textures.count(tileset.name)){
                 if(ImGui::Button(("Recover Missing Tileset:"+ tileset.name).c_str())){
-                    SDL_ShowOpenFileDialog(&UFOEngineStudio::OnRecoverTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+                    SDL_ShowOpenFileDialog(
+                        &UFOEngineStudio::OnRecoverTileset,
+                        _level_editor_tab,
+                        _level_editor_tab->engine->window,
+                        nullptr,
+                        0,
+                        _level_editor_tab->editor->opened_directory_path.c_str(),
+                        false
+                    );
                     tileset_being_recovered = tileset.name;
                 }
 
@@ -270,6 +220,48 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                 ImVec2 mouse_pos = ImGui::GetMousePos();
                 ImVec2 item_rect_pos = ImGui::GetItemRectMin();
 
+                if(ImGui::IsItemHovered() && (ImGui::IsMouseDragging(0) || ImGui::IsMouseReleased(0))){
+                    UpdateSelectedTilesetTile(tileset);
+                }
+
+
+                int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
+                int x = tile_on_tile_selector%tileset.columns;
+                int y = tile_on_tile_selector/tileset.columns;
+
+                int columns_in_buffer = std::abs(x-currently_selected_tiles.column)+1;
+                int rows_in_buffer =    std::abs(y-currently_selected_tiles.row)+1;
+
+                Console::PrintLine(columns_in_buffer, rows_in_buffer);
+                Console::PrintLine("x,y:",x, y);
+
+                int x0 = currently_selected_tiles.column;
+                int y0 = currently_selected_tiles.row;
+                int x1 = x+1;
+                int y1 = y+1;
+
+                Console::PrintLine("x0,y0,x1,y1:",x0,y0,x1, y1);
+
+                if(x0 >= x1){
+                    std::swap(x0,x1);
+                    x1+=1;
+                    x0-=1;
+                    //columns_in_buffer-=1;
+                    //x1+=1;
+                    //x0-=(currently_selected_tiles.number_of_columns);
+                    //x1-=(currently_selected_tiles.number_of_columns);
+                }
+                if(y0 >= y1){
+                    std::swap(y0,y1);
+                    y1+=1;
+                    y0-=1;
+                    //rows_in_buffer+=1;
+                    //y1-=1;
+                    //y0-=(currently_selected_tiles.number_of_rows);
+                    //y1-=(currently_selected_tiles.number_of_rows);
+                }
+                Console::PrintLine("x0,y0,x1,y1:",x0,y0,x1, y1);
+
                 if(ImGui::IsItemHovered()){
                     if(ImGui::IsMouseClicked(0)){
                         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
@@ -294,19 +286,6 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
                         UpdateSelectedTilesetTile(tileset);
 
-                        int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
-                        int x = tile_on_tile_selector%tileset.columns;
-                        int y = tile_on_tile_selector/tileset.columns;
-
-                        int columns_in_buffer = x-currently_selected_tiles.column+1;
-                        int rows_in_buffer = y-currently_selected_tiles.row+1;
-                        //Console::PrintLine("first tile id",tileset.tileset_start_id, "rect",x, columns_in_buffer,y,rows_in_buffer);
-
-                        int x0 = currently_selected_tiles.column;
-                        int y0 = currently_selected_tiles.row;
-                        int x1 = x+1;
-                        int y1 = y+1;
-
                         for(int r = y0; r < y1; r++){
                             for(int c = x0; c < x1; c++){
                                 int t = (r*tileset.columns)+ c + tileset.tileset_start_id;
@@ -322,11 +301,11 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                 }
 
                 ImGui::GetWindowDrawList()->AddRect(
-                    ImVec2(item_rect_pos.x + currently_selected_tiles.column*tileset.tile_width , item_rect_pos.y + currently_selected_tiles.row*tileset.tile_height),
+                    ImVec2(item_rect_pos.x + x0*tileset.tile_width , item_rect_pos.y + y0*tileset.tile_height),
                     ImVec2(item_rect_pos.x +
-                        currently_selected_tiles.column*tileset.tile_width+tileset.tile_width*currently_selected_tiles.number_of_columns ,
+                        x0*tileset.tile_width+tileset.tile_width*(x1-x0) ,
                         item_rect_pos.y +
-                        currently_selected_tiles.row*tileset.tile_height+tileset.tile_height*currently_selected_tiles.number_of_rows),
+                        y0*tileset.tile_height+tileset.tile_height*(y1-y0)),
                     0xFFFF00FF, 0.0f, 0, 1.0f);
 
                 ImGui::EndTabItem();
