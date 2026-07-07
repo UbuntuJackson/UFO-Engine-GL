@@ -15,7 +15,6 @@
 #include "ufo_maths.h"
 #include "widget.h"
 #include "button.h"
-#include "actor_component_loader.h"
 #include "platformer_rectangle_collision.h"
 #include "collision_grid.h"
 #include "background_sprite.h"
@@ -519,27 +518,6 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 	else{
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("class_name")->AsString());
 					return std::move(factory_map.at("Actor")(_json));
-	}
-}
-
-void GenericGenerator::JsonToActorTreeInGameComponentLoad(Actor* _actor, ufo::gc::JsonMap* _json){
-    return;
-
-    try{
-
-		_actor->import_mode = _json->map.at("import_mode")->AsFloat();
-		if(_actor->import_mode == Actor::ImportModes::WRAPPED){
-                Console::PrintLine("new actor queue size before whiping",_actor->new_actor_queue.size(), _actor->actors.size());
-                _actor->new_actor_queue.clear();
-
-		    //Importing components instead of the entire actor.
-			ActorComponentLoader actor_component_loader;
-			actor_component_loader.Load(this, _actor);
-
-		}
-
-	}catch(const std::exception& _error){
-	    Console::PrintLine("[UFO-Engine] GenericGenerator::FromJsonInGame: Could not find data 'import_mode'");
 	}
 }
 

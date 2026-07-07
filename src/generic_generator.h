@@ -72,8 +72,6 @@ public:
 
     std::unique_ptr<Actor> FromJsonInGame(ufo::gc::JsonMap* _json);
 
-    void JsonToActorTreeInGameComponentLoad(Actor* _actor, ufo::gc::JsonMap* _json);
-
     virtual ~GenericGenerator() = default;
 };
 

@@ -166,20 +166,16 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
     ImGui::SameLine();
 
     if(ImGui::Button("Brush")){
-        tool = Tools::BRUSH;
-
-        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
     }
 
     if(ImGui::Button("Eraser")){
         currently_selected_tiles = ManyTiles{{0},0,0,1,1};
-        tool = Tools::BRUSH;
-        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
     }
 
     if(ImGui::Button("Fill Bucket")){
-        tool = Tools::FILL_BUCKET;
-        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET;
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
@@ -226,45 +222,33 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
 
                 int tile_on_tile_selector = currently_selected_tile  - tileset.tileset_start_id;
-                int x = tile_on_tile_selector%tileset.columns;
-                int y = tile_on_tile_selector/tileset.columns;
+                int new_tile_x = tile_on_tile_selector%tileset.columns;
+                int new_tile_y = tile_on_tile_selector/tileset.columns;
 
-                int columns_in_buffer = std::abs(x-currently_selected_tiles.column)+1;
-                int rows_in_buffer =    std::abs(y-currently_selected_tiles.row)+1;
-
-                Console::PrintLine(columns_in_buffer, rows_in_buffer);
-                Console::PrintLine("x,y:",x, y);
+                int columns_in_buffer = std::abs(new_tile_x-currently_selected_tiles.column)+1;
+                int rows_in_buffer =    std::abs(new_tile_y-currently_selected_tiles.row)+1;
 
                 int x0 = currently_selected_tiles.column;
                 int y0 = currently_selected_tiles.row;
-                int x1 = x+1;
-                int y1 = y+1;
-
-                Console::PrintLine("x0,y0,x1,y1:",x0,y0,x1, y1);
+                int x1 = new_tile_x+1;
+                int y1 = new_tile_y+1;
 
                 if(x0 >= x1){
                     std::swap(x0,x1);
                     x1+=1;
                     x0-=1;
-                    //columns_in_buffer-=1;
-                    //x1+=1;
-                    //x0-=(currently_selected_tiles.number_of_columns);
-                    //x1-=(currently_selected_tiles.number_of_columns);
+
                 }
                 if(y0 >= y1){
                     std::swap(y0,y1);
                     y1+=1;
                     y0-=1;
-                    //rows_in_buffer+=1;
-                    //y1-=1;
-                    //y0-=(currently_selected_tiles.number_of_rows);
-                    //y1-=(currently_selected_tiles.number_of_rows);
+
                 }
-                Console::PrintLine("x0,y0,x1,y1:",x0,y0,x1, y1);
 
                 if(ImGui::IsItemHovered()){
                     if(ImGui::IsMouseClicked(0)){
-                        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::EDIT_TILEMAP;
+                        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
 
                         UpdateSelectedTilesetTile(tileset);
 

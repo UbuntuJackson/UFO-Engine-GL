@@ -39,7 +39,7 @@ private:
     int clean_up_mode = CleanUpModes::EACH_FRAME;
 public:
     Level();
-    void OnSpawn();
+    void OnSpawn() override;
 private:
     int control_handout_counter = -1;
 public:
@@ -52,14 +52,9 @@ public:
 
     virtual void Load();
 
-    void OnAddActor(Actor* _actor) override {
-        level = this;
-        //_actor->level = this;
-    }
-
     virtual ~Level(){}
 
-    void Update(float _delta_time);
+    void Update(float _delta_time) override;
 
     void UpdatePhase(float _delta_time);
 
@@ -73,7 +68,7 @@ public:
 
     }
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc){
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override{
 
         ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
         ufo::gc::JsonArray* tilesets = _gc->New<ufo::gc::JsonArray>();
@@ -108,17 +103,17 @@ public:
 
     std::map<int, ufo::Actor*> actors_with_stable_id;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
     void Undo();
     void Redo();
     void RemoveFutureChanges();
 
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     bool OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

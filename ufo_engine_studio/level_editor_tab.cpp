@@ -26,6 +26,19 @@
 
 namespace UFOEngineStudio{
 
+void LevelEditorTab::SubmitUndoRedoAction(){
+
+    if(current_undo_redo_action.actor_id != ufo::Maths::NULL_ID){
+        this_level->RemoveFutureChanges();
+
+        this_level->actors_with_stable_id.at(current_undo_redo_action.actor_id)->OnEndUndoRedoAction(this);
+        this_level->level_changes.push_back(std::move(current_undo_redo_action.actor_change));
+
+        this_level->level_changes.back()->Do();
+    }
+    current_undo_redo_action = UndoRedoAction{ufo::Maths::NULL_ID, Tools::NONE, nullptr};
+}
+
 LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
     this_level = _editor->AddActor<ufo::Level>();
     this_level->Load();
@@ -74,6 +87,25 @@ void LevelEditorTab::Refresh(){
 }
 
 void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
+
+    ImGui::Begin("Undo & Redo");
+
+    ImGui::TextWrapped("Current level change: %s", std::to_string(this_level->current_level_change).c_str());
+
+    for(const auto& change : this_level->level_changes){
+        ImGui::TextWrapped("%s", change->GetInfo().c_str());
+    }
+
+    ImGui::End();
+
+    //Shortcuts for testing purposes
+    if(ImGui::IsKeyPressed(ImGuiKey_F5)){
+        _editor->refresh_entire_project = true;
+    }
+
+    if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
+        SubmitUndoRedoAction();
+    }
 
     if(reset_selection_status){
         this_level->ResetSelectionStatus();
@@ -226,11 +258,14 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     ImGui::Begin(std::string(currently_viewed_properties_actor_name+"###Properties"+std::to_string(id)).c_str());
     if(selected_actors.size() > 0){
         //-1 is just a temporary index here to test things out, I don't think that value is actually used to anything.
-        this_level->actors_with_stable_id.at(selected_actors[0])->ViewProperties(this,-1);
+        inspected_actor = this_level->actors_with_stable_id.at(selected_actors[0])->editor_id;
     }
     else{
-        this_level->actors_with_stable_id.at(actor_dedicated_to_viewport)->ViewProperties(this, -1);
+        inspected_actor = actor_dedicated_to_viewport;
     }
+
+    if(inspected_actor != ufo::Maths::NULL_ID) this_level->actors_with_stable_id.at(inspected_actor)->ViewProperties(this, -1);
+
     ImGui::End();
 
     float w_h_ratio = (float)ImGui::GetWindowSize().x/(float)ImGui::GetWindowSize().y;

@@ -145,43 +145,12 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
 
 #ifdef UFO_ENGINE_STUDIO
 
-void TileMap::Do(){
-    //change the course of changes
-    while((int)level->level_changes.size()-1 > level->current_level_change){
-        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
-        level->level_changes.pop_back();
-    }
-
-}
-
-void TileMap::DoPaint(){
-    Do();
-
-    Console::PrintLine("Popped change stack",level->current_level_change, level->level_changes.size());
-
-    level->level_changes.push_back(std::make_unique<TileMapChange_Paint>(
-        this,
-        left_bound_tile,
-        lower_bound_tile,
-        right_bound_tile,
-        upper_bound_tile)
-    );
-
-    level->level_changes.back()->Do();
-
-    level->current_level_change++;
-
-    //Output: accurate
-    Console::PrintLine("Doing:",level->current_level_change,right_bound_tile-left_bound_tile);
-}
-
-void TileMap::DoResize(int _left, int _right, int _bottom, int _top){
-    Do();
+void TileMap::DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top){
+    level->RemoveFutureChanges();
 
     level->level_changes.push_back(
         std::make_unique<TileMapChange_TileMapSize>(this, _left, _right, _bottom, _top)
     );
-    level->current_level_change++;
 }
 
 void TileMap::ResizeRight(int _number_of_tiles_to_insert){
@@ -268,7 +237,11 @@ void TileMap::CancelAllResizeDialogues(){
 }
 
 void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    if(!visible || !is_selected) return;
+    if(
+        !(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
+    )) return;
 
     float scale = _camera->scale;
 
@@ -371,6 +344,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     if(!resize_right){
         if(ImGui::Button("Resize Right")){
             resize_right = true;
+            _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
     }
     else{
@@ -378,7 +352,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeRight(number_of_tiles_to_insert);
 
-            DoResize(0,number_of_tiles_to_insert,0,0);
+            DoResize(_level_editor_tab,0,number_of_tiles_to_insert,0,0);
 
 
             resize_right = false;
@@ -392,6 +366,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     if(!resize_left){
         if(ImGui::Button("Resize Left")){
             resize_left = true;
+            _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
     }
     else{
@@ -399,7 +374,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeLeft(number_of_tiles_to_insert);
 
-            DoResize(number_of_tiles_to_insert,0,0,0);
+            DoResize(_level_editor_tab,number_of_tiles_to_insert,0,0,0);
 
             resize_left = false;
         }
@@ -412,6 +387,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     if(!resize_bottom){
         if(ImGui::Button("Resize Bottom")){
             resize_bottom = true;
+            _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
     }
     else{
@@ -419,7 +395,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeBottom(number_of_tiles_to_insert);
 
-            DoResize(0,0,number_of_tiles_to_insert,0);
+            DoResize(_level_editor_tab,0,0,number_of_tiles_to_insert,0);
 
             resize_bottom = false;
         }
@@ -432,6 +408,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     if(!resize_top){
         if(ImGui::Button("Resize Top")){
             resize_top = true;
+            _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
     }
     else{
@@ -439,7 +416,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
         if(ImGui::Button("Ok")){
             ResizeTop(number_of_tiles_to_insert);
 
-            DoResize(0,0,0,number_of_tiles_to_insert);
+            DoResize(_level_editor_tab,0,0,0,number_of_tiles_to_insert);
 
             resize_top = false;
         }
@@ -459,18 +436,103 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
 }
 
+void TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(_level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH){
+        _level_editor_tab->current_undo_redo_action.actor_change = std::make_unique<TileMapChange_Paint>(
+            this,
+            left_bound_tile,
+            lower_bound_tile,
+            right_bound_tile,
+            upper_bound_tile);
+    }
+    else if(_level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET){
+        bool tiles_are_being_added = true;
+
+        std::vector<Vector2i> all_filled_tiles; //For undo&redo
+
+        std::vector<Vector2i> tiles_to_fill;
+
+        tiles_to_fill.push_back(Vector2i(currently_hovered_tile_x, currently_hovered_tile_y));
+
+        int max_number_of_tiles = 100;
+
+        while(tiles_are_being_added && max_number_of_tiles > 0){
+            max_number_of_tiles--;
+
+            std::vector<Vector2i> additional_tiles;
+
+            tiles_are_being_added = false;
+            for(Vector2i tile_position : tiles_to_fill){
+
+                std::vector<Vector2i> directions = {
+                    tile_position+Vector2i(1, 0),
+                    tile_position+Vector2i(-1, 0),
+                    tile_position+Vector2i(0, -1),
+                    tile_position+Vector2i(0, 1)
+
+                };
+
+                for(Vector2i tile_direction : directions){
+                    if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
+                    if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
+
+                    int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
+
+                    if(tile_index > -1 && tile_index < (int)tilemap_data.size()){
+                        if(tilemap_data[tile_index] == 0){
+
+                            tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
+
+                            additional_tiles.push_back(tile_direction);
+
+                            all_filled_tiles.push_back(tile_direction);
+
+                            tiles_are_being_added = true;
+
+                        }
+
+                    }
+                }
+            }
+
+            tiles_to_fill = additional_tiles;
+
+        }
+
+        if(max_number_of_tiles <= 0) Console::PrintLine("TileMap: Reached max tiles");
+
+        int lower_bound_tile_fill = currently_hovered_tile_y;
+        int upper_bound_tile_fill = currently_hovered_tile_y;
+        int left_bound_tile_fill = currently_hovered_tile_x;
+        int right_bound_tile_fill = currently_hovered_tile_x;
+
+        for(Vector2i tile : all_filled_tiles){
+            Console::PrintLine(tile);
+            if(lower_bound_tile_fill > tile.y) lower_bound_tile_fill = tile.y;
+            if(upper_bound_tile_fill < tile.y) upper_bound_tile_fill = tile.y;
+            if(left_bound_tile_fill > tile.x) left_bound_tile_fill = tile.x;
+            if(right_bound_tile_fill < tile.x) right_bound_tile_fill = tile.x;
+        }
+
+        _level_editor_tab->current_undo_redo_action.actor_change = std::make_unique<TileMapChange_Paint>(this,left_bound_tile_fill,lower_bound_tile_fill,right_bound_tile_fill+1,upper_bound_tile_fill+1);
+
+    }
+}
+
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     if(!is_selected && level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->GetTileMap() != this) return;
 
-    if(is_selected && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP){
+    if(is_selected &&
+        (_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
+    )){
 
         Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
         current_world_mouse_x = world_mouse.x;
         current_world_mouse_y = world_mouse.y;
-
-        //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
 
         int hovered_tile_x = int(world_mouse.x)/tile_width;
         int hovered_tile_y = int(world_mouse.y)/tile_height;
@@ -489,93 +551,13 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             lower_bound_tile = hovered_tile_y;
             upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
             right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
+
+            _level_editor_tab->current_undo_redo_action = UFOEngineStudio::LevelEditorTab::UndoRedoAction{
+                editor_id, _level_editor_tab->current_tool, nullptr
+            };
         }
 
-        if(ImGui::IsItemHovered(0) && ImGui::IsMouseReleased(0)){
-
-            if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
-                DoPaint();
-            }
-            else if(level->tileset_manager.tool == TilesetManager::Tools::FILL_BUCKET){
-                bool tiles_are_being_added = true;
-
-                std::vector<Vector2i> all_filled_tiles; //For undo&redo
-
-                std::vector<Vector2i> tiles_to_fill;
-
-                tiles_to_fill.push_back(Vector2i(hovered_tile_x, hovered_tile_y));
-
-                int max_number_of_tiles = 100;
-
-                while(tiles_are_being_added && max_number_of_tiles > 0){
-                    max_number_of_tiles--;
-
-                    std::vector<Vector2i> additional_tiles;
-
-                    tiles_are_being_added = false;
-                    for(Vector2i tile_position : tiles_to_fill){
-
-                        std::vector<Vector2i> directions = {
-                            tile_position+Vector2i(1, 0),
-                            tile_position+Vector2i(-1, 0),
-                            tile_position+Vector2i(0, -1),
-                            tile_position+Vector2i(0, 1)
-
-                        };
-
-                        for(Vector2i tile_direction : directions){
-                            if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
-                            if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
-
-                            int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
-
-                            if(tile_index > -1 && tile_index < (int)tilemap_data.size()){
-                                if(tilemap_data[tile_index] == 0){
-
-                                    tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
-
-                                    additional_tiles.push_back(tile_direction);
-
-                                    all_filled_tiles.push_back(tile_direction);
-
-                                    tiles_are_being_added = true;
-
-                                }
-
-                            }
-                        }
-                    }
-
-                    tiles_to_fill = additional_tiles;
-
-                }
-
-                if(max_number_of_tiles <= 0) Console::PrintLine("TileMap: Reached max tiles");
-
-                int lower_bound_tile_fill = hovered_tile_y;
-                int upper_bound_tile_fill = hovered_tile_y;
-                int left_bound_tile_fill = hovered_tile_x;
-                int right_bound_tile_fill = hovered_tile_x;
-
-                for(Vector2i tile : all_filled_tiles){
-                    Console::PrintLine(tile);
-                    if(lower_bound_tile_fill > tile.y) lower_bound_tile_fill = tile.y;
-                    if(upper_bound_tile_fill < tile.y) upper_bound_tile_fill = tile.y;
-                    if(left_bound_tile_fill > tile.x) left_bound_tile_fill = tile.x;
-                    if(right_bound_tile_fill < tile.x) right_bound_tile_fill = tile.x;
-                }
-
-                Console::PrintLine(left_bound_tile_fill, lower_bound_tile_fill, right_bound_tile_fill,upper_bound_tile_fill);
-
-                level->RemoveFutureChanges();
-
-                level->level_changes.push_back(std::make_unique<TileMapChange_Paint>(this,left_bound_tile_fill,lower_bound_tile_fill,right_bound_tile_fill+1,upper_bound_tile_fill+1));
-
-                level->level_changes.back()->Do();
-
-            }
-
-        }
+        //Here the change which ends the placing action was before
 
         if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
             if(hovered_tile_x < left_bound_tile) left_bound_tile = hovered_tile_x;
@@ -583,7 +565,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             if((int)hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows > upper_bound_tile) upper_bound_tile = hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
             if((int)hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
-            if(level->tileset_manager.tool == TilesetManager::Tools::BRUSH){
+            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH){
                 int xx = 0;
                 int yy = 0;
                 for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
@@ -625,35 +607,6 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     }
 
     ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
-
-    //Placing actors
-
-    /*if(is_selected){
-        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
-            if(_editor->currently_selected_actor_type != ""){
-                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
-                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
-
-                    inst->local_position = _level_editor_tab->spawn_cursor->GetGlobalPosition() - GetGlobalPosition();
-
-                    //Undo&redo
-
-                    while((int)level->level_changes.size()-1 > level->current_level_change){
-                        Console::PrintLine("loop change stack",level->current_level_change, level->level_changes.size());
-                        level->level_changes.pop_back();
-                    }
-
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
-
-                    level->current_level_change++;
-                    Console::PrintLine("Actor current change",level->current_level_change);
-
-                    AddActorUniquePtr(std::move(inst));
-
-                }
-            }
-        }
-    }*/
 
 }
 

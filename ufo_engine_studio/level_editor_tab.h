@@ -6,6 +6,7 @@
 #include <vector>
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
+#include "actor_undo_and_redo.h"
 
 namespace ufo{
     class Level;
@@ -24,19 +25,34 @@ public:
     std::vector<int> selected_actors;
 
     int actor_dedicated_to_viewport = ufo::Maths::NULL_ID;
+    int inspected_actor = ufo::Maths::NULL_ID;
 
     //This is for multi-dragdropping and single dragdropping too
     std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;
 
-    enum Tools{ SELECT, PLACE, ERASE, EDIT_TILEMAP, RESIZE, MOVE_ACTOR_CLUSTER, MULTI_SELECT,ESTABLISH_MULTI_SELECT };
+    enum Tools{
+        //For general viewport?
+        NONE , SELECT, PLACE, ERASE, /*EDIT_TILEMAP,*/ RESIZE, MOVE_ACTOR_CLUSTER, MULTI_SELECT,ESTABLISH_MULTI_SELECT,
+        //TileMap
+        TILE_MAP_FILL_BUCKET, TILE_MAP_BRUSH, TILE_MAP_ERASER, TILE_MAP_RESIZE
+
+    };
 
     std::string asset_browser_search;
 
     bool focused_actor_found = false;
     bool show_multi_selection_right_click_pop_up_menu = false;
 
+    struct UndoRedoAction{
+        int actor_id;
+        Tools tool;
+        std::unique_ptr<ufo::ActorChange> actor_change;
+    };
+
     Tools current_tool = Tools::SELECT;
-    Tools former_tool = Tools::SELECT;
+    UndoRedoAction current_undo_redo_action = UndoRedoAction{ufo::Maths::NULL_ID, Tools::NONE, nullptr};
+
+    void SubmitUndoRedoAction();
 
     ufo::Engine* engine = nullptr;
 

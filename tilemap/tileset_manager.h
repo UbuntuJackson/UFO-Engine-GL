@@ -44,24 +44,7 @@ public:
 
     bool in_editor = false;
 
-    const int EMPTY = 0;
-    const int FULL = 1;
-    const int HALF_BOTTOM = 2;
-    const int HALF_TOP = 3;
-    const int HALF_LEFT = 4;
-    const int HALF_RIGHT = 5;
-    const int SLOPE45_BOTTOM_RIGHT = 10;
-    const int SLOPE45_BOTTOM_LEFT = 15;
-    const int SLOPE_22dot5_RIGHT_1 = 6;
-    const int SLOPE_22dot5_RIGHT_2 = 7;
-
-    enum Tools{
-        FILL_BUCKET,
-        BRUSH,
-        ERASER
-    };
-
-    Tools tool = BRUSH;
+    //ufo::Rectangle tilemap_rectangular_selection;
 
     int currently_selected_tile = 0;
 

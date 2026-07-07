@@ -4,6 +4,7 @@
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "../utils/conversion.h"
 
 namespace ufo{
 
@@ -15,6 +16,7 @@ public:
     virtual void Redo() = 0;
     virtual void Do() = 0;
     virtual ~ActorChange() = default;
+    virtual std::string GetInfo() = 0;
 };
 
 class ActorChange_Move : public ActorChange{
@@ -33,6 +35,14 @@ public:
     void Redo() override;
 
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_Move "+MemoryAddressToString(actor)+
+        " "+MemoryAddressToString(former_parent)+
+        " "+std::to_string(former_order_index)+
+        " "+MemoryAddressToString(current_parent)+
+        " "+std::to_string(current_order_index);
+    }
 };
 
 class ActorChange_AddActor : public ActorChange{
@@ -45,6 +55,10 @@ public:
     void Redo() override;
 
     void Do() override{}
+
+    std::string GetInfo(){
+        return "ActorChange_Move "+MemoryAddressToString(actor);
+    }
 
 };
 
@@ -60,6 +74,10 @@ public:
 
     void Do() override{}
 
+    std::string GetInfo(){
+        return "ActorChange_Move "+MemoryAddressToString(actor);
+    }
+
 };
 
 class ActorChange_RemoveMultipleActors : public ActorChange{
@@ -73,6 +91,16 @@ public:
     void Redo() override;
 
     void Do() override;
+
+    std::string GetInfo(){
+
+        std::string info = "";
+        for(ActorChange_RemoveActor change : changes){
+            info+=change.GetInfo()+"\n";
+        }
+
+        return info;
+    }
 
 };
 
@@ -90,6 +118,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableInt";
+    }
 };
 
 class ActorChange_CustomVariableFloat : public ufo::ActorChange{
@@ -106,6 +138,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableFloat";
+    }
 };
 
 class ActorChange_CustomVariableFloatHandle : public ActorChange{
@@ -122,6 +158,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableFloatHandle";
+    }
 };
 
 class ActorChange_CustomVariableIntHandle : public ActorChange{
@@ -138,6 +178,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableIntHandle";
+    }
 };
 
 // ...
@@ -156,6 +200,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableIntHandle";
+    }
 };
 
 // ...
@@ -175,6 +223,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableIntHandle";
+    }
 };
 
 class ActorChange_MultipleActorChange : public ActorChange{
@@ -187,6 +239,10 @@ public:
     void Undo() override;
     void Redo() override;
     void Do() override;
+
+    std::string GetInfo(){
+        return "ActorChange_CustomVariableIntHandle";
+    }
 };
 
 }

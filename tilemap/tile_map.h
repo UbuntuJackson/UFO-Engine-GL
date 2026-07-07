@@ -27,7 +27,7 @@ public:
 
     TileMap(Vector2f _);
 
-    void OnSpawn();
+    void OnSpawn() override;
 
     static std::unique_ptr<TileMap> Load(ufo::gc::JsonMap* _layer);
 
@@ -108,6 +108,10 @@ public:
             tile_map->ResizeTop(top);
         }
 
+        std::string GetInfo(){
+            return "TileMapChange_TileMapSize";
+        }
+
     };
 
     class TileMapChange_Paint : public ufo::ActorChange{
@@ -178,6 +182,10 @@ public:
             }
             Console::PrintLine("\n");
         }
+
+        std::string GetInfo(){
+            return "TileMapChange_Paint";
+        }
     };
 
 
@@ -185,13 +193,7 @@ public:
     //std::vector<std::unique_ptr<TileMapChange>> changes;
     std::vector<int> tilemap_data_before_change;
 
-    //int current_change = -1;
-
-    void Do();
-
-    void DoPaint();
-
-    void DoResize(int _left, int _right, int _bottom, int _top);
+    void DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top);
 
     int lower_bound_tile;
     int upper_bound_tile;
@@ -218,6 +220,8 @@ public:
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
+
+    void OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 

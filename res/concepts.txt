@@ -1,0 +1,13 @@
+### Undo & Redo Actions ###
+
+An undo/redo action goes in 3 categories:
+
+1.) Adding
+2.) Removing
+3.) Editing
+
+Adding and removing are quite simple actions, while editing can be more diverse. You can edit fields, text, tilemap-data.
+
+Multiple actors could be added in one swoop by holding the left mouse button and dragging it. Same can be said by removing, as well as editing tilemap data with the paint action. What these actions have in common is they they're all done in the viewport.
+
+The conclusion for now is that actions done in the viewport always involve a button press, and release. There might be exceptions.

@@ -182,38 +182,6 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
     ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min), UFOEngineStudio::FromVector2fToImVec2(pos_max), 0xFF00FFFF);
 
-    /*Vector2f min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-    Vector2f max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
-
-    ImGui::GetWindowDrawList()->AddRect(
-        ImVec2(min.x, min.y),
-        ImVec2(max.x, max.y), 0xFFFFFFFF, 1.0f,ImDrawFlags_RoundCornersAll);
-
-    if(is_selected){
-        if(ImGui::IsItemClicked(0) && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::PLACE){
-            if(_editor->currently_selected_actor_type != ""){
-                if(_editor->spawnable_actor_map.count(_editor->currently_selected_actor_type)){
-                    auto inst = _editor->spawnable_actor_map.at(_editor->currently_selected_actor_type)->Spawn(_editor);
-
-                    inst->local_position = active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
-
-                    //Undo&redo
-
-                    while((int)level_changes.size()-1 > current_level_change){
-                        level_changes.pop_back();
-                    }
-
-                    level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
-
-                    current_level_change++;
-                    Console::PrintLine("Actor current change",current_level_change);
-
-                    AddActorUniquePtr(std::move(inst));
-                }
-            }
-        }
-    }*/
-
 }
 
 bool Level::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){

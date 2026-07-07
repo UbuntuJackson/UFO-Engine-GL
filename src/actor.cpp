@@ -88,7 +88,9 @@ void Actor::AddNewActors(){
         //All levels are already preset, so if actor_ptr->level is not nullptr, then just let it be.
         if(!actor_ptr->level) actor_ptr->level = level;
 #ifdef UFO_ENGINE_STUDIO
-        level->actors_with_stable_id.emplace(actor_ptr->editor_id, actor_ptr);
+
+        //actor_ptr is guaranteed to be the correct instance of Level
+        actor_ptr->level->actors_with_stable_id.emplace(actor_ptr->editor_id, actor_ptr);
 #endif
 
         actor_ptr->engine = engine;
@@ -180,12 +182,6 @@ void Actor::SortActors(){
 }
 
 void Actor::OnSpawn(){
-
-}
-
-void Actor::OnAddActor(Actor* _actor){
-
-
 
 }
 
@@ -468,34 +464,6 @@ void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_
         new_actor_queue[a]->UpdateActorStructure(_editor, _parent_is_modifiable);
     }
 
-    /*for(auto&& actor : new_actor_queue){
-        actor->UpdateActorStructure(_editor, false);
-    }*/
-
-    /*if(import_mode == ImportModes::WRAPPED){
-
-        actors.clear();
-        auto act = _editor->spawnable_actor_map.at(class_name)->Spawn(_editor);
-
-        //An issue here: the attributes aren't copied.
-        // An idea would be
-        // 1.) Save the old actor
-        // 2.) Replace the old one with the new one
-        // 3.) Move all the custom properties to the new one from the saved old one
-        // 4.) Refresh, remove outdated properties, add new ones with Actor::RemoveAndAddEditorPropertiesDuringRuntime
-
-        for(auto&& actor : act->new_actor_queue){
-            AddActorUniquePtr(std::move(actor));
-        }
-        for(auto&& actor : new_actor_queue){
-            actor->UpdateActorStructure(_editor, false);
-        }
-    } else if(import_mode == ImportModes::UNWRAPPED) {
-        for(const auto& actor : actors){
-            actor->UpdateActorStructure(_editor, false);
-        }
-    }*/
-
 }
 
 void Actor::TurnOnEditMode(){
@@ -582,6 +550,8 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
         if((ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsItemHovered()) || ImGui::IsKeyPressed(ImGuiKey_Enter)){
             editing_name = false;
+
+            //Todo: Store UndoRedo action for name changes
         }
     }
     else{
@@ -601,10 +571,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
             }
 
-            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::EDIT_TILEMAP && base_class_name != "ufo::TileMap"){
-                _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::SELECT;
-
-            }
         }
 
     }
@@ -641,7 +607,6 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     }
 
     if(adding_new_actor){
-        //Read from json somehow to add the attributes, however tf that is gonna happen
 
         ImGui::Begin("Adding Actor");
 

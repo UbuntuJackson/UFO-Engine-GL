@@ -115,8 +115,6 @@ public:
 
     virtual void OnSpawn();
 
-    virtual void OnAddActor(Actor* _actor);
-
     virtual void Update(float _delta_time);
 
     virtual void OnUpdate(float _delta_time){
@@ -203,6 +201,8 @@ public:
 ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
 
 #ifdef UFO_ENGINE_STUDIO
+
+    virtual void OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab){}
 
     virtual void OnResourcesEdited(){
 
