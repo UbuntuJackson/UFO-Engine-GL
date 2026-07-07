@@ -44,8 +44,6 @@ set(
     src/engine.cpp
     src/generic_generator.cpp
     src/texture_2d.cpp
-    #main.cpp
-    src/viewport_editing_utils.cpp
     src/level.cpp
     src/input.cpp
     src/actor.cpp
@@ -100,6 +98,7 @@ set(
     #Actor utils
     src/actor_undo_and_redo.cpp
     src/editor_property.cpp
+    src/viewport_editing_utils.cpp
 
     #ImGui
 
