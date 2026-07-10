@@ -20,20 +20,23 @@ FileNode::FileNode(){
 std::unique_ptr<FileNode> FileNode::ParseFolder(std::string _path){
     std::unique_ptr<Directory> directory = std::make_unique<Directory>(false);
 
-    directory->file_name = _path.substr(_path.find_last_of("/")+1);
+    const std::filesystem::path filesystem_path(_path);
+
+    //Fix this later plz
+    directory->file_name = filesystem_path.filename().generic_string();
 
     for(const auto& directory_entry : std::filesystem::directory_iterator{_path}){
 
         std::error_code ec;
-        std::string s_path = std::string(directory_entry.path().string());
+
         if(std::filesystem::is_directory(directory_entry,ec)){
 
-            directory->file_nodes.push_back(FileNode::ParseFolder(s_path));
+            directory->file_nodes.push_back(FileNode::ParseFolder(directory_entry.path().generic_string()));
 
         }
         else{
 
-            std::string file_name = s_path.substr(s_path.find_last_of("/")+1);
+            std::string file_name = directory_entry.path().filename().generic_string();
 
             auto file = std::make_unique<TreeFile>();
 

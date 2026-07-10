@@ -15,7 +15,7 @@ class AdvancedActorSpawner : public ufo::gc::Object{
 public:
 
     std::string actor_config_path = "";
-    std::string category = "UFO-Engine";
+    std::string category = "";
     std::string comment = "";
 
     std::string base;
@@ -27,7 +27,8 @@ public:
     AdvancedActorSpawner(
         std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
         std::string _base = "",
-        std::string _class_name = ""
+        std::string _class_name = "",
+        std::string _category = "Miscellaneous"
     );
 
     void OnMark();

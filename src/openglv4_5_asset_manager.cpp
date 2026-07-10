@@ -107,10 +107,6 @@ void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineSt
 }
 #endif
 
-/*ufo::Shader OpenGLv4_5_AssetManager::LoadShader(const std::string& _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
-    return LoadShader(_vertex_shader_path.c_str(), _fragment_shader_path, _geometry_shader_path, _name);
-}*/
-
 ufo::Shader OpenGLv4_5_AssetManager::LoadShader(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
     shaders[_name] = LoadShaderFromFile(_vertex_shader_path, _fragment_shader_path, _geometry_shader_path);
     return shaders[_name];

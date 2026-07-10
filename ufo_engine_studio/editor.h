@@ -12,6 +12,7 @@
 #include <engine.h>
 #include <map>
 #include <functional>
+#include <set>
 #include "../ufo_garbage_collector/object.h"
 #include "../src/actor.h"
 #include <gc_json.h>
@@ -44,6 +45,9 @@ struct ProjectSettings{
 
 class Editor : public ufo::Level, public ufo::gc::Root{
 public:
+
+    std::set<std::string> recently_opened;
+
 
     bool finished_loading_folder = true;
 

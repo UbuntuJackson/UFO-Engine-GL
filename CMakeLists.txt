@@ -130,7 +130,7 @@ set(
 endif()
 
 # Create your game executable target as usual
-add_library(UFO ${SRC} ${UFO_ENGINE_STUDIO_SRC})
+add_library(UFO STATIC ${SRC} ${UFO_ENGINE_STUDIO_SRC})
 
 target_include_directories(UFO PUBLIC src)
 target_include_directories(UFO PUBLIC ufo_maths)
@@ -199,6 +199,30 @@ if(NOT WIN32)  # Only consider ALSA or PulseAudio on Linux
 
     endif()
 endif()
+
+if(CMAKE_TOOLCHAIN_FILE) #If cross-compiling
+    message(CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE})
+
+    target_link_libraries(UFO PUBLIC oleaut32.lib)
+    target_link_libraries(UFO PUBLIC ole32.lib)
+    target_link_libraries(UFO PUBLIC uuid.lib)
+    target_link_libraries(UFO PUBLIC advapi32.lib)
+    target_link_libraries(UFO PUBLIC pthread.lib)
+    target_link_libraries(UFO PUBLIC kernel32.lib)
+    target_link_libraries(UFO PUBLIC winspool.lib)
+    target_link_libraries(UFO PUBLIC user32.lib)
+    target_link_libraries(UFO PUBLIC gdi32.lib)
+    target_link_libraries(UFO PUBLIC opengl32.lib)
+    target_link_libraries(UFO PUBLIC stdc++fs.lib)
+    target_link_libraries(UFO PUBLIC gdiplus.lib)
+    target_link_libraries(UFO PUBLIC shlwapi.lib)
+    target_link_libraries(UFO PUBLIC dwmapi.lib)
+    target_link_libraries(UFO PUBLIC winmm.lib)
+
+endif()
+
+# Link freetype to the SDL3_ttf library.
+target_link_libraries(SDL3_ttf-shared PUBLIC freetype)
 
 # Link to the actual SDL3 library.
 target_link_libraries(UFO PUBLIC SDL3::SDL3)

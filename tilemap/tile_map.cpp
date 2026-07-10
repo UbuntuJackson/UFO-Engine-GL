@@ -452,6 +452,8 @@ void TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
 
         std::vector<Vector2i> tiles_to_fill;
 
+        int tile_to_replace = tilemap_data[currently_hovered_tile_y*number_of_columns+currently_hovered_tile_x];
+
         tiles_to_fill.push_back(Vector2i(currently_hovered_tile_x, currently_hovered_tile_y));
 
         int max_number_of_tiles = 100;
@@ -479,7 +481,7 @@ void TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
                     int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
 
                     if(tile_index > -1 && tile_index < (int)tilemap_data.size()){
-                        if(tilemap_data[tile_index] == 0){
+                        if(tilemap_data[tile_index] == tile_to_replace){
 
                             tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
 
@@ -613,7 +615,9 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 void TileMap::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
     std::string visible_or_not_string = visible ? "<o>###" : "</>###";
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str())){
+    if(ImGui::Button(
+        (visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))
+    ){
         visible = !visible;
     }
 }

@@ -13,11 +13,13 @@ namespace UFOEngineStudio{
 AdvancedActorSpawner::AdvancedActorSpawner(
     std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
     std::string _base,
-    std::string _class_name
+    std::string _class_name,
+    std::string _category
 ) :
 spawner_function{_spawner_function},
 base{_base},
-class_name{_class_name}
+class_name{_class_name},
+category{_category}
 {
     MakeMarkable(&actor_as_json);
 }

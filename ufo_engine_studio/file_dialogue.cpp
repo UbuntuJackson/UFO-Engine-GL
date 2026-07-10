@@ -15,15 +15,27 @@ namespace UFOEngineStudio{
 
 void OnOpenFolder(void *_userdata, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        return; //Should file not have been selected
+    }
 
     Editor* program = (Editor*)_userdata;
 
-    program->OpenFolder(*_filelist);
+    std::string my_path = std::string(*_filelist);
+    my_path = std::filesystem::path(my_path).generic_string();
+
+    program->OpenFolder(my_path);
 
 }
 
 void OnNewActorFile(void *_tab, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        return; //Should file not have been selected
+    }
+
     LevelEditorTab* tab = (LevelEditorTab*)_tab;
 
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
@@ -39,6 +51,10 @@ void OnNewActorFile(void *_tab, const char * const *_filelist, int _filter){
 
 void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        return; //Should file not have been selected
+    }
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 

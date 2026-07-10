@@ -1,3 +1,5 @@
+#include "gc_json.h"
+#define SDL_MAIN_HANDLED
 #include <exception>
 #include <level.h>
 #include <string>
@@ -44,6 +46,17 @@ void Editor::OpenFolder(std::string _path){
     opened_directory->file_name = "";
 
     opened_directory_path = _path;
+
+    recently_opened.insert(_path);
+
+
+    ufo::gc::JsonMap* json_config = gc.New<ufo::gc::JsonMap>();
+    ufo::gc::JsonArray* json_array = gc.New<ufo::gc::JsonArray>();
+    for(const std::string& recently_opened_path : recently_opened){
+        json_array->array.push_back(gc.New<ufo::gc::JsonString>(recently_opened_path));
+    }
+    json_config->map.emplace("recently_opened", json_array);
+    json_config->Write("../editor_config.json");
 
     tabs.clear();
     active_tab = nullptr;
@@ -94,7 +107,22 @@ void Editor::RefreshFolder(){
 
 void
 Editor::Load(){
-    OpenFolder("/home/uj/Documents/C++/sta_replica");
+    //OpenFolder("/home/uj/Documents/C++/sta_replica");
+
+    /*ufo::gc::JsonMap* json_config = gc.New<ufo::gc::JsonMap>();
+    ufo::gc::JsonArray* json_array = gc.New<ufo::gc::JsonArray>();
+    for(const std::string& recently_opened_path : recently_opened){
+        json_array->array.push_back(gc.New<ufo::gc::JsonString>(recently_opened_path));
+    }
+    json_config->map.emplace("recently_opened", json_array);
+    json_config->Write("../editor_config.json");*/
+
+    if(ufo::FileSystem::FileExists("../editor_config.json")){
+        ufo::gc::JsonMap* json_config = ufo::gc::JsonRead(&gc, "../editor_config.json");
+        if(json_config->map.count("recently_opened")) for(const auto& recently_opened_path : json_config->map.at("recently_opened")->AsArray()){
+            if(ufo::FileSystem::FileExists(recently_opened_path->AsString())) recently_opened.insert(recently_opened_path->AsString());
+        }
+    }
 
 }
 
@@ -146,6 +174,18 @@ void Editor::OnUpdate(float _delta_time){
     {
         if (ImGui::BeginMenu("File"))
         {
+
+            if (ImGui::BeginMenu("Open Recent"))
+            {
+                for(const std::string& recent : recently_opened){
+                    if(ImGui::MenuItem(recent.c_str())){
+                        OpenFolder(recent);
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+
             if(ImGui::MenuItem("Open Folder")){
                 SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenFolder, this, engine->window, "/home", false);
             }
@@ -362,49 +402,49 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
     spawnable_actor_map.emplace("ufo::Actor",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Actor", "ufo::Actor"))
+        }, "ufo::Actor", "ufo::Actor", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::CollisionGrid>(Vector2f(0.0f, 0.0f));
-        }, "ufo::CollisionGrid", "ufo::CollisionGrid"))
+        }, "ufo::CollisionGrid", "ufo::CollisionGrid", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::PlatformerRectangleCollision",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(0.0f, 0.0f));
-        }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision"))
+        }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::TileMap>(Vector2f(0.0f, 0.0f));
-        }, "ufo::TileMap", "ufo::TileMap"))
+        }, "ufo::TileMap", "ufo::TileMap", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Level",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Level>();
-        }, "ufo::Level", "ufo::Level"))
+        }, "ufo::Level", "ufo::Level", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Widget",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Widget", "ufo::Widget"))
+        }, "ufo::Widget", "ufo::Widget", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Text",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Text>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Text", "ufo::Text"))
+        }, "ufo::Text", "ufo::Text", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Button",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Button>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Button", "ufo::Button"))
+        }, "ufo::Button", "ufo::Button", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace(
@@ -421,7 +461,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::Sprite",
-            "ufo::Sprite"
+            "ufo::Sprite", "UFO-Engine"
         ))
     );
 
@@ -434,7 +474,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::BackgroundSprite",
-            "ufo::BackgroundSprite"
+            "ufo::BackgroundSprite", "UFO-Engine"
         ))
     );
 
@@ -447,7 +487,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::Animation",
-            "ufo::Animation"
+            "ufo::Animation", "UFO-Engine"
         ))
     );
 
@@ -455,14 +495,14 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
         std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Camera>(Vector2f(0.0f, 0.0f));
         },
-        "ufo::Camera", "ufo::Camera"))
+        "ufo::Camera", "ufo::Camera", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::RectangularArea",
         std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::RectangularArea>(Vector2f(0.0f, 0.0f));
         },
-        "ufo::RectangularArea", "ufo::RectangularArea"))
+        "ufo::RectangularArea", "ufo::RectangularArea", "UFO-Engine"))
     );
 }
 

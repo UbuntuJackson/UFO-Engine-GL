@@ -330,7 +330,7 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
 
     ImGuiStyle style = ImGui::GetStyle();
 
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetItemRectSize().y))){
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))){
         visible = !visible;
     }
 }

@@ -232,8 +232,10 @@ void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStu
 
 void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-
-    DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
+    if(_level_editor_tab->inspected_actor != ufo::Maths::NULL_ID){
+        actors_with_stable_id.at(_level_editor_tab->inspected_actor)->OnDrawGizmos(engine->graphics.get(), active_camera_handles.back(), _level_editor_tab);
+    }
+    //DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
 
 }
 

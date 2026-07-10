@@ -164,6 +164,8 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 spawn_cursor->actors.clear();
             }
 
+            ImGui::SameLine();
+
             if(ImGui::Button("Resize")){
                 current_tool = Tools::RESIZE;
                 spawn_cursor->actors.clear();
@@ -216,16 +218,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                     UFOEngineStudio::PopStyleCompact();
 
                     ImGui::EndTable();
-                }
-
-                ImGui::Separator();
-
-                for(const auto& [k,v] : _editor->spawnable_actor_map){
-                    if(ImGui::Button(std::string("Add "+k).c_str())){
-                        /*auto inst = v->Spawn(_editor);
-                        inst->class_name = k;
-                        AddActorUniquePtr(std::move(inst));*/
-                    }
                 }
 
             }
@@ -341,6 +333,8 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
 
         //if(current_tool == Tools::ROTATE){}
         //if(current_tool == Tools::SCALE){}
+
+
         if(current_tool == Tools::RESIZE && inspected_actor != ufo::Maths::NULL_ID){this_level->actors_with_stable_id.at(inspected_actor)->OnResize(editor, this);}
 
         if(current_tool == Tools::SELECT || current_tool == Tools::MOVE_ACTOR_CLUSTER){

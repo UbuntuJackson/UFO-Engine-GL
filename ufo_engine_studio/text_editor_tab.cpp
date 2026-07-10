@@ -42,7 +42,6 @@ void TextEditorTab::OnSave(Editor* _editor){
     if(name != ""){
         ufo::FileSystem::Write(path,text);
 
-        _editor->refresh_entire_project = true;
     }
     else{
         const char* global_file_location = _editor->opened_directory_path.c_str();

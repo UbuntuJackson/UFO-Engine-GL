@@ -3,6 +3,8 @@ import os
 import pprint
 import sys
 
+sys.path.append(".")
+
 import generate_actor_spawner_functions
 
 

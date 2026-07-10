@@ -5,7 +5,7 @@
 #include <ufo_macros.h>
 #include <ufo_maths.h>
 #include <console.h>
-//#include <actor.h>
+#include <actor.h>
 //#include <animation.h>
 //#include <sprite.h>
 //#include "../generated_base_classes.h"
@@ -16,7 +16,7 @@
 // ufo_category("My Actors")
 // ufo_comment("Enter your description here")
 // ufo_hide_in_editor()
-ufo_class() class MyActor : public BaseClass{
+ufo_class() class MyActor : public ufo::Actor{
 public:
 
     // Mandatory constructor
