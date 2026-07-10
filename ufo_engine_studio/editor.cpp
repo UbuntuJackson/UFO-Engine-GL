@@ -45,8 +45,6 @@ void Editor::OpenFolder(std::string _path){
 
     opened_directory_path = _path;
 
-    ResetUFOEngineStudio();
-
     tabs.clear();
     active_tab = nullptr;
 
@@ -83,6 +81,7 @@ void Editor::OpenFolder(std::string _path){
         j_settings->Write(opened_directory_path+"/settings.json");
     }
 
+    finished_loading_folder = false;
     refresh_entire_project = true;
 }
 
@@ -104,6 +103,11 @@ void Editor::ImportHeaderFileToProject(std::string _path){
 }
 
 void Editor::OnUpdate(float _delta_time){
+
+    if(!finished_loading_folder){
+        ResetUFOEngineStudio();
+        finished_loading_folder = true;
+    }
 
     ImGuiWindowFlags im_gui_window_flags = ImGuiWindowFlags_NoDocking |
             ImGuiWindowFlags_NoTitleBar |
@@ -163,9 +167,14 @@ void Editor::OnUpdate(float _delta_time){
                 if(ImGui::MenuItem("Textfile (.txt)")){
                     tabs.push_back(std::make_unique<TextEditorTab>("","",this));
                 }
-                /*if(ImGui::MenuItem("Actor (ufo.h)")){
-                    tabs.push_back(std::make_unique<TextEditorTab>("","",this));
-                    }*/
+                if(ImGui::MenuItem("C++ class (.cpp)")){
+
+                    std::string template_file_header = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.h");
+                    std::string template_file_source = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.cpp");
+
+                    tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this));
+                    tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this));
+                }
 
                 ImGui::EndMenu();
             }

@@ -420,19 +420,6 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                 				instance->editor_name);
                 }
 			}
-			/*else if(hint == "EditorPropertyFloatSlider"){
-                try{
-     			    std::string name = v->AsMap().at("name")->AsString();
-    				int value = v->AsMap().at("value")->AsFloat();
-
-                    instance->editor_properties.push_back(std::make_unique<Actor::EditorPropertyFloatSlider>(name, name, value));
-                } catch(const std::exception& _error){
-                    Console::PrintLine(
-                				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
-                				instance->class_name, "and name",
-                				instance->editor_name);
-                }
-                }*/
 			else if(hint == "EditorPropertyFloat"){
                 try{
      			    std::string name = v->AsMap().at("name")->AsString();

@@ -442,24 +442,52 @@ def get_background_sprite_loading_code(_instance, _actor_json):
 
 
 def get_platformer_rectangle_collision_loading_code(_instance, _actor_json):
-    return ""
+
+    default_properties_string = ""
+
+    editor_hitbox = _actor_json["editor_hitbox"]
+
+    x = editor_hitbox["x"]
+    y = editor_hitbox["y"]
+    width = editor_hitbox["width"]
+    height = editor_hitbox["height"]
+
+    default_properties_string += (
+        "    "
+        + _instance
+        + "->"
+        + "get_current_shape = [=](){return ufo::Rectangle(Vector2f("
+        + str(x)
+        + ","
+        + str(y)
+        + "), Vector2f("
+        + str(width)
+        + ","
+        + str(height)
+        + "));};"
+    )
+
+    return default_properties_string
 
 
-def get_actor_loading_code(_base_class_name, _instance_, actor_json):
+def get_actor_loading_code(_base_class_name, _instance, actor_json):
     if _base_class_name == "ufo::Sprite":
-        return get_sprite_loading_code(_instance_, actor_json)
+        return get_sprite_loading_code(_instance, actor_json)
 
     if _base_class_name == "ufo::Animation":
-        return get_animation_loading_code(_instance_, actor_json)
+        return get_animation_loading_code(_instance, actor_json)
 
     if _base_class_name == "ufo::Widget":
-        return get_widget_loading_code(_instance_, actor_json)
+        return get_widget_loading_code(_instance, actor_json)
 
     if _base_class_name == "ufo::Button":
-        return get_button_loading_code(_instance_, actor_json)
+        return get_button_loading_code(_instance, actor_json)
 
     if _base_class_name == "ufo::Camera":
-        return get_camera_loading_code(_instance_, actor_json)
+        return get_camera_loading_code(_instance, actor_json)
+
+    if _base_class_name == "ufo::PlatformerRectangleCollision":
+        return get_platformer_rectangle_collision_loading_code(_instance, actor_json)
 
     return ""
 

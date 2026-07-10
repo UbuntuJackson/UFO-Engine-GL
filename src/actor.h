@@ -74,10 +74,6 @@ public:
         auto u_actor = std::make_unique<tActor>(_args...);
         auto actor_ptr = u_actor.get();
         actor_ptr->parent = this;
-        //actor_ptr->level = level;
-        //OnAddActor(actor_ptr);
-        //actor_ptr->engine = engine;
-        //actor_ptr->OnSpawn();
         new_actor_queue.push_back(std::move(u_actor));
         return actor_ptr;
     }
@@ -85,14 +81,11 @@ public:
     Actor* AddActorUniquePtr(std::unique_ptr<Actor> _u_actor){
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
-        //actor_ptr->level = level;
-        //OnAddActor(actor_ptr);
-        //actor_ptr->engine = engine;
-        //actor_ptr->OnSpawn();
         new_actor_queue.push_back(std::move(_u_actor));
         return actor_ptr;
     }
 
+    //Unused
     Actor* ReplaceActorUniquePtr(int _index,std::unique_ptr<Actor> _u_actor){
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
@@ -110,21 +103,16 @@ public:
 
     void CleanUpDeadActors();
     void StashActors();
-
     void MarkAllDead();
 
     virtual void OnSpawn();
 
     virtual void Update(float _delta_time);
 
-    virtual void OnUpdate(float _delta_time){
-
-    }
+    virtual void OnUpdate(float _delta_time){}
 
     virtual void Pause(float _delta_time);
-    virtual void OnPause(float _delta_time){
-
-    }
+    virtual void OnPause(float _delta_time){}
 
     void IrregularUpdate();
 
@@ -202,6 +190,12 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
 #ifdef UFO_ENGINE_STUDIO
 
+    //Handles to member variables independent of memory address
+    std::map<std::string,Vector2f*> vector2f_handles;
+    std::map<std::string,std::string*> string_handles;
+    std::map<std::string,int*> int_handles;
+    std::map<std::string,float*> float_handles;
+
     virtual void OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab){}
 
     virtual void OnResourcesEdited(){
@@ -215,7 +209,7 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
         }
     }
 
-    void SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value);
+    void SetVector2fUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab, std::string _name, Vector2f _value);
 
     bool is_savable = true;
 
@@ -262,13 +256,13 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     std::string find_actor_search_field = "";
 
-    bool InputFloatWithUndoAndRedo(const std::string& _id, float* _ptr);
+    bool InputFloatWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name);
 
     //This function is currently untested
-    bool InputIntWithUndoAndRedo(const std::string& _id, int* _ptr);
+    bool InputIntWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name);
 
     //This function is currently untested
-    bool InputTextWithUndoAndRedo(const std::string& _id, std::string* _ptr);
+    bool InputTextWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name);
 
     virtual void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
@@ -289,6 +283,8 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     bool is_grabbed_by_cursor = false;
     void UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    virtual void OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     virtual void OnSelectedInViewport(UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 

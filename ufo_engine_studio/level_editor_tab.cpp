@@ -164,6 +164,11 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 spawn_cursor->actors.clear();
             }
 
+            if(ImGui::Button("Resize")){
+                current_tool = Tools::RESIZE;
+                spawn_cursor->actors.clear();
+            }
+
             ImGui::SameLine();
 
             if(ImGui::Button("Erase")){
@@ -230,9 +235,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
             ImGui::EndTabItem();
         }
 
-        if(selected_actors.size()){
-            this_level->actors_with_stable_id.at(selected_actors[0])->OnUtiliseAssetManager(this);
-        }
+        if(inspected_actor != ufo::Maths::NULL_ID) this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
 
         ImGui::EndTabBar();
 
@@ -314,7 +317,7 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
                 for(const int& actor_id : selected_actors){
                     ufo::Actor* actor = this_level->actors_with_stable_id.at(actor_id);
 
-                    remove_actor_change->changes.push_back(ufo::ActorChange_RemoveActor(actor));
+                    remove_actor_change->changes.push_back(ufo::ActorChange_RemoveActor(this,actor->editor_id, actor->parent->editor_id));
 
                     actor->stash = true;
 
@@ -335,6 +338,10 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     if(is_viewport_hovered){
 
         spawn_cursor->local_position = this_level->active_camera_handles.back()->TransformScreenToWorld(mouse_position_over_screenspace);
+
+        //if(current_tool == Tools::ROTATE){}
+        //if(current_tool == Tools::SCALE){}
+        if(current_tool == Tools::RESIZE && inspected_actor != ufo::Maths::NULL_ID){this_level->actors_with_stable_id.at(inspected_actor)->OnResize(editor, this);}
 
         if(current_tool == Tools::SELECT || current_tool == Tools::MOVE_ACTOR_CLUSTER){
             SelectionUpdate();
@@ -393,7 +400,7 @@ void LevelEditorTab::PlaceActors(){
                             this_level->level_changes.pop_back();
                         }
 
-                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(this,inst.get()->editor_id, place_inside_actor->editor_id));
 
                         this_level->current_level_change++;
                         Console::PrintLine("Actor current change",this_level->current_level_change);
@@ -464,7 +471,11 @@ void LevelEditorTab::SelectionUpdate(){
                     ufo::Actor* inner_actor = this_level->actors_with_stable_id.at(inner_actor_id);
 
                     multiple_actor_change->changes.push_back(
-                        std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(&inner_actor->local_position,inner_actor->local_position,Vector2f(0.0f, 0.0f))
+                        std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(
+                            this,
+                            inner_actor_id,
+                            "local_position",
+                            inner_actor->local_position,Vector2f(0.0f, 0.0f))
                     );
                 }
 

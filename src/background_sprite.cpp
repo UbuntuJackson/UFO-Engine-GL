@@ -15,6 +15,11 @@ namespace ufo{
 BackgroundSprite::BackgroundSprite(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
     class_name = "ufo::BackgroundSprite";
     base_class_name = class_name;
+#ifdef UFO_ENGINE_STUDIO
+    float_handles.emplace("parallax.x",&parallax.x);
+    float_handles.emplace("parallax.y",&parallax.y);
+#endif
+
 }
 
 void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
@@ -70,8 +75,8 @@ void BackgroundSprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 void BackgroundSprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Sprite::OnViewProperties(_level_editor_tab, _index);
 
-    InputFloatWithUndoAndRedo("parallax.x", &parallax.x);
-    InputFloatWithUndoAndRedo("parallax.y", &parallax.y);
+    InputFloatWithUndoAndRedo(_level_editor_tab,"parallax.x", "parallax.x");
+    InputFloatWithUndoAndRedo(_level_editor_tab,"parallax.y", "parallax.y");
 
 }
 #endif

@@ -34,6 +34,15 @@ Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former
     editor_id = editor_id_counter++;
     editor_name = "@Instance"+class_name+std::to_string(editor_id);
 
+#ifdef UFO_ENGINE_STUDIO
+
+    float_handles.emplace("local_position.x",&local_position.x);
+    float_handles.emplace("local_position.y",&local_position.y);
+
+    vector2f_handles.emplace("local_position",&local_position);
+
+#endif
+
 }
 
 std::string Actor::GetInfo(){
@@ -140,7 +149,9 @@ void Actor::CleanUpDeadActors(){
 }
 
 void Actor::InsertActors(){
-    for(auto&& inserted_actor : inserted_actor_queue){
+    for(int a = inserted_actor_queue.size()-1; a != -1; a--){
+        auto&& inserted_actor = inserted_actor_queue[a];
+
         actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
     }
 
@@ -376,12 +387,12 @@ void Actor::StashActors(){
 
 }
 
-void Actor::SetVector2fUndoAndRedo(Vector2f* _ptr, Vector2f _value){
-    Vector2f former_value = *_ptr;
+void Actor::SetVector2fUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab, std::string _name, Vector2f _value){
+    Vector2f former_value = *vector2f_handles.at(_name);
 
-    *_ptr = _value;
+    *vector2f_handles.at(_name) = _value;
 
-    level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(_ptr, former_value, _value));
+    level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(_level_editor_tab,editor_id,_name, former_value, _value));
 }
 
 void Actor::AddToLevelEditorTabIfSelected(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -492,30 +503,42 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             if(_editor->active_tab){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
 
-                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+
+                level->RemoveFutureChanges();
+
+                //Sort from smallest to largest
+                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
+                   return _second.index > _first.index;
+                });
+
+                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
+                    const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
 
                     Actor* drag_dropped_actor = dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index].get();
 
-                    while((int)level->level_changes.size()-1 > level->current_level_change){
-
-                        level->level_changes.pop_back();
-                    }
-
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_Move>(drag_dropped_actor, drag_dropped_actor->parent, drag_dropped_actor->order_index, parent, dragged_actor_where_abouts_.index));
-                    level->current_level_change++;
+                    multiple_actor_change->changes.push_back(std::make_unique<ufo::ActorChange_Move>(
+                        _level_editor_tab,drag_dropped_actor->editor_id,
+                        drag_dropped_actor->parent->editor_id,
+                        drag_dropped_actor->order_index,
+                        parent->editor_id,
+                        dragged_actor_where_abouts_.index));
 
                     drag_dropped_actor->parent = parent;
 
-                    parent->inserted_actor_queue.push_back(InsertedActor{_index,std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index])});
+                }
 
+                level->level_changes.push_back(std::move(multiple_actor_change));
+
+                for(int where_abouts_index = 0; where_abouts_index < level_editor_tab->drag_dropped_actors.size(); where_abouts_index++){
+                    const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
+                    parent->InsertActorUniquePtr(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]), _index);
 
                 }
 
-                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
-                   return _second.index < _first.index;
-                });
+                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
 
-                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                    const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
                     dragged_actor_where_abouts_.parent->actors.erase(dragged_actor_where_abouts_.parent->actors.begin()+dragged_actor_where_abouts_.index);
                 }
 
@@ -590,7 +613,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             if(ImGui::MenuItem("Delete")){
                 level->RemoveFutureChanges();
 
-                level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(this));
+                level->level_changes.push_back(std::make_unique<ufo::ActorChange_RemoveActor>(_level_editor_tab, this->editor_id, this->parent->editor_id));
 
                 stash = true;
 
@@ -625,7 +648,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
                     level->RemoveFutureChanges();
 
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(inst.get()));
+                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(_level_editor_tab,inst.get()->editor_id, this->editor_id));
 
                     AddActorUniquePtr(std::move(inst));
                     adding_new_actor = false;
@@ -672,28 +695,42 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             if(_editor->active_tab){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
 
-                for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
+                   return _second.index > _first.index;
+                });
+
+                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+
+                level->RemoveFutureChanges();
+
+                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
+
+                    const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
 
                     Actor* drag_dropped_actor = dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index].get();
 
-                    while((int)level->level_changes.size()-1 > level->current_level_change){
-
-                        level->level_changes.pop_back();
-                    }
-
-                    level->level_changes.push_back(std::make_unique<ufo::ActorChange_Move>(drag_dropped_actor, drag_dropped_actor->parent, drag_dropped_actor->order_index, this, dragged_actor_where_abouts_.index));
-                    level->current_level_change++;
+                    multiple_actor_change->changes.push_back(std::make_unique<ufo::ActorChange_Move>(
+                        _level_editor_tab,
+                        drag_dropped_actor->editor_id,
+                        drag_dropped_actor->parent->editor_id,
+                        drag_dropped_actor->order_index,
+                        this->editor_id,
+                        dragged_actor_where_abouts_.index));
 
                     drag_dropped_actor->parent = this;
-
-                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
                 }
 
-                std::sort(level_editor_tab->drag_dropped_actors.begin(), level_editor_tab->drag_dropped_actors.end(), [](DraggedActorWhereAbouts& _first, DraggedActorWhereAbouts& _second){
-                   return _second.index < _first.index;
-                });
+                level->level_changes.push_back(std::move(multiple_actor_change));
 
                 for(const auto& dragged_actor_where_abouts_ : level_editor_tab->drag_dropped_actors){
+
+                    new_actor_queue.push_back(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]));
+
+                }
+
+                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
+
+                    const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
 
                     dragged_actor_where_abouts_.parent->actors.erase(dragged_actor_where_abouts_.parent->actors.begin()+dragged_actor_where_abouts_.index);
 
@@ -817,13 +854,14 @@ void Actor::RemoveAndAddEditorPropertiesDuringRuntime(UFOEngineStudio::Editor* _
     }
 }
 
-bool Actor::InputFloatWithUndoAndRedo(const std::string& _id, float* _ptr){
-    float value_before_edit = *_ptr;
-    if(ImGui::InputFloat(_id.c_str(), _ptr)){
+bool Actor::InputFloatWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name){
+    float value_before_edit = *float_handles.at(_name);
+    if(ImGui::InputFloat(_id.c_str(), float_handles.at(_name))){
 
         level->RemoveFutureChanges();
 
-        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableFloatHandle>(_ptr, value_before_edit, *_ptr));
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableFloatHandle>(
+            _level_editor_tab, editor_id, _name,value_before_edit, *float_handles.at(_name)));
 
         return true;
     }
@@ -832,13 +870,13 @@ bool Actor::InputFloatWithUndoAndRedo(const std::string& _id, float* _ptr){
 }
 
 //This function is currently untested
-bool Actor::InputIntWithUndoAndRedo(const std::string& _id, int* _ptr){
-    int value_before_edit = *_ptr;
-    if(ImGui::InputInt(_id.c_str(), _ptr)){
+bool Actor::InputIntWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name){
+    int value_before_edit = *int_handles.at(_name);
+    if(ImGui::InputInt(_id.c_str(), int_handles.at(_name))){
 
         level->RemoveFutureChanges();
 
-        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableIntHandle>(_ptr, value_before_edit, *_ptr));
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableIntHandle>(_level_editor_tab, editor_id, _name, value_before_edit, *int_handles.at(_name)));
 
         return true;
     }
@@ -847,13 +885,13 @@ bool Actor::InputIntWithUndoAndRedo(const std::string& _id, int* _ptr){
 }
 
 //This function is currently untested
-bool Actor::InputTextWithUndoAndRedo(const std::string& _id, std::string* _ptr){
-    std::string value_before_edit = *_ptr;
-    if(ImGui::InputText(_id.c_str(), _ptr)){
+bool Actor::InputTextWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_editor_tab ,const std::string& _id, std::string _name){
+    std::string value_before_edit = *string_handles.at(_name);
+    if(ImGui::InputText(_id.c_str(), string_handles.at(_name))){
 
         level->RemoveFutureChanges();
 
-        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableStringHandle>(_ptr, value_before_edit, *_ptr));
+        level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableStringHandle>(_level_editor_tab, editor_id, _name, value_before_edit, *string_handles.at(_name)));
 
         return true;
     }
@@ -885,11 +923,13 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
         }
     }
 
-    InputFloatWithUndoAndRedo(std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), &local_position.x);
-    InputFloatWithUndoAndRedo(std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), &local_position.y);
+    InputFloatWithUndoAndRedo(_level_editor_tab,
+        std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), "local_position.x");
+    InputFloatWithUndoAndRedo(_level_editor_tab,
+        std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), "local_position.y");
 
     for(int i = 0; i < editor_properties.size(); i++){
-        editor_properties[i]->Update(this, editor_name, i);
+        editor_properties[i]->Update(_level_editor_tab ,this, editor_name, i);
     }
 
 }
@@ -902,6 +942,10 @@ void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, i
 }
 
 void Actor::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+}
+
+void Actor::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

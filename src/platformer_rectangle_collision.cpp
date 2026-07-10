@@ -16,7 +16,7 @@
 namespace ufo{
 
 #ifdef UFO_ENGINE_STUDIO
-void PlatformerRectangleCollision::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void PlatformerRectangleCollision::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     if(import_mode == ImportModes::WRAPPED) return;
 

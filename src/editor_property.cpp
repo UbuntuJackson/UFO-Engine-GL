@@ -5,48 +5,9 @@
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "actor_undo_and_redo.h"
 #include "level.h"
+#include "level_editor_tab.h"
 
 namespace ufo{
-
-// EditorPropertyFloatHandle
-
-EditorPropertyFloatHandle::EditorPropertyFloatHandle(const std::string& _name,const std::string& _alias, float* _value) : EditorProperty(_name,_alias), value{_value}{}
-
-void EditorPropertyFloatHandle::Update(Actor* _actor, const std::string& _editor_name, int _index){
-    ImGui::InputFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), value);
-}
-
-ufo::gc::JsonMap* EditorPropertyFloatHandle::GetJson(ufo::GarbageCollector* _gc){
-    auto m = _gc->New<ufo::gc::JsonMap>();
-    m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
-    m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
-    m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(*value));
-    return m;
-}
-
-std::unique_ptr<EditorProperty> EditorPropertyFloatHandle::Copy(){
-    return std::make_unique<EditorPropertyFloatHandle>(variable_name,alias,value);
-}
-
-// EditorPropertyIntHandle
-
-EditorPropertyIntHandle::EditorPropertyIntHandle(const std::string& _name,const std::string& _alias, int* _value) : EditorProperty(_name,_alias), value{_value}{}
-
-void EditorPropertyIntHandle::Update(Actor* _actor, const std::string& _editor_name, int _index){
-    ImGui::InputInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), value);
-}
-
-ufo::gc::JsonMap* EditorPropertyIntHandle::GetJson(ufo::GarbageCollector* _gc){
-    auto m = _gc->New<ufo::gc::JsonMap>();
-    m->map.emplace("name", _gc->New<ufo::gc::JsonString>(variable_name));
-    m->map.emplace("type", _gc->New<ufo::gc::JsonString>("float"));
-    m->map.emplace("value", _gc->New<ufo::gc::JsonNumber>(*value));
-    return m;
-}
-
-std::unique_ptr<EditorProperty> EditorPropertyIntHandle::Copy(){
-    return std::make_unique<EditorPropertyIntHandle>(variable_name,alias,value);
-}
 
 // EditorPropertyInt
 
@@ -55,12 +16,12 @@ EditorPropertyInt::EditorPropertyInt(const std::string& _name,const std::string&
 
     }
 
-void EditorPropertyInt::Update(Actor* _actor, const std::string& _editor_name, int _index) {
+void EditorPropertyInt::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index) {
     int former_value = value;
 
     if(ImGui::InputInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value)){
         _actor->level->RemoveFutureChanges();
-        _actor->level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableInt>(_actor, variable_name, former_value, value));
+        _actor->level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableInt>(_level_editor_tab, _actor->editor_id, variable_name, former_value, value));
     }
 }
 
@@ -84,11 +45,11 @@ EditorPropertyFloat::EditorPropertyFloat(const std::string& _name,const std::str
 
     }
 
-void EditorPropertyFloat::Update(Actor* _actor, const std::string& _editor_name, int _index){
+void EditorPropertyFloat::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index){
     float former_value = value;
     if(ImGui::InputFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value)){
         _actor->level->RemoveFutureChanges();
-        _actor->level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableFloat>(_actor, variable_name, former_value, value));
+        _actor->level->level_changes.push_back(std::make_unique<ufo::ActorChange_CustomVariableFloat>(_level_editor_tab, _actor->editor_id, variable_name, former_value, value));
     }
 }
 
@@ -112,7 +73,7 @@ EditorPropertyString::EditorPropertyString(const std::string& _name,const std::s
 
     }
 
-void EditorPropertyString::Update(Actor* _actor, const std::string& _editor_name, int _index){
+void EditorPropertyString::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index){
     ImGui::InputText(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
 }
 
@@ -138,7 +99,7 @@ EditorPropertyIntSlider::EditorPropertyIntSlider(const std::string& _name,const 
 
     }
 
-void EditorPropertyIntSlider::Update(Actor* _actor, const std::string& _editor_name, int _index) {
+void EditorPropertyIntSlider::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index) {
     ImGui::SliderInt(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value, min, max);
 }
 
@@ -165,7 +126,7 @@ EditorPropertyFloatSlider::EditorPropertyFloatSlider(const std::string& _name,co
 
     }
 
-void EditorPropertyFloatSlider::Update(Actor* _actor, const std::string& _editor_name, int _index) {
+void EditorPropertyFloatSlider::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index) {
     ImGui::SliderFloat(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value, min, max);
 }
 
@@ -189,7 +150,7 @@ value{_value}{
 
 }
 
-void EditorPropertyCheckBox::Update(Actor* _actor, const std::string& _editor_name, int _index) {
+void EditorPropertyCheckBox::Update(UFOEngineStudio::LevelEditorTab* _level_editor_tab, Actor* _actor, const std::string& _editor_name, int _index) {
     ImGui::Checkbox(std::string(alias+"###Property"+_editor_name+std::to_string(_index)).c_str(), &value);
 }
 

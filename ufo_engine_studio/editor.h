@@ -45,6 +45,8 @@ struct ProjectSettings{
 class Editor : public ufo::Level, public ufo::gc::Root{
 public:
 
+    bool finished_loading_folder = true;
+
     //Stuff for project class.
 
     std::string open_file_dialog_path = "";

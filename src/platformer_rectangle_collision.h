@@ -514,11 +514,12 @@ public:
 
         try{
             auto j_rectangle = _json->map.at("editor_hitbox")->AsMap();
-            float widget_x = j_rectangle.at("x")->AsFloat();
-            float widget_y = j_rectangle.at("y")->AsFloat();
-            float widget_w = j_rectangle.at("width")->AsFloat();
-            float widget_h = j_rectangle.at("height")->AsFloat();
-            get_current_shape = [=](){return ufo::Rectangle(Vector2f(widget_x, widget_y), Vector2f(widget_w,widget_h));};
+            float x = j_rectangle.at("x")->AsFloat();
+            float y = j_rectangle.at("y")->AsFloat();
+            float width = j_rectangle.at("width")->AsFloat();
+            float height = j_rectangle.at("height")->AsFloat();
+            editor_hitbox = ufo::Rectangle(Vector2f(x, y), Vector2f(width,height));
+            get_current_shape = [=](){return ufo::Rectangle(editor_hitbox.position, editor_hitbox.size);};
         } catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for "+class_name);
         }
@@ -542,7 +543,7 @@ public:
     }
 #ifdef UFO_ENGINE_STUDIO
     PartsOfRectangle part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 #endif //UFO_ENGINE_STUDIO
 
 };
