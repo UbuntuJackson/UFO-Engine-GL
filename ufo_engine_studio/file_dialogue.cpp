@@ -1,11 +1,9 @@
-#include <SDL3/SDL.h>
-#include "console.h"
-#include "editor.h"
 #include <cstddef>
 #include <string>
+#include "console.h"
+#include "editor.h"
 #include "file_dialogue.h"
 #include "level_editor_tab.h"
-#include "../ufo_garbage_collector/garbage_collector.h"
 #include "text_editor_tab.h"
 #include "../tilemap/tileset_manager.h"
 #include "../src/openglv4_5_asset_manager.h"
@@ -13,7 +11,7 @@
 
 namespace UFOEngineStudio{
 
-void OnOpenFolder(void *_userdata, const char * const *_filelist, int _filter){
+void OnOpenFolder(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
         Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
@@ -29,7 +27,7 @@ void OnOpenFolder(void *_userdata, const char * const *_filelist, int _filter){
 
 }
 
-void OnNewActorFile(void *_tab, const char * const *_filelist, int _filter){
+void OnNewActorFile(void *_tab, const char * const *_filelist,[[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
         Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
@@ -49,7 +47,7 @@ void OnNewActorFile(void *_tab, const char * const *_filelist, int _filter){
 
 }
 
-void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
+void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
         Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
@@ -62,7 +60,7 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, int _filter){
 
 }
 
-void OnRecoverTileset(void *_userdata, const char * const *_filelist, int _filter){
+void OnRecoverTileset(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
@@ -79,7 +77,7 @@ void OnRecoverTileset(void *_userdata, const char * const *_filelist, int _filte
 
 }
 
-void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
+void OnOpenTexture(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
 
     while(*_filelist != nullptr){
@@ -93,7 +91,7 @@ void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter){
 
 }
 
-void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter){
+void OnNewTextFile(void *_tab, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(*_filelist == nullptr) return; //Should file not have been selected
     TextEditorTab* tab = (TextEditorTab*)_tab;
 
@@ -107,7 +105,7 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter){
 
 }
 
-void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, int _filter){
+void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, [[maybe_unused]] int _filter){
 
     if(*_filelist == nullptr) return; //Should file not have been selected
     UFOEngineStudio::Editor* editor = (UFOEngineStudio::Editor*)_editor;

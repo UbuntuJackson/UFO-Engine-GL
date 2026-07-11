@@ -3,14 +3,12 @@
 #include <vector>
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
-#include "../ufo_garbage_collector/gc_json.h"
 #include "../shapes/rectangle.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
 #include "../imgui/imgui.h"
-#include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif //UFO_ENGINE_STUDIO
 
 namespace UFOEngineStudio{
@@ -109,10 +107,10 @@ public:
 
     virtual void Update(float _delta_time);
 
-    virtual void OnUpdate(float _delta_time){}
+    virtual void OnUpdate([[maybe_unused]] float _delta_time){}
 
     virtual void Pause(float _delta_time);
-    virtual void OnPause(float _delta_time){}
+    virtual void OnPause([[maybe_unused]] float _delta_time){}
 
     void IrregularUpdate();
 
@@ -196,7 +194,7 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
     std::map<std::string,int*> int_handles;
     std::map<std::string,float*> float_handles;
 
-    virtual void OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab){}
+    virtual void OnEndUndoRedoAction([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){}
 
     virtual void OnResourcesEdited(){
 

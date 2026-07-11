@@ -1,10 +1,9 @@
 #pragma once
 #include <string>
-#include <iostream>
-#include <sstream>
 #include "../imgui/imgui.h"
-#include <graphics.h>
 #include "../ufo_garbage_collector/object.h"
+
+namespace ufo{class Graphics;}
 
 namespace UFOEngineStudio{
 
@@ -36,11 +35,11 @@ public:
 
     virtual void OnSave(Editor* _program_state);
 
-    virtual void LevelUpdatePhase(float _float){
+    virtual void LevelUpdatePhase([[maybe_unused]] float _float){
 
     }
 
-    virtual void LevelDrawPhase(ufo::Graphics* _graphics){
+    virtual void LevelDrawPhase([[maybe_unused]] ufo::Graphics* _graphics){
 
     }
 

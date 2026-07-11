@@ -29,8 +29,6 @@ public:
 
     void OnSpawn() override;
 
-    static std::unique_ptr<TileMap> Load(ufo::gc::JsonMap* _layer);
-
     int GetTileID_AtLevelPosition(Vector2f _position);
 
     ufo::Rectangle GetFrameFromSpriteSheet(int _sprite_width, int _frame, Vector2f _frame_size);
@@ -73,10 +71,10 @@ public:
     class TileMapChange_TileMapSize : public ufo::ActorChange{
     public:
         TileMap* tile_map = nullptr;
-        int top;
-        int bottom;
         int left;
         int right;
+        int bottom;
+        int top;
         TileMapChange_TileMapSize(TileMap* _tile_map,int _left, int _right, int _bottom, int _top)
         :
         tile_map{_tile_map},

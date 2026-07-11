@@ -86,7 +86,7 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Actor>(Vector2f(_x, _y));
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -96,7 +96,7 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::CollisionGrid>(Vector2f(_x, _y));
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -106,7 +106,7 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(_x, _y));
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -134,7 +134,7 @@ void GenericGenerator::Initialise(){
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
             }
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -153,7 +153,7 @@ void GenericGenerator::Initialise(){
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Text instance", _error.what());
             }
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -173,7 +173,7 @@ void GenericGenerator::Initialise(){
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Button instance", _error.what());
             }
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -185,7 +185,7 @@ void GenericGenerator::Initialise(){
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Widget>(Vector2f(_x, _y));
 
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -205,7 +205,7 @@ void GenericGenerator::Initialise(){
                 Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Camera instance", _error.what());
             }
 
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -213,8 +213,6 @@ void GenericGenerator::Initialise(){
         "ufo::Level",
         [](ufo::gc::JsonMap* _json){
 
-            float _x = _json->map.at("x")->AsFloat();
-            float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Level>();
 
             try{
@@ -243,7 +241,7 @@ void GenericGenerator::Initialise(){
                 );
             }
 
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -254,7 +252,7 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<UFOEngineStudio::ControllableCamera>(Vector2f(_x, _y));
-            return std::move(instance);
+            return instance;
         }
     );
 #endif //UFO_ENGINE_STUDIO
@@ -268,7 +266,7 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<Sprite>(
             	Vector2f(_x, _y));
 
-            return std::move(instance);
+            return instance;
         }
         );
 
@@ -281,7 +279,7 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<Animation>(
                	Vector2f(_x, _y));
 
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -294,7 +292,7 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<ufo::BackgroundSprite>(
                	Vector2f(_x, _y));
 
-            return std::move(instance);
+            return instance;
         }
     );
 
@@ -307,21 +305,16 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<ufo::RectangularArea>(
                	Vector2f(_x, _y));
 
-            return std::move(instance);
+            return instance;
         }
     );
 }
 
-std::unique_ptr<Actor> GenericGenerator::JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
+std::unique_ptr<Actor> GenericGenerator::JsonToActorTree([[maybe_unused]] ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
 
     std::unique_ptr<Actor> actor = FromJson(_json);
-    OnJsonToActorTree(actor.get(), _json);
 
-    return std::move(actor);
-
-}
-
-void GenericGenerator::OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json){
+    return actor;
 
 }
 
@@ -333,7 +326,7 @@ std::unique_ptr<Actor> GenericGenerator::SpawnAtRuntime(const std::string& _clas
 
 	    std::unique_ptr<Actor> instance = factory_map_runtime.at(GetBaseClassOf(_class_name))(_local_position);
 
-		return std::move(instance);
+		return instance;
     }
 
 
@@ -451,7 +444,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 			}
 		}
 
-	    return std::move(instance);
+	    return instance;
 	}
 	else{
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",class_name,"with base type",GetBaseClassOf(class_name));
@@ -500,11 +493,11 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
             Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson:","Could not find class json for class",instance->class_name);
 		}
 
-	    return std::move(instance);
+	    return instance;
 	}
 	else{
 	    Console::PrintLine("std::unique_ptr<Actor> GenericGenerator::FromJson: Could not find type",_json->map.at("class_name")->AsString());
-					return std::move(factory_map.at("Actor")(_json));
+					return factory_map.at("Actor")(_json);
 	}
 }
 

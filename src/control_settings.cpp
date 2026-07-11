@@ -6,8 +6,4 @@
 
 namespace ufo{
 
-void ControlSettings::SetupControls(Engine* _engine){
-
-}
-
 }

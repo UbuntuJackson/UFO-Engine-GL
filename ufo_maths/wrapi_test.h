@@ -1,7 +1,7 @@
 #pragma once
 #include "../utils/console.h"
 #include "ufo_maths.h"
-void WrapiTest(){
+inline void WrapiTest(){
     for(int i = -10; i < 10; i++){
         Console::Out(ufo::Maths::Wrapi(i, 0, 4));
     }

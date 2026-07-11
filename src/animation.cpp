@@ -16,11 +16,12 @@
 #include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
-Animation::Animation(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
+Animation::Animation(Vector2f _local_position) : Sprite(_local_position, "placeholder_icon", Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
 
     class_name = "ufo::Animation";
     base_class_name = class_name;
@@ -53,7 +54,7 @@ void Animation::SetCostume(const std::string& _configuration_key){
     }
 
     ufo::Texture2D& ref_texture = engine->asset_manager.textures.at(key);
-    number_of_frames = (float)(ref_texture.width/(unsigned int)frame_size.x * ref_texture.height/(unsigned int)frame_size.y);
+    number_of_frames = (float)((unsigned int)ref_texture.width/(unsigned int)frame_size.x * (unsigned int)ref_texture.height/(unsigned int)frame_size.y);
 
     if(frame_size.x == 0.0f || frame_size.y == 0.0f){
         Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", frame_size.x, frame_size.y);
@@ -268,7 +269,6 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
     Actor::OnViewProperties(_level_editor_tab, _index);
 
     std::string removed_costume_key;
-    bool did_remove_costume = false;
 
     if(ImGui::Button(preview ? "||" : ">")){
         preview = !preview;

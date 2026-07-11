@@ -8,11 +8,11 @@
 
 namespace UFOEngineStudio{
 
-void MakeReleaseBuild(const std::string& _development_build_directory, const std::string& _release_build_directory){
+inline void MakeReleaseBuild(const std::string& _development_build_directory, const std::string& _release_build_directory){
 
     int number_of_directory_entries = 0;
 
-    for(const auto& directory_entry : std::filesystem::recursive_directory_iterator(_release_build_directory)){
+    for([[maybe_unused]] const auto& directory_entry : std::filesystem::recursive_directory_iterator(_release_build_directory)){
         number_of_directory_entries++;
     }
 

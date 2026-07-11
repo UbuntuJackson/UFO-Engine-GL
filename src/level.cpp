@@ -46,7 +46,7 @@ Level::Load(){
 
 }
 
-void Level::Update(float _delta_time){}
+void Level::Update([[maybe_unused]] float _delta_time){}
 
 void Level::UpdatePhase(float _delta_time){
     AddNewActors();
@@ -93,8 +93,6 @@ void Level::UpdatePhase(float _delta_time){
 }
 
 void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
-
-    float w_h_ratio = (float)engine->width/(float)engine->height;
 
     if(engine->multi_player){
         if(active_camera_handles.size() == 1){
@@ -171,11 +169,11 @@ void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
 
 #ifdef UFO_ENGINE_STUDIO
 
-Actor* Level::OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) {
+Actor* Level::OnGetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace) {
     return nullptr;
 }
 
-void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Level::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     const Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
     const Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+size);
@@ -184,7 +182,7 @@ void Level::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineSt
 
 }
 
-bool Level::OnUpdateEditorViewportFocus(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+bool Level::OnUpdateEditorViewportFocus([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     return false;
 }
 
@@ -226,11 +224,11 @@ void Level::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
     ImGui::InputFloat(std::string("size.y###size.y"+editor_name+std::to_string(_index)).c_str(), &size.y);
 }
 
-void Level::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Level::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics,[[maybe_unused]]  Camera* _camera,[[maybe_unused]]  UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 
-void Level::DrawGizmosPhase(ufo::Graphics* _graphics, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Level::DrawGizmosPhase([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     if(_level_editor_tab->inspected_actor != ufo::Maths::NULL_ID){
         actors_with_stable_id.at(_level_editor_tab->inspected_actor)->OnDrawGizmos(engine->graphics.get(), active_camera_handles.back(), _level_editor_tab);

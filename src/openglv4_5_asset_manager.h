@@ -61,7 +61,7 @@ public:
 
 
      std::unordered_map<std::string, MIX_Audio*> audio;
-     void LoadAudio(const std::string& _path, const std::string& _name){}
+     //void LoadAudio(const std::string& _path, const std::string& _name){}
 
     //Editor only. Todo: When the editor refreshes or closes I want the assets to be saved in the project folder. However,
     // right now it only does so upon closing the editor.

@@ -2,7 +2,6 @@
 #include <functional>
 #include <string>
 #include "../ufo_garbage_collector/gc_json.h"
-#include "../ufo_garbage_collector/object.h"
 #include "../src/actor.h"
 #include "editor.h"
 #include "advanced_actor_spawner.h"

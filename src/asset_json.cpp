@@ -26,7 +26,7 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
     }
 }
 
-void AssetJson::Write(const std::string& _path, OpenGLv4_5_AssetManager* _asset_manager){
+void AssetJson::Write(OpenGLv4_5_AssetManager* _asset_manager){
     auto j = gc.New<ufo::gc::JsonMap>();
 
     auto asset_arr = gc.New<ufo::gc::JsonArray>();

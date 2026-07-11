@@ -133,7 +133,7 @@ ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shad
 
 void OpenGLv4_5_AssetManager::SaveAssets(){
     AssetJson j;
-    j.Write(save_path, this);
+    j.Write(this);
 }
 
 void OpenGLv4_5_AssetManager::Clear(){

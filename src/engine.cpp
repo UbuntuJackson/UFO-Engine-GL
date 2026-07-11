@@ -97,7 +97,7 @@ void Engine::InitIndependant(){
     window = nullptr;
     //SDL_GL_Context is unassigned here
 
-    if(SDL_Init(SDL_INIT_VIDEO) < 0){
+    if(!SDL_Init(SDL_INIT_VIDEO)){
         Console::PrintLine("Couldn't initialise SDL", SDL_GetError());
         exit(2);
     }
@@ -320,8 +320,8 @@ void Engine::StartWithImGui(){
     //IM_ASSERT(font != nullptr);
 
     // Our state
-    bool show_demo_window = false;
-    bool show_another_window = false;
+    [[maybe_unused]] bool show_demo_window = false;
+    [[maybe_unused]] bool show_another_window = false;
 
     /*ForIMGUI END*/
 

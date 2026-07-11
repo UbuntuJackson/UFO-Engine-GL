@@ -20,7 +20,7 @@ public:
 
     EditorProperty(const std::string& _variable_name, const std::string& _alias) : variable_name{_variable_name}, alias{_alias}{}
 
-    virtual ufo::gc::JsonMap* GetJson(ufo::GarbageCollector* _gc){
+    virtual ufo::gc::JsonMap* GetJson([[maybe_unused]] ufo::GarbageCollector* _gc){
         return nullptr;
     }
 

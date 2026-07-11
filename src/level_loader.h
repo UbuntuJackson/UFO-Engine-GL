@@ -17,7 +17,7 @@ public:
         }
 
         auto level = _engine->actor_generator->JsonToActorTree(&gc,level_json);
-        return std::move(level);
+        return level;
      }
 };
 

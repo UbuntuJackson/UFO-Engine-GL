@@ -1,6 +1,5 @@
 #include <stdexcept>
 #include <string>
-#include <SDL3/SDL.h>
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "engine.h"
@@ -13,13 +12,14 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/file_dialogue.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
 
-Sprite::Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
-key{_key},
+Sprite::Sprite(olc::vf2d _position, std::string _key, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
 Actor(_position),
+key{_key},
 offset{_offset},
 frame_size{_frame_size},
 scale{_scale},
@@ -31,8 +31,8 @@ current_frame_index{_frame_index}
 }
 
 Sprite::Sprite(olc::vf2d _position) :
-key{"placeholder_icon"},
 Actor(_position),
+key{"placeholder_icon"},
 offset{Vector2f(0.0f,0.0f)},
 frame_size{Vector2f(32.0f,32.0f)},
 scale{Vector2f(1.0f,1.0f)},
@@ -155,7 +155,7 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
 #ifdef UFO_ENGINE_STUDIO
 
-void Sprite::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Sprite::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 
@@ -262,7 +262,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
     }
 }
 
-void Sprite::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Sprite::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     editor_hitbox.size = Vector2f(frame_size.x*scale.x,frame_size.y*scale.y);
     editor_hitbox.position = -offset;
 }
@@ -327,8 +327,6 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
 
     std::string visible_or_not_string = visible ? "<o>###" : "</>###";
-
-    ImGuiStyle style = ImGui::GetStyle();
 
     if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))){
         visible = !visible;

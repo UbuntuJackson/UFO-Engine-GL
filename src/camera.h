@@ -41,7 +41,6 @@ public:
 
     Camera(olc::vf2d _position);
     void OnSpawn();
-    void OnUpdate(float _delta_time);
     void EarlyUpdate();
     void ClampLocalPosition();
     void HandleUpdate();

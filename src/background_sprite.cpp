@@ -12,7 +12,7 @@
 
 namespace ufo{
 
-BackgroundSprite::BackgroundSprite(Vector2f _local_position) : Sprite("placeholder_icon", _local_position, Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
+BackgroundSprite::BackgroundSprite(Vector2f _local_position) : Sprite(_local_position,"placeholder_icon", Vector2f(0.0f, 0.0f), Vector2f(16.0f, 16.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f){
     class_name = "ufo::BackgroundSprite";
     base_class_name = class_name;
 #ifdef UFO_ENGINE_STUDIO

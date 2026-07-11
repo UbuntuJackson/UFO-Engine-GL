@@ -2,7 +2,7 @@
 namespace ufo::Maths{
 bool IsPolygonClockwise(ufo::Polygon _polygon){
     float sum = 0.0f;
-    for(int i = 0; i < _polygon.size(); i++){
+    for(int i = 0; i < (int)_polygon.size(); i++){
         float x0 = _polygon[i].x;
         float y0 = _polygon[i].y;
         float x1 = _polygon[(i+1)%(_polygon.size())].x;

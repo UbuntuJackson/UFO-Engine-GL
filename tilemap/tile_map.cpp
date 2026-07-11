@@ -34,24 +34,6 @@ void TileMap::OnSpawn(){
 
 }
 
-std::unique_ptr<TileMap>
-TileMap::Load(ufo::gc::JsonMap* _layer){
-    std::unique_ptr<TileMap> u_tilemap = std::make_unique<TileMap>(Vector2f(0.0f,0.0f));
-
-    if(_layer->map.at("type")->AsString() == "tilelayer"){
-        std::vector<int> data;
-        auto layer_data = _layer->map.at("data")->AsArray();
-
-        for(const auto& _json : layer_data){
-            int id = (float)_json->AsFloat();
-            u_tilemap->tilemap_data.push_back(id);
-        }
-
-    }
-
-    return std::move(u_tilemap);
-}
-
 int TileMap::GetTileID_AtLevelPosition(Vector2f _position){
     int tile_id = tilemap_data[int(_position.y/tile_height) * number_of_columns + (_position.x/tile_width)];
     return tile_id;
@@ -75,7 +57,6 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     if(!visible) return;
 
     float scale = _camera->scale;
-    Bounds world_bounds = _camera->world;
 
     //Haven't made a TilesetManager yet.
     for(auto&& tileset : level->tileset_manager.tileset_data){
@@ -574,7 +555,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
                     int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
 
-                    if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+                    if(tile_to_be_set > -1 && tile_to_be_set < (int)tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
 
                     xx++;
                     if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){

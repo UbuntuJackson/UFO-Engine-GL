@@ -25,7 +25,6 @@ void PlatformerRectangleCollision::OnResize(UFOEngineStudio::Editor* _editor, UF
     {
         Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
         Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
-        Vector2f global_position = GetGlobalPosition();
 
         ImU32 colour = 0xFFFFFFFF;
         if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
@@ -37,10 +36,6 @@ void PlatformerRectangleCollision::OnResize(UFOEngineStudio::Editor* _editor, UF
     ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
 
     Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
-
-    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
-
-    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
 
     Vector2f scaled_delta_mouse_position = 1.0f/cam->scale * (engine->mouse.position - engine->mouse.former_position) * _level_editor_tab->window_to_engine_ratio;
 

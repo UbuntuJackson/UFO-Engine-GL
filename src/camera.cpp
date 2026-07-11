@@ -31,10 +31,6 @@ void Camera::OnSpawn(){
     Console::PrintLine("Camera Spawned", editor_name);
 }
 
-void Camera::OnUpdate(float _delta_time){
-
-}
-
 void
 Camera::HandleUpdate(){ //Updates as a handle.
 

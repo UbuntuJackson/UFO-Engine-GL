@@ -11,7 +11,7 @@ public:
 
     SaveFile(std::string _save_file_path) : save_file_path{_save_file_path}{}
 
-    virtual void OnLoad(ufo::gc::JsonMap* _save_file){
+    virtual void OnLoad([[maybe_unused]] ufo::gc::JsonMap* _save_file){
 
     }
 

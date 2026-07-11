@@ -1,9 +1,7 @@
 #pragma once
-#include "../ufo_engine_studio/tab.h"
-#include "../imgui/imgui_internal.h"
-#include "../imgui/imgui.h"
-#include "../ufo_garbage_collector/garbage_collector.h"
 #include <vector>
+#include "../ufo_engine_studio/tab.h"
+#include "../imgui/imgui.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
 #include "actor_undo_and_redo.h"

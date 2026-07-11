@@ -61,14 +61,13 @@ ufo::gc::JsonMap* RectangularArea::GetAsJson(ufo::GarbageCollector* _gc){
 
 #ifdef UFO_ENGINE_STUDIO
 
-void RectangularArea::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void RectangularArea::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     auto cam = _level_editor_tab->this_level->active_camera_handles.back();
 
     {
         Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
         Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
-        Vector2f global_position = GetGlobalPosition();
 
         ImU32 colour = 0xFFFFFFFF;
         if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;

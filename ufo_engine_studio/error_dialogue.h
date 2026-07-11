@@ -35,9 +35,9 @@ class ErrorDialogueMismatchedClass : public ErrorDialogue{
 public:
     bool initialised = false;
     std::string scene_file_path;
+    std::string scene_file_base_class_name;
     std::string source_file_class_name;
     std::string base_class_name;
-    std::string scene_file_base_class_name;
 
     ErrorDialogueMismatchedClass(const std::string& _scene_file_path, const std::string& _scene_file_base_class_name, const std::string& _source_file_class_name, const std::string& _base_class_name);
 

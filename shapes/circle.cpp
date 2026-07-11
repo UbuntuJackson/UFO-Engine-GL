@@ -2,8 +2,6 @@
 #include "circle.h"
 #include "raw_shape_base.h"
 #include "../ufo_maths/ufo_maths.h"
-//#include "../drawing_system/drawing_system.h"
-//#include "../camera/camera.h"
 
 namespace ufo{
 

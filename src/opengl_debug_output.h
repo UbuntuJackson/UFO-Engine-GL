@@ -13,7 +13,7 @@ static void APIENTRY glDebugOutput(
 {
 
     //Errors to ignore
-    if(_id == 131169 || _id == 131185 || _id == 131218, _id == 131204) return;
+    if(_id == 131169 || _id == 131185 || _id == 131218 || _id == 131204) return;
 
     Console::PrintLine("Debug message (",_id,")",_message);
 

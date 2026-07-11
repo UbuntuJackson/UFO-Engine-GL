@@ -7,7 +7,6 @@
 #include "file.h"
 #include "file_node.h"
 #include "../imgui/imgui.h"
-#include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "editor.h"
 
 namespace UFOEngineStudio{

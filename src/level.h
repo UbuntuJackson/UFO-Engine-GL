@@ -60,7 +60,7 @@ public:
 
     void DrawPhase(ufo::Graphics* _graphics, int _width, int _height);
 
-    virtual void EditorUpdatePhase(float _delta_time){
+    virtual void EditorUpdatePhase([[maybe_unused]] float _delta_time){
 
     }
 

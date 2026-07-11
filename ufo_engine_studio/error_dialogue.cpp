@@ -13,7 +13,7 @@
 namespace UFOEngineStudio{
 
 
-void ErrorDialogueNoError::Update(Editor* _editor){
+void ErrorDialogueNoError::Update([[maybe_unused]] Editor* _editor){
 
 }
 

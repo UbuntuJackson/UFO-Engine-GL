@@ -22,7 +22,7 @@ bool TextEditorTab::DetermineIfEdited(){
     return text == last_saved_text;
 }
 
-void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
+void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , [[maybe_unused]] Editor* _editor, float _delta_time){
 
     ImGui::Begin(std::string("TextEditorTabWindow"+name_and_imgui_id).c_str());
 
@@ -33,7 +33,7 @@ void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, floa
     ImGui::End();
 }
 
-void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _editor){
+void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, [[maybe_unused]] Editor* _editor){
     ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string("TextEditorTabWindow"+name_and_imgui_id).c_str());
 }
 

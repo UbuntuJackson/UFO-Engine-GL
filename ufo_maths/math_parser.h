@@ -119,7 +119,7 @@ std::unique_ptr<MathNode> ParseTokensRecursive(std::vector<std::string>& _expres
         node = std::make_unique<NumberNode>(std::stoi(right_side_words[0]));
     }
 
-    return std::move(node);
+    return node;
 }
 
 inline float ParseExpression(const std::string& _expression){

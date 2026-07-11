@@ -65,7 +65,7 @@ void CollisionGrid::OnSpawn(){
     }
 }
 
-void CollisionGrid::OnUpdate(float _delta_time){
+void CollisionGrid::OnUpdate([[maybe_unused]] float _delta_time){
 
     std::set<int> divisions_to_reset;
 
@@ -110,7 +110,7 @@ void CollisionGrid::OnUpdate(float _delta_time){
 }
 
 #ifdef UFO_ENGINE_STUDIO
-void CollisionGrid::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+void CollisionGrid::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, [[maybe_unused]] int _index){
     if(ImGui::Button("Edit in viewport")){
         _level_editor_tab->currently_edited_actor_in_viewport = this->editor_id;
     }

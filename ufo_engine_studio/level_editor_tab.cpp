@@ -86,7 +86,7 @@ void LevelEditorTab::Refresh(){
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
 
-void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
+void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
 
     ImGui::Begin("Undo & Redo");
 
@@ -111,8 +111,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
         this_level->ResetSelectionStatus();
     }
     reset_selection_status = false;
-
-    ImGuiWindowFlags window_flags = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar;
 
     ImGui::Begin(std::string("ContentBrowser###ContentBrowser"+std::to_string(id)).c_str());
 
@@ -262,8 +260,6 @@ void LevelEditorTab::OnActive(ImGuiID _local_dockspace_id , Editor* _editor, flo
     if(inspected_actor != ufo::Maths::NULL_ID) this_level->actors_with_stable_id.at(inspected_actor)->ViewProperties(this, -1);
 
     ImGui::End();
-
-    float w_h_ratio = (float)ImGui::GetWindowSize().x/(float)ImGui::GetWindowSize().y;
 
     ImGui::Image(
         (void*)(intptr_t)(dynamic_cast<ufo::OpenGLv4_5_Graphics*>(engine->graphics.get())->texture_id),
@@ -566,7 +562,7 @@ void LevelEditorTab::SelectionUpdate(){
     }*/
 }
 
-void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, Editor* _program_state){
+void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id,[[maybe_unused]] Editor* _program_state){
     ImGuiDockSpaceSplit(
         _local_dockspace_id,
         ImGui::GetWindowSize(),

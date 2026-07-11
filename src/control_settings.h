@@ -40,8 +40,6 @@ public:
         controls.push_back(Controls());
     }
 
-    void SetupControls(Engine* _engine);
-
 };
 
 }

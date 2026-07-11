@@ -18,14 +18,15 @@ public:
     Vector2f scale = {1.0f, 1.0f};
     float rotation = 0.0f;
     float current_frame_index = 0.0f;
-    float number_of_frames = 1.0f;
     bool visible = true;
     ufo::Colour tint = olc::WHITE;
+
+    float number_of_frames = 1.0f;
 
     //Custom shader can either use std::string, raw int or the shader class instance.
     ufo::Shader shader;
 
-    Sprite(std::string _key, olc::vf2d _position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index);
+    Sprite(olc::vf2d _position, std::string _key, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index);
 
     Sprite(olc::vf2d _position);
 

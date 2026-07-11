@@ -43,8 +43,6 @@ public:
 
     std::unique_ptr<Actor> JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json);
 
-    virtual void OnJsonToActorTree(Actor* _actor, ufo::gc::JsonMap* _json);
-
 #ifdef UFO_ENGINE_STUDIO
     //Not done yet
     std::unique_ptr<Actor> SpawnAtRuntime(const std::string& _class_name, Vector2f _local_position);

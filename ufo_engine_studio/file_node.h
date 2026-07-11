@@ -3,9 +3,6 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <algorithm>
-#include <functional>
-#include "../utils/console.h"
 
 namespace UFOEngineStudio{
 

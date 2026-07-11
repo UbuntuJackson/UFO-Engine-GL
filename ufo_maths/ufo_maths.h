@@ -67,11 +67,11 @@ public:
 
 //Collision detection, and similar utilities
 
-inline bool PointVsRotatedRectangle(Vector2f _point, const ufo::Rectangle& _rectangle, float _rotation){
+/*inline bool PointVsRotatedRectangle(Vector2f _point, const ufo::Rectangle& _rectangle, float _rotation){
 
 
     return false;
-}
+}*/
 
 Vector2f RotateVector(Vector2f _v,float _angle_in_radians);
 

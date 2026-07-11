@@ -200,7 +200,7 @@ if(NOT WIN32)  # Only consider ALSA or PulseAudio on Linux
     endif()
 endif()
 
-if(CMAKE_TOOLCHAIN_FILE) #If cross-compiling
+if(CMAKE_TOOLCHAIN_FILE OR WIN32) #If cross-compiling
     message(CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE})
 
     target_link_libraries(UFO PUBLIC oleaut32.lib)
@@ -218,6 +218,7 @@ if(CMAKE_TOOLCHAIN_FILE) #If cross-compiling
     target_link_libraries(UFO PUBLIC shlwapi.lib)
     target_link_libraries(UFO PUBLIC dwmapi.lib)
     target_link_libraries(UFO PUBLIC winmm.lib)
+    target_link_libraries(UFO PUBLIC stdc++.lib)
 
 endif()
 

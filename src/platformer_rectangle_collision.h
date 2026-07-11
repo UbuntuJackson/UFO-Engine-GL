@@ -78,7 +78,7 @@ public:
                 int tile_index = xx+yy*_tile_map->number_of_columns;
 
                 //Trying to prevent out of bounds array access
-                if(tile_index >= _tile_map->tilemap_data.size() || tile_index < 0) continue;
+                if(tile_index >= (int)_tile_map->tilemap_data.size() || tile_index < 0) continue;
 
                 int tile_id = _tile_map->tilemap_data[tile_index] - data.tileset_start_id + 1;
 
@@ -208,7 +208,7 @@ public:
                 int tile_index = xx+yy*_tile_map->number_of_columns;
 
                 //Trying to prevent out of bounds array access
-                if(tile_index >= _tile_map->tilemap_data.size() || tile_index < 0) continue;
+                if(tile_index >= (int)_tile_map->tilemap_data.size() || tile_index < 0) continue;
 
                 int tile_id = _tile_map->tilemap_data[tile_index] - data.tileset_start_id + 1;
 

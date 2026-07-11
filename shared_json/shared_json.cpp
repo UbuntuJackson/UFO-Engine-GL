@@ -100,9 +100,9 @@ std::shared_ptr<JsonArray> cJSON_ToArray(cJSON* member){
 std::shared_ptr<JsonMap> JsonRead(std::string _path){
     std::string s = FileSystem::Read(_path);
     cJSON* member = ujson::JsonParse(s);
-    bool invalid_cjson = false;
+
     if(!member){
-        invalid_cjson = true;
+
         Console::PrintLine("[!]", "[Json::JsonRead()]" ,"Could not load json from path:", _path);
         return std::make_shared<FaultyJsonMap>();
     }

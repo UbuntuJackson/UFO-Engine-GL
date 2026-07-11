@@ -120,7 +120,7 @@ void Actor::AddNewActors(){
 
     if(!queue_was_empty && !should_be_sorted){
 
-        for(int i = 0; i < actors.size(); i++){
+        for(int i = 0; i < (int)actors.size(); i++){
             actors[i]->order_index = i;
         }
     }
@@ -155,7 +155,7 @@ void Actor::InsertActors(){
         actors.insert(actors.begin()+inserted_actor.index, std::move(inserted_actor.actor));
     }
 
-    for(int i = 0; i < actors.size(); i++){
+    for(int i = 0; i < (int)actors.size(); i++){
         actors[i]->order_index = i;
     }
 
@@ -185,7 +185,7 @@ void Actor::SortActors(){
     });
 
     //Not sure why I'm doing it like this. I don't remember
-    for(int i = 0; i < actors.size(); i++){
+    for(int i = 0; i < (int)actors.size(); i++){
         actors[i]->order_index = i;
     }
 
@@ -244,7 +244,7 @@ void Actor::WidgetDraw(ufo::Graphics* _graphics){
     OnWidgetDraw(_graphics);
 }
 
-void Actor::OnWidgetDraw(ufo::Graphics* _graphics){
+void Actor::OnWidgetDraw([[maybe_unused]] ufo::Graphics* _graphics){
 
 }
 
@@ -255,7 +255,7 @@ void Actor::Draw(ufo::Graphics* _graphics, Camera* _camera){
     }
 }
 
-void Actor::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
+void Actor::OnDraw([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera){
 
 }
 
@@ -332,7 +332,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 }
 
 //Actor generator calls this.
-void Actor::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+void Actor::OnLoadDefaultProperties([[maybe_unused]] ufo::gc::JsonMap* _json){
 
 }
 
@@ -362,7 +362,7 @@ TileMap* Actor::GetTileMap(){
 // UFO-Engine Studio
 #ifdef UFO_ENGINE_STUDIO
 
-void Actor::ReplaceActors(UFOEngineStudio::Editor* _editor){
+void Actor::ReplaceActors([[maybe_unused]] UFOEngineStudio::Editor* _editor){
     /*for(int i = 0; i < actors.size(); i++){
         actors[i]->ReplaceActors(_editor);
 
@@ -482,7 +482,7 @@ void Actor::TurnOnEditMode(){
     old_editor_name = editor_name;
 }
 
-void Actor::OnUpdateEditorTree(int _index){
+void Actor::OnUpdateEditorTree([[maybe_unused]] int _index){
 
 }
 
@@ -492,7 +492,7 @@ void Actor::OnAdditionalButtonsForTreeItem(){
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
-    bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
+    //bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
 
     if(ImGui::BeginDragDropTarget()){
 
@@ -530,7 +530,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
                 level->level_changes.push_back(std::move(multiple_actor_change));
 
-                for(int where_abouts_index = 0; where_abouts_index < level_editor_tab->drag_dropped_actors.size(); where_abouts_index++){
+                for(int where_abouts_index = 0; where_abouts_index < (int)level_editor_tab->drag_dropped_actors.size(); where_abouts_index++){
                     const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
                     parent->InsertActorUniquePtr(std::move(dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index]), _index);
 
@@ -910,17 +910,9 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
     if(search_field_active){
         ImGui::InputText("FindActor...", &find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
-        Actor* actor = nullptr;
-        try{
-             actor = GetActor(find_actor_search_field);
-        }
-        catch(const std::exception& _error){
+        Actor* actor = actor = GetActor(find_actor_search_field);
 
-        }
-
-        if(ImGui::Button(std::string("Found actor: "+find_actor_search_field).c_str())){
-
-        }
+        if(actor) ImGui::Text("Found actor");
     }
 
     InputFloatWithUndoAndRedo(_level_editor_tab,
@@ -949,11 +941,11 @@ void Actor::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEdi
 
 }
 
-void Actor::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Actor::OnUtiliseAssetManager([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 
-Actor* Actor::GetFocusedActor(Vector2f _mouse_position_over_screenspace){
+Actor* Actor::GetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace){
     if(import_mode != ImportModes::WRAPPED){
         for(const auto& actor : actors){
             Actor* act = actor->GetFocusedActor(_mouse_position_over_screenspace);
@@ -977,7 +969,7 @@ void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_
 
 }
 
-void Actor::UpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Actor::UpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     if(import_mode != ImportModes::WRAPPED){
         for(const auto& actor : actors){
@@ -1001,7 +993,7 @@ void Actor::DrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudi
     }
 }
 
-void Actor::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Actor::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

@@ -11,6 +11,7 @@
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif
 
 namespace ufo{
@@ -142,7 +143,7 @@ void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, 
 
     if(ImGui::BeginCombo("Languages###Languages", engine->language.c_str())){
 
-        for(int i = 0; i < engine->languages.size(); ++i){
+        for(int i = 0; i < (int)engine->languages.size(); ++i){
             bool is_selected = (engine->language == engine->languages[i]);
 
             if(ImGui::Selectable(engine->languages[i].c_str(), &is_selected)){
@@ -159,7 +160,7 @@ void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, 
     }
 }
 
-void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Text::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
     Vector2f pos_min = GetGlobalPosition()+editor_hitbox.position;
     Vector2f pos_max = GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size;
@@ -199,7 +200,7 @@ void Text::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStu
 
 }
 
-void Text::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Text::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 

@@ -1,4 +1,3 @@
-#include "gc_json.h"
 #define SDL_MAIN_HANDLED
 #include <exception>
 #include <level.h>
@@ -22,6 +21,7 @@
 #include "../utils/file_utils.h"
 #include "../imgui/imgui_internal.h"
 #include "../ufo_maths/math_parser.h"
+#include "gc_json.h"
 
 namespace UFOEngineStudio{
 
@@ -367,9 +367,11 @@ void Editor::OnUpdate(float _delta_time){
         AddNewActors();
 
         spawnable_actor_map.clear();
-        std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
-        //std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 generate_actor_spawner_functions.py" + std::string(" "))+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
-
+#ifdef __MINGW32__
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+#else
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+#endif
         engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
         PopulateSpawnableActorMapWithBaseObjects();
         ReloadSpawnableActorMap();
@@ -387,7 +389,6 @@ void Editor::OnUpdate(float _delta_time){
     }
 
     if(will_compile_game){
-        //std::system("cd ../UFO-Engine/header_tool && chmod +x compile_game.sh && ./compile_game.sh");
 
         const std::string build_directory = opened_directory_path+"/build";
         std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
@@ -451,8 +452,9 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
         "ufo::Sprite",
         std::move(std::make_unique<AdvancedActorSpawner>(
             [](Editor* _editor, AdvancedActorSpawner* _this){
-                return std::make_unique<ufo::Sprite>("placeholder_icon",
+                return std::make_unique<ufo::Sprite>(
                     Vector2f(0.0f, 0.0f),
+                    "placeholder_icon",
                     Vector2f(0.0f, 0.0f),
                     Vector2f(32.0f, 32.0f),
                     Vector2f(1.0f, 1.0f),
@@ -525,7 +527,7 @@ void Editor::ReloadSpawnableActorMap(){
                         if(_editor->spawnable_actor_map.count(_this->base)){
                             auto instance = _editor->spawnable_actor_map.at(_this->base)->Spawn(_editor);
 
-                            return std::move(instance);
+                            return instance;
                         }
 
                         Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Error, could not find spawner of base-type",
@@ -738,17 +740,22 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
     }
 
     //Could build with max available CPU here.
+#ifdef __MINGW32__
+    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb -O0\" -DUFO_ENGINE_STUDIO=ON -GNinja && ninja -j16 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
+#else
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
+#endif
+
 }
 
-void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path){
+void DebugGame(const std::string& _build_directory, [[maybe_unused]] const std::string& _opened_directory_path){
     //Could build with max available CPU here.
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"gdb OUT && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
 }
 
-void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path){
+void RunGame(const std::string& _build_directory, [[maybe_unused]] const std::string& _opened_directory_path){
     //Could build with max available CPU here.
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"./OUT && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);

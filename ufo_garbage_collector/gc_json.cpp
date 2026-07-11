@@ -102,9 +102,9 @@ gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member){
 gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path){
     std::string s = FileSystem::Read(_path);
     cJSON* member = ujson::JsonParse(s);
-    bool invalid_cjson = false;
+
     if(!member){
-        invalid_cjson = true;
+
         Console::PrintLine("[!]", "[Json::JsonRead()]" ,"Could not load json from path:", _path);
         return _gc->New<gc::FaultyJsonMap>();
     }

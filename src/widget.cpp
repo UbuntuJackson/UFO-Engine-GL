@@ -62,11 +62,11 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 
 #ifdef UFO_ENGINE_STUDIO
 
-void Widget::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void Widget::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
 }
 
-void Widget::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
+void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab, [[maybe_unused]] int _index){
 
 }
 
@@ -182,6 +182,9 @@ void Widget::ResizeOrMove(Vector2f _position_screen_space,Vector2f _size_screen_
 
             local_position += dp;
             break;
+        }
+        default:{
+
         }
     }
 
