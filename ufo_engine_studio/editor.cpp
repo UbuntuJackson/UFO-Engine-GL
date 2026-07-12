@@ -32,7 +32,8 @@ Editor::Editor(){
 void Editor::ResetUFOEngineStudio(){
     engine->asset_manager.SaveAssets();
 
-    for(auto& shader : engine->asset_manager.shaders) shader.second.Delete();
+    //Commented out for now, caused issues
+    //for(auto& shader : engine->asset_manager.shaders) shader.second.Delete();
     engine->asset_manager.shaders.clear();
 
     engine->asset_manager.textures.clear();
@@ -373,7 +374,7 @@ void Editor::OnUpdate(float _delta_time){
 
         spawnable_actor_map.clear();
 #ifdef __MINGW32__
-        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && ../../build/python.exe "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 #else
         [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 #endif
