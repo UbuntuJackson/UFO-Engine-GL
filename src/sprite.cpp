@@ -258,7 +258,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
                     }
                     ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
-                    ImGui::Text(("name:"+name).c_str(),"%s");
+                    ImGui::Text(("name: "+name).c_str(),"%s");
                     ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
                 }
 
@@ -321,7 +321,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
             for(const std::string& name : shader_names){
 
-                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name:"+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name: "+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
 
                 if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
 
@@ -336,7 +336,6 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
                     }
 
-                    ImGui::Text(("name:"+name).c_str(),"%s");
                 }
 
             }

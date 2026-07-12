@@ -5,6 +5,8 @@
 #include "../src/actor.h"
 #include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
+#include "gc_json.h"
+#include "graphics.h"
 
 namespace ufo{
     class Camera;
@@ -25,6 +27,7 @@ public:
     int tile_width = 16;
     int tile_height = 16;
 
+    ufo::Colour tint = ufo::Colour(255,255,255,255);
     std::string shader_key = "partial_sprite_shader";
 
     TileMap(Vector2f _);
@@ -66,9 +69,13 @@ public:
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _gc) override;
+
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
 #ifdef UFO_ENGINE_STUDIO
+    ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     class TileMapChange_TileMapSize : public ufo::ActorChange{

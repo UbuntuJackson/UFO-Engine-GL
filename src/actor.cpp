@@ -561,7 +561,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     if(import_mode == ImportModes::UNWRAPPED){
         std::string label = std::string("###ActorTree"+std::to_string(editor_id));
 
-        if(_level_editor_tab->actor_dedicated_to_viewport == this->editor_id) ImGui::SetNextItemOpen(true);
+        //if(level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->editor_id == this->editor_id) ImGui::SetNextItemOpen(true);
         tree_node_opened = ImGui::TreeNodeEx(label.c_str(), ImGuiTreeNodeFlags_SpanTextWidth);
 
         ImGui::SameLine();
@@ -604,6 +604,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             ufo::Actor* new_actor_place_holder = AddActor<UFOEngineStudio::NewActorPlaceHolder>(Vector2f(0.0f, 0.0f));
 
             _level_editor_tab->actor_dedicated_to_viewport = new_actor_place_holder->editor_id;
+            level->actors_with_stable_id.emplace(new_actor_place_holder->editor_id, new_actor_place_holder);
 
         }
         if(ImGui::MenuItem("Rename")){

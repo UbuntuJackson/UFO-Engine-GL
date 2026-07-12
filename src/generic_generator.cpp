@@ -118,18 +118,7 @@ void GenericGenerator::Initialise(){
             auto instance = std::make_unique<ufo::TileMap>(Vector2f(_x, _y));
 
             try{
-                auto tiles = _json->map.at("tiles")->AsArray();
-                instance->tilemap_data.clear();
-                instance->tilemap_data.reserve(tiles.size());
-
-                for(const auto& tile : tiles){
-                    instance->tilemap_data.push_back((int)tile->AsFloat());
-                }
-
-                instance->number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
-                instance->number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
-
-                instance->visible = (int)_json->map.at("visible")->AsFloat();
+                instance->OnLoadDefaultProperties(_json);
 
             } catch(const std::exception& _error){
                 Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());

@@ -95,7 +95,7 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                             sample_rectangle.position,
                             sample_rectangle.size,
                             0.0f,
-                            ufo::Colour(255,255,255,255), shader_key
+                            tint, shader_key
                         );
                     }
                     catch(const std::exception& _error){
@@ -122,7 +122,45 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("number_of_columns", _gc->New<ufo::gc::JsonNumber>(number_of_columns));
     parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
     parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
+
+    parent_class_as_json->map.emplace("shader_key", _gc->New<ufo::gc::JsonString>(shader_key));
+
+    ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.g));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
+
+    parent_class_as_json->map.emplace("tint", j_colour);
+
     return parent_class_as_json;
+}
+
+void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    auto tiles = _json->map.at("tiles")->AsArray();
+    tilemap_data.clear();
+    tilemap_data.reserve(tiles.size());
+
+    for(const auto& tile : tiles){
+        tilemap_data.push_back((int)tile->AsFloat());
+    }
+
+    number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
+    number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
+
+    visible = (int)_json->map.at("visible")->AsFloat();
+
+    _json->TryToGetValueAsString("shader_key", shader_key);
+
+    std::vector<gc::Json *> j_colour;
+    _json->TryToGetValueAsArray("tint", j_colour);
+    if((int)j_colour.size() == 4){
+        float red = j_colour[0]->AsFloat();
+        float green = j_colour[1]->AsFloat();
+        float blue = j_colour[2]->AsFloat();
+        float alpha = j_colour[3]->AsFloat();
+        tint = ufo::Colour(red, green, blue, alpha);
+    }
 }
 
 #ifdef UFO_ENGINE_STUDIO
@@ -352,7 +390,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                             sample_rectangle.position,
                             sample_rectangle.size,
                             0.0f,
-                            ufo::Colour(255,255,255,255),
+                            tint,
                             shader_key
                         );
 
@@ -386,6 +424,19 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     ImGui::Separator();
 
     Actor::OnViewProperties(_level_editor_tab, _index);
+
+    ImGui::Separator();
+
+    if(ImGui::CollapsingHeader("Custom Colouring###TileMap::OnViewProperties_show_colour_picker")){
+        ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+        if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
+            tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+            Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+        }
+
+        ImGui::Text("Shader: %s", shader_key.c_str());
+    }
 
     ImGui::Separator();
 
