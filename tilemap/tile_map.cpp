@@ -738,7 +738,9 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     if(is_selected && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
         if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+            level->tileset_manager.tilemap_rectangular_selection.size = Vector2f(0.0f, 0.0f);
             level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
+            level->tileset_manager.tilemap_selected_tiles.clear();
             _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION_RESIZE;
         }
 
@@ -791,6 +793,9 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
         }
 
         if(ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)){
+
+            //Suggestion: re-enter TILE_MAP_BRUSH mode and transfer tilemap_selected_tiles to currently_selected_tiles, allowing the user to paint them.
+
             level->tileset_manager.tilemap_rectangular_selection = ufo::Rectangle(Vector2f(x0, y0),Vector2f(x1-x0, y1-y0));
             _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION;
         }
