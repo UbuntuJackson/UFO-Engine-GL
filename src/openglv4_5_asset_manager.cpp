@@ -36,7 +36,7 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     AssetJson j;
     save_path = "../loaded_assets.json";
     if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[],\"shaders\":[]}");
-    j.Read(save_path, "..", this);
+    j.Read(save_path, "..", this, _engine);
 
 }
 
