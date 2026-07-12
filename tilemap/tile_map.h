@@ -8,7 +8,10 @@
 #include "console.h"
 #include "gc_json.h"
 #include "graphics.h"
+
+#ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
+#endif
 
 namespace ufo{
     class Camera;
