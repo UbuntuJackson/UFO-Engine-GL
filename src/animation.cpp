@@ -124,6 +124,16 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
         j_costumes->array.push_back(j_costume);
     }
 
+    parent_class_as_json->map.emplace("shader_key",_gc->New<ufo::gc::JsonString>(shader_key));
+
+    ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.g));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
+    j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
+
+    parent_class_as_json->map.emplace("tint", j_colour);
+
     parent_class_as_json->map.emplace("costumes",j_costumes);
     parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(key));
     parent_class_as_json->map.emplace("preview",_gc->New<ufo::gc::JsonNumber>(preview));
@@ -155,6 +165,19 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         }
         key = _json->map.at("current_costume")->AsString();
         preview = _json->map.at("preview")->AsFloat();
+
+        _json->TryToGetValueAsString("shader_key", shader_key);
+
+        std::vector<gc::Json *> j_colour;
+        _json->TryToGetValueAsArray("tint", j_colour);
+        if((int)j_colour.size() == 4){
+            float red = j_colour[0]->AsFloat();
+            float green = j_colour[1]->AsFloat();
+            float blue = j_colour[2]->AsFloat();
+            float alpha = j_colour[3]->AsFloat();
+            tint = ufo::Colour(red, green, blue, alpha);
+        }
+
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
     }
