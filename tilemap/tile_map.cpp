@@ -13,6 +13,7 @@
 #include "../src/graphics.h"
 #include "../src/engine.h"
 #include "console.h"
+#include "im_vec.h"
 #include "tileset_manager.h"
 
 #ifdef UFO_ENGINE_STUDIO
@@ -642,7 +643,8 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     if(is_selected &&
         (_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
         _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
-        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION
     )){
 
         Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
@@ -668,9 +670,15 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
             right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
-            _level_editor_tab->current_undo_redo_action = UFOEngineStudio::LevelEditorTab::UndoRedoAction{
-                editor_id, _level_editor_tab->current_tool, nullptr
-            };
+            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
+                level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
+            }
+            else{
+                //If normal tool
+                _level_editor_tab->current_undo_redo_action = UFOEngineStudio::LevelEditorTab::UndoRedoAction{
+                    editor_id, _level_editor_tab->current_tool, nullptr
+                };
+            }
         }
 
         //Here the change which ends the placing action was before
@@ -703,26 +711,99 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     }
 
-    Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-    Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
+    {
+        Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+        Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
 
-    ImU32 colour = 0x66777755;
+        ImU32 colour = 0x66777755;
 
-    for(int rr = 0; rr < number_of_rows; rr++){
-        Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
-        Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
+        for(int rr = 0; rr < number_of_rows; rr++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
 
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        for(int cc = 0; cc < number_of_columns; cc++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
+
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
     }
 
-    for(int cc = 0; cc < number_of_columns; cc++){
-        Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
-        Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
+    //Draw selection
+    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
 
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        level->tileset_manager.tilemap_rectangular_selection.size = Vector2f(currently_hovered_tile_x+1, currently_hovered_tile_y+1)-level->tileset_manager.tilemap_rectangular_selection.position;
+
+        int x0 = level->tileset_manager.tilemap_rectangular_selection.position.x;
+        int x1 = level->tileset_manager.tilemap_rectangular_selection.position.x+level->tileset_manager.tilemap_rectangular_selection.size.x;
+        int y0 = level->tileset_manager.tilemap_rectangular_selection.position.y;
+        int y1 = level->tileset_manager.tilemap_rectangular_selection.position.y+level->tileset_manager.tilemap_rectangular_selection.size.y;
+
+        if(x0 >= x1){
+            std::swap(x0,x1);
+            x1+=1;
+            x0-=1;
+
+        }
+        if(y0 >= y1){
+            std::swap(y0,y1);
+            y1+=1;
+            y0-=1;
+
+        }
+
+        if(ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)){
+            level->tileset_manager.tilemap_rectangular_selection = ufo::Rectangle(Vector2f(x0, y0),Vector2f(x1-x0, y1-y0));
+            _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
+        }
+
+        ImU32 colour = 0xFFFFFFFF;
+
+        ImVec2 selection_min = UFOEngineStudio::FromVector2fToImVec2(_level_editor_tab->TranslateToEditorScreenSpace(Vector2f(x0,y0)*Vector2f(tile_width, tile_height)));
+        ImVec2 selection_max = UFOEngineStudio::FromVector2fToImVec2(_level_editor_tab->TranslateToEditorScreenSpace(Vector2f(x1,y1)*Vector2f(tile_width, tile_height)));
+
+        ImGui::GetWindowDrawList()->AddRect(selection_min, selection_max, colour, 1.0f,ImDrawFlags_RoundCornersAll);
     }
+    else{
+        int x0 = level->tileset_manager.tilemap_rectangular_selection.position.x;
+        int x1 = level->tileset_manager.tilemap_rectangular_selection.position.x+level->tileset_manager.tilemap_rectangular_selection.size.x;
+        int y0 = level->tileset_manager.tilemap_rectangular_selection.position.y;
+        int y1 = level->tileset_manager.tilemap_rectangular_selection.position.y+level->tileset_manager.tilemap_rectangular_selection.size.y;
 
-    ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
+        if(ImGui::IsKeyPressed(ImGuiKey_C) /*&& ImGui::IsKeyDown(ImGuiKey_LeftCtrl)*/){
+            level->tileset_manager.tilemap_selected_tiles.clear();
+            for(int yy = y0; yy < y1; yy++){
+                for(int xx = x0; xx < x1; xx++){
+                    int tile = tilemap_data[yy*number_of_columns+xx];
+                    level->tileset_manager.tilemap_selected_tiles.push_back(tile);
+
+                }
+            }
+        }
+
+        if(ImGui::IsKeyPressed(ImGuiKey_V)/* && ImGui::IsKeyDown(ImGuiKey_LeftCtrl)*/){
+            for(int t = 0; t < (int)level->tileset_manager.tilemap_selected_tiles.size(); t++){
+                int xx = t%(int)(x1-x0);
+                int yy = t/(int)(x1-x0);
+                Console::PrintLine(t);
+
+                tilemap_data[currently_hovered_tile_x+xx+(currently_hovered_tile_y+yy)*number_of_columns] = level->tileset_manager.tilemap_selected_tiles[t];
+
+            }
+        }
+
+        ImU32 colour = 0xFFFFFFFF;
+
+        ImVec2 selection_min = UFOEngineStudio::FromVector2fToImVec2(_level_editor_tab->TranslateToEditorScreenSpace(Vector2f(x0,y0)*Vector2f(tile_width, tile_height)));
+        ImVec2 selection_max = UFOEngineStudio::FromVector2fToImVec2(_level_editor_tab->TranslateToEditorScreenSpace(Vector2f(x1,y1)*Vector2f(tile_width, tile_height)));
+
+        ImGui::GetWindowDrawList()->AddRect(selection_min, selection_max, colour, 1.0f,ImDrawFlags_RoundCornersAll);
+    }
 
 }
 

@@ -44,7 +44,8 @@ public:
 
     bool in_editor = false;
 
-    //ufo::Rectangle tilemap_rectangular_selection;
+    ufo::Rectangle tilemap_rectangular_selection = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
+    std::vector<int> tilemap_selected_tiles;
 
     int currently_selected_tile = 0;
 

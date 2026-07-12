@@ -178,6 +178,10 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET;
     }
 
+    if(ImGui::Button("Recangle Selection")){
+        _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION;
+    }
+
     if(ImGui::BeginTabBar("TilesetManager")){
         for(auto& tileset : tileset_data){
             if(!engine->asset_manager.textures.count(tileset.name)){
