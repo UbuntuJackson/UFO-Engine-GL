@@ -163,7 +163,9 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
             float blue = j_colour[2]->AsFloat();
             float alpha = j_colour[3]->AsFloat();
             tint = ufo::Colour(red, green, blue, alpha);
-            im_colour = ImVec4(red,green,blue,alpha);
+            #ifdef UFO_ENGINE_STUDIO
+                        im_colour = ImVec4(red,green,blue,alpha);
+            #endif
         }
 
     } catch(const std::exception& _error){
