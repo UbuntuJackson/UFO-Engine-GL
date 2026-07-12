@@ -19,6 +19,7 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../src/actor_undo_and_redo.h"
+#include "../imgui/misc/cpp/imgui_stdlib.h"
 #endif
 
 namespace ufo{
@@ -94,7 +95,7 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                             sample_rectangle.position,
                             sample_rectangle.size,
                             0.0f,
-                            ufo::Colour(255,255,255,255)
+                            ufo::Colour(255,255,255,255), shader_key
                         );
                     }
                     catch(const std::exception& _error){
@@ -125,6 +126,86 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
 }
 
 #ifdef UFO_ENGINE_STUDIO
+
+void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(ImGui::BeginTabItem("Shaders")){
+
+        if(ImGui::Button("[+] Add Shader")){
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+        }
+
+        if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
+
+        }
+
+        if(ImGui::BeginChild("MyShaders")){
+
+            bool shader_was_erased = false;
+            std::string name_of_erased_shader = "";
+
+            std::vector<std::string> shader_names;
+            for(const auto& [name, shader] : engine->asset_manager.shaders){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) shader_names.push_back(name);
+            }
+            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : shader_names){
+
+                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name:"+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Shader###UnloadShader"+name).c_str())){
+                        name_of_erased_shader = name;
+                        shader_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Shader to Current Sprite###AddCostume"+name).c_str())){
+                        shader_key = name;
+
+                    }
+
+                    ImGui::Text(("name:"+name).c_str(),"%s");
+                }
+
+            }
+
+            if(shader_was_erased && name_of_erased_shader != shader_key){
+                engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
+                engine->asset_manager.shaders.erase(name_of_erased_shader);
+                _level_editor_tab->this_level->ResourcesEdited();
+
+                if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
+
+            }
+
+            ImGui::EndChild();
+        }
+
+
+        ImGui::EndTabItem();
+
+    }
+}
 
 void TileMap::DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top){
     level->RemoveFutureChanges();
@@ -271,7 +352,8 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                             sample_rectangle.position,
                             sample_rectangle.size,
                             0.0f,
-                            ufo::Colour(255,255,255,255)
+                            ufo::Colour(255,255,255,255),
+                            shader_key
                         );
 
                     }

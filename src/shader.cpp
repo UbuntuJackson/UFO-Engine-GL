@@ -21,7 +21,7 @@ Shader::Initialise(){
     Console::PrintLine("Shader::Shader() ran", shader_program_id);
 }
 
-void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path){
+bool Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path){
 
     unsigned int vertex_shader;
     unsigned int fragment_shader;
@@ -29,10 +29,13 @@ void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
 
     if(!FileSystem::FileExists(_vertex_shader_path) || !FileSystem::FileExists(_fragment_shader_path)){
         Console::PrintLine("One of the shaders don't exist");
+        return false;
     }
 
     std::string vertex_shader_source_str = FileSystem::Read(_vertex_shader_path);
     std::string fragment_shader_source_str = FileSystem::Read(_fragment_shader_path);
+
+    Console::PrintLine(vertex_shader_source_str, fragment_shader_source_str);
 
     const char* vertex_shader_source = vertex_shader_source_str.c_str();
     const char* fragment_shader_source = fragment_shader_source_str.c_str();
@@ -56,6 +59,8 @@ void Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
 
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+
+    return true;
 
 }
 
@@ -195,6 +200,12 @@ void Shader::CheckCompileErrors(unsigned int _object, const std::string& _type){
 
         }
     }
+}
+
+void Shader::Delete(){
+
+    glDeleteShader(shader_program_id);
+
 }
 
 }

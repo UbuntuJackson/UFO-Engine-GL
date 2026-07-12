@@ -17,7 +17,7 @@ namespace UFOEngineStudio{
 
 namespace ufo{
     class Engine;
-}
+
 
 class OpenGLv4_5_AssetManager{
 public:
@@ -52,13 +52,10 @@ public:
     //ufo::Shader LoadShader(const std::string& _vertex_shader_path, const std::string& _fragment_shader_path, const std::string& _geometry_shader_path, const std::string& _name);
 
     //Todo: This one has the same issue as LoadTexture, it doesn't actually load the shader, it emplaces it.
-    ufo::Shader LoadShader(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name);
+    bool LoadShader(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name);
 
     //Todo: You don't really need a get function for assets...
-    ufo::Shader GetShader(const std::string& _name);
-
-    ufo::Shader LoadShaderFromFile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path);
-
+    ufo::Shader& GetShader(const std::string& _name);
 
      std::unordered_map<std::string, MIX_Audio*> audio;
      //void LoadAudio(const std::string& _path, const std::string& _name){}
@@ -70,3 +67,4 @@ public:
     //This is called somewhere in the Main class together with the other cleanup function calls.
     void Clear();
 };
+}

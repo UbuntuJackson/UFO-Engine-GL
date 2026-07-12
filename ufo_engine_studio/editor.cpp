@@ -31,8 +31,13 @@ Editor::Editor(){
 
 void Editor::ResetUFOEngineStudio(){
     engine->asset_manager.SaveAssets();
+
+    for(auto& shader : engine->asset_manager.shaders) shader.second.Delete();
     engine->asset_manager.shaders.clear();
+
     engine->asset_manager.textures.clear();
+
+    engine->graphics->InitialiseRenderData(engine);
 
     engine->asset_manager.Initialise_UFOEngineStudio(this,engine);
 }

@@ -3,7 +3,9 @@
 #include "console.h"
 #include "editor.h"
 #include "file_dialogue.h"
+#include "file_utils.h"
 #include "level_editor_tab.h"
+#include "openglv4_5_graphics.h"
 #include "text_editor_tab.h"
 #include "../tilemap/tileset_manager.h"
 #include "../src/openglv4_5_asset_manager.h"
@@ -85,6 +87,38 @@ void OnOpenTexture(void *_userdata, const char * const *_filelist, [[maybe_unuse
         UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
 
         level_editor_tab->engine->asset_manager.OnAddTexture(*_filelist, level_editor_tab);
+
+        _filelist++;
+    }
+
+}
+
+void OnOpenShader(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
+    if(*_filelist == nullptr) return; //Should file not have been selected
+
+    while(*_filelist != nullptr){
+        Console::PrintLine(*_filelist);
+        UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
+
+        const std::string vertex_shader_path = std::string(*_filelist)+".vertex.cs";
+        const std::string fragment_shader_path = std::string(*_filelist)+".fragment.cs";
+        const std::string geometry_shader_path = std::string(*_filelist)+".geometry.cs"; //Unused for now
+
+        const std::string relative_path = ufo::FileSystem::GetRelativePath(std::string(*_filelist),level_editor_tab->editor->opened_directory_path);
+
+        bool shader_loaded_successfully = level_editor_tab->engine->asset_manager.LoadShader(vertex_shader_path.c_str(), fragment_shader_path.c_str(), nullptr, relative_path);
+
+        glm::mat4 projection = glm::ortho(
+            0.0f, static_cast<float>(level_editor_tab->engine->width),
+            static_cast<float>(level_editor_tab->engine->height), 0.0f,
+            -1.0f, 0.0f
+        );
+
+        level_editor_tab->engine->asset_manager.GetShader(relative_path).Use();
+        level_editor_tab->engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
+        level_editor_tab->engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
+
+        if(!shader_loaded_successfully) Console::PrintLine("Failed to load shader",*_filelist);
 
         _filelist++;
     }

@@ -113,7 +113,8 @@ void Text::OnWidgetDraw(ufo::Graphics* _graphics){
         Vector2f(0.0f, 0.0f),
         Vector2f(texture.width, texture.height),
         0.0f,
-        ufo::Colour(255,255,255,255)
+        ufo::Colour(255,255,255,255),
+        "partial_sprite_shader"
     );
 }
 

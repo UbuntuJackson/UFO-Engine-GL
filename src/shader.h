@@ -14,10 +14,12 @@ public:
 
     unsigned int shader_program_id = 0;
 
+    bool permanent = false;
+
     Shader();
     void Initialise();
 
-    void Compile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path = nullptr);
+    bool Compile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path = nullptr);
 
     void AttachVertexShader(std::string _path);
 
@@ -40,6 +42,8 @@ public:
     void SetMatrix4(const char *_name, const glm::mat4 &_matrix, bool _use_shader = false);
 
     void CheckCompileErrors(unsigned int _object, const std::string& _type);
+
+    void Delete();
 
 };
 

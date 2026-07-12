@@ -1,8 +1,6 @@
 #pragma once
 #include <unordered_map>
-#include <vector>
 #include "../ufo_maths/ufo_maths.h"
-#include "graphics.h"
 #include "sprite.h"
 
 namespace ufo::gc
@@ -16,6 +14,8 @@ namespace UFOEngineStudio{
 }
 
 namespace ufo{
+
+class Graphics;
 
 class Animation : public Sprite{
 public:

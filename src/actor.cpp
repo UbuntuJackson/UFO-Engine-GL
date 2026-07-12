@@ -129,7 +129,7 @@ void Actor::AddNewActors(){
 void Actor::MarkAllDead(){
     for(auto& actor : actors){
         actor->is_dead = true;
-        Console::PrintLine("Deleted", actor.get());
+        Console::PrintLine("Deleted Actor", actor.get());
     }
 }
 

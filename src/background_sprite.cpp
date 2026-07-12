@@ -45,7 +45,7 @@ void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
             sample_rectangle.position,
             sample_rectangle.size,
             rotation,
-            tint
+            tint, shader_key
         );
     }
 }

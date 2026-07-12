@@ -7,6 +7,7 @@
 #include "../../shapes/rectangle.h"
 #include "sprite.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "graphics.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -48,12 +49,15 @@ void Sprite::OnSpawn(){
     if(!engine->asset_manager.textures.count(key)){
         key = "placeholder_icon";
     }
+    if(!engine->asset_manager.shaders.count(shader_key)){
+        shader_key = "partial_sprite_shader";
+    }
     //if(frame_size.x > engine->asset_manager.at(key).w) frame_size.x = engine->asset_manager.at(key).w;
     //if(frame_size.y > engine->asset_manager.at(key).h) frame_size.y = engine->asset_manager.at(key).h;
 }
 
 ufo::Rectangle
-Sprite::GetRectangle(int _x, int _y, Vector2f _frame_size){
+Sprite::GetRectangleFromPositionAndFrameSize(int _x, int _y, Vector2f _frame_size){
     ufo::Rectangle rect = ufo::Rectangle({(float)(_x * _frame_size.x), (float)(_y * _frame_size.y)}, _frame_size);
     return rect;
 }
@@ -68,7 +72,7 @@ Sprite::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _f
         fx = (int)_frame % (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x); //1 can only give me x = 0
         fy = (int)_frame / (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x);
     }
-    return GetRectangle(
+    return GetRectangleFromPositionAndFrameSize(
         fx,
         fy,
         _frame_size); //1 can only give y = 1
@@ -87,7 +91,8 @@ void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
         sample_rectangle.position,
         sample_rectangle.size,
         rotation,
-        tint
+        tint,
+        shader_key
     );
 }
 
@@ -113,6 +118,7 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("scale_y", _gc->New<ufo::gc::JsonNumber>(scale.y));
     parent_class_as_json->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(rotation));
     parent_class_as_json->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(current_frame_index));
+    parent_class_as_json->map.emplace("shader_key", _gc->New<ufo::gc::JsonString>(shader_key));
 
     ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
     j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
@@ -120,7 +126,7 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.b));
     j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
 
-    parent_class_as_json->map.emplace("colour", j_colour);
+    parent_class_as_json->map.emplace("tint", j_colour);
 
     //}
 
@@ -146,6 +152,19 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         scale.y = _json->map.at("scale_y")->AsFloat();
         rotation = _json->map.at("rotation")->AsFloat();
         current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
+
+        _json->TryToGetValueAsString("shader_key", shader_key);
+
+        std::vector<gc::Json *> j_colour;
+        _json->TryToGetValueAsArray("tint", j_colour);
+        if((int)j_colour.size() == 4){
+            float red = j_colour[0]->AsFloat();
+            float green = j_colour[1]->AsFloat();
+            float blue = j_colour[2]->AsFloat();
+            float alpha = j_colour[3]->AsFloat();
+            tint = ufo::Colour(red, green, blue, alpha);
+        }
+
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
     }
@@ -160,7 +179,7 @@ void Sprite::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unu
 }
 
 void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    if(ImGui::BeginTabItem("MyAssets")){
+    if(ImGui::BeginTabItem("Textures")){
 
         if(ImGui::Button("[+] Add Texture")){
             SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
@@ -260,6 +279,84 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
         ImGui::EndTabItem();
     }
+
+    if(ImGui::BeginTabItem("Shaders")){
+
+        if(ImGui::Button("[+] Add Shader")){
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+        }
+
+        if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
+
+        }
+
+        if(ImGui::BeginChild("MyShaders")){
+
+            bool shader_was_erased = false;
+            std::string name_of_erased_shader = "";
+
+            std::vector<std::string> shader_names;
+            for(const auto& [name, shader] : engine->asset_manager.shaders){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) shader_names.push_back(name);
+            }
+            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : shader_names){
+
+                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name:"+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Shader###UnloadShader"+name).c_str())){
+                        name_of_erased_shader = name;
+                        shader_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Shader to Current Sprite###AddCostume"+name).c_str())){
+                        shader_key = name;
+
+                    }
+
+                    ImGui::Text(("name:"+name).c_str(),"%s");
+                }
+
+            }
+
+            if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
+                engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
+                engine->asset_manager.shaders.erase(name_of_erased_shader);
+                _level_editor_tab->this_level->ResourcesEdited();
+
+                if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
+
+            }
+
+            ImGui::EndChild();
+        }
+
+
+        ImGui::EndTabItem();
+
+    }
 }
 
 void Sprite::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -286,40 +383,7 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
     }
 
-    /*if(ImGui::Button("Add Texture")){
-        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
-    }
-
-    bool texture_was_erased = false;
-    std::string name_of_erased_texture = "";
-
-    for(const auto& [name, texture] : engine->asset_manager.textures){
-        ImGui::Text("%s",name.c_str());
-        ImGui::Image(
-            (void*)(intptr_t)texture.id,
-            ImVec2(16, 16),
-            ImVec2(0,0),
-            ImVec2(1,1)
-        );
-        ImGui::SameLine();
-        if(ImGui::Button(std::string("Assign Texture to Sprite###Assign Texture to Sprite"+name).c_str())){
-            key = name;
-            float w = (float)engine->asset_manager.textures.at(name).width;
-            float h = (float)engine->asset_manager.textures.at(name).height;
-        }
-        ImGui::SameLine();
-        if(ImGui::Button(std::string("Unload###UnloadTexture"+name).c_str())){
-            name_of_erased_texture = name;
-            texture_was_erased = true;
-        }
-    }
-
-    if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
-        engine->asset_manager.textures.at(name_of_erased_texture).Delete();
-        engine->asset_manager.textures.erase(name_of_erased_texture);
-
-        if(key == name_of_erased_texture) key = "placeholder_icon";
-        }*/
+    ImGui::Text("Shader: %s", shader_key.c_str());
 
 }
 

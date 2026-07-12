@@ -262,6 +262,84 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
 
         ImGui::EndTabItem();
     }
+
+    if(ImGui::BeginTabItem("Shaders")){
+
+        if(ImGui::Button("[+] Add Shader")){
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+        }
+
+        if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
+
+        }
+
+        if(ImGui::BeginChild("MyShaders")){
+
+            bool shader_was_erased = false;
+            std::string name_of_erased_shader = "";
+
+            std::vector<std::string> shader_names;
+            for(const auto& [name, shader] : engine->asset_manager.shaders){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) shader_names.push_back(name);
+            }
+            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : shader_names){
+
+                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name:"+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Shader###UnloadShader"+name).c_str())){
+                        name_of_erased_shader = name;
+                        shader_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Shader to Current Sprite###AddCostume"+name).c_str())){
+                        shader_key = name;
+
+                    }
+
+                    ImGui::Text(("name:"+name).c_str(),"%s");
+                }
+
+            }
+
+            if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
+                engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
+                engine->asset_manager.shaders.erase(name_of_erased_shader);
+                _level_editor_tab->this_level->ResourcesEdited();
+
+                if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
+
+            }
+
+            ImGui::EndChild();
+        }
+
+
+        ImGui::EndTabItem();
+
+    }
 }
 
 void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -321,45 +399,6 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
     if(ImGui::InputFloat("rotation (degrees)",&costumes.at(key).rotation)) rotation = costumes.at(key).rotation;
     if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
     if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
-
-    /*ImGui::Separator();
-
-    if(ImGui::Button("Add Texture")){
-        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
-    }
-
-    bool texture_was_erased = false;
-    std::string name_of_erased_texture = "";
-
-    for(const auto& [name, texture] : engine->asset_manager.textures){
-        ImGui::Text("%s",name.c_str());
-        ImGui::Image(
-            (void*)(intptr_t)texture.id,
-            ImVec2(16, 16),
-            ImVec2(0,0),
-            ImVec2(1,1)
-        );
-        ImGui::SameLine();
-        if(ImGui::Button(std::string("Add Texture as Costume###AddCostume"+name).c_str())){
-            float w = (float)engine->asset_manager.textures.at(name).width;
-            float h = (float)engine->asset_manager.textures.at(name).height;
-            AddCostume(name, Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(w,h), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
-            SetCostume(name);
-        }
-        ImGui::SameLine();
-        if(ImGui::Button(std::string("Unload###UnloadCostume"+name).c_str())){
-            name_of_erased_texture = name;
-            texture_was_erased = true;
-        }
-    }
-
-    if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
-
-        engine->asset_manager.textures.at(name_of_erased_texture).Delete();
-        engine->asset_manager.textures.erase(name_of_erased_texture);
-
-        if(key == name_of_erased_texture) SetCostume("placeholder_icon");
-        }*/
 
 }
 

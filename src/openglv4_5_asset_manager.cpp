@@ -15,6 +15,8 @@
 #include "../ufo_engine_studio/editor.h"
 #endif //UFO_ENGINE_STUDIO
 
+namespace ufo{
+
 //Todo: Different intialise function for the Editor would be a lot cleaner, eventhough this isn't as bad as it seems.
 // What happens within this class upon initialisation and deinitialisation is going to be very conditional no matter how
 // you twist and turn it.
@@ -33,7 +35,7 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     Console::PrintLine("OpenGLv4_5_AssetManager reading from path", std::filesystem::current_path().c_str());
     AssetJson j;
     save_path = "../loaded_assets.json";
-    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[],\"shaders\":[]}");
     j.Read(save_path, "..", this);
 
 }
@@ -87,11 +89,11 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
 
 
     save_path = _editor->opened_directory_path+"/loaded_assets.json";
-    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[]}");
+    if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[],\"shaders\":[]}");
 
     Console::PrintLine(save_path);
     AssetJson j;
-    j.ReadEditor(save_path,_editor->opened_directory_path, this);
+    j.ReadEditor(save_path,_editor->opened_directory_path, this, _engine);
 
 }
 
@@ -107,28 +109,23 @@ void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineSt
 }
 #endif
 
-ufo::Shader OpenGLv4_5_AssetManager::LoadShader(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
-    shaders[_name] = LoadShaderFromFile(_vertex_shader_path, _fragment_shader_path, _geometry_shader_path);
-    return shaders[_name];
-}
-
-ufo::Shader OpenGLv4_5_AssetManager::GetShader(const std::string& _name){
-    return shaders[_name];
-}
-
-ufo::Shader OpenGLv4_5_AssetManager::LoadShaderFromFile(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path){
+bool OpenGLv4_5_AssetManager::LoadShader(const char* _vertex_shader_path, const char* _fragment_shader_path, const char* _geometry_shader_path, const std::string& _name){
     ufo::Shader shader;
 
     Console::PrintLine("[UFO-Engine] Loading shaders",_vertex_shader_path, _fragment_shader_path);
 
-    shader.Compile(_vertex_shader_path, _fragment_shader_path, _geometry_shader_path);
+    bool is_shader_properly_compiled = shader.Compile(_vertex_shader_path, _fragment_shader_path, _geometry_shader_path);
 
-    /*shader.Initialise();
-    if(_vertex_shader_path != nullptr) shader.AttachVertexShader(std::string(_vertex_shader_path));
-    if(_fragment_shader_path != nullptr) shader.AttachFragmentShader(std::string(_fragment_shader_path));
-    if(_geometry_shader_path != nullptr) shader.AttachGeometryShader(std::string(_geometry_shader_path));*/
+    if(is_shader_properly_compiled){
+        shaders.emplace(_name, shader);
+        return true;
+    }
 
-    return shader;
+    return false;
+}
+
+ufo::Shader& OpenGLv4_5_AssetManager::GetShader(const std::string& _name){
+    return shaders.at(_name);
 }
 
 void OpenGLv4_5_AssetManager::SaveAssets(){
@@ -145,4 +142,6 @@ void OpenGLv4_5_AssetManager::Clear(){
     for(auto shader_iterator : shaders){
         glDeleteProgram(shader_iterator.second.shader_program_id);
     }
+}
+
 }
