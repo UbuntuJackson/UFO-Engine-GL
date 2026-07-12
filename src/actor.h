@@ -194,7 +194,7 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
     std::map<std::string,int*> int_handles;
     std::map<std::string,float*> float_handles;
 
-    virtual void OnEndUndoRedoAction([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){}
+    virtual bool OnEndUndoRedoAction([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){return false;}
 
     virtual void OnResourcesEdited(){
 

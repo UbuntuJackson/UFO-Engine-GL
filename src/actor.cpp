@@ -492,7 +492,7 @@ void Actor::OnAdditionalButtonsForTreeItem(){
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
-    //bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
+    bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
 
     if(ImGui::BeginDragDropTarget()){
 

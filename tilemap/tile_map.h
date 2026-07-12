@@ -5,8 +5,10 @@
 #include "../src/actor.h"
 #include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
+#include "console.h"
 #include "gc_json.h"
 #include "graphics.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
 
 namespace ufo{
     class Camera;
@@ -80,14 +82,16 @@ public:
 
     class TileMapChange_TileMapSize : public ufo::ActorChange{
     public:
-        TileMap* tile_map = nullptr;
+        UFOEngineStudio::LevelEditorTab* level_editor_tab = nullptr;
+        int tile_map_id = Maths::NULL_ID;
         int left;
         int right;
         int bottom;
         int top;
-        TileMapChange_TileMapSize(TileMap* _tile_map,int _left, int _right, int _bottom, int _top)
+        TileMapChange_TileMapSize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _tile_map_id, int _left, int _right, int _bottom, int _top)
         :
-        tile_map{_tile_map},
+        level_editor_tab{_level_editor_tab},
+        tile_map_id{_tile_map_id},
         left{_left},
         right{_right},
         bottom{_bottom},
@@ -102,6 +106,12 @@ public:
         }
 
         void Undo(){
+            ufo::TileMap* tile_map = level_editor_tab->this_level->actors_with_stable_id.at(tile_map_id)->DynamicCast<TileMap>();
+            if(!tile_map){
+                Console::PrintLine("Invalid cast to ufo::TileMap");
+                return;
+            }
+
             tile_map->ResizeBottom(-bottom);
             tile_map->ResizeRight(-right);
             tile_map->ResizeLeft(-left);
@@ -110,6 +120,12 @@ public:
         }
 
         void Redo(){
+            ufo::TileMap* tile_map = level_editor_tab->this_level->actors_with_stable_id.at(tile_map_id)->DynamicCast<TileMap>();
+            if(!tile_map){
+                Console::PrintLine("Invalid cast to ufo::TileMap");
+                return;
+            }
+
             tile_map->ResizeBottom(bottom);
             tile_map->ResizeRight(right);
             tile_map->ResizeLeft(left);
@@ -124,7 +140,8 @@ public:
 
     class TileMapChange_Paint : public ufo::ActorChange{
     public:
-        TileMap* tile_map = nullptr;
+        UFOEngineStudio::LevelEditorTab* level_editor_tab = nullptr;
+        int tile_map_id = Maths::NULL_ID;
         int left_bound_tile;  // x0
         int lower_bound_tile; // y0
         int right_bound_tile; // x1
@@ -132,8 +149,9 @@ public:
         std::vector<int> tiles_before;
         std::vector<int> tiles_after;
 
-        TileMapChange_Paint(TileMap* _tile_map, int _left_bound_tile, int _lower_bound_tile, int _right_bound_tile, int _upper_bound_tile):
-        tile_map{_tile_map},
+        TileMapChange_Paint(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _tile_map_id, int _left_bound_tile, int _lower_bound_tile, int _right_bound_tile, int _upper_bound_tile):
+        level_editor_tab{_level_editor_tab},
+        tile_map_id{_tile_map_id},
         left_bound_tile{_left_bound_tile},
         lower_bound_tile{_lower_bound_tile},
         right_bound_tile{_right_bound_tile},
@@ -143,6 +161,12 @@ public:
         }
 
         void Do(){
+            ufo::TileMap* tile_map = level_editor_tab->this_level->actors_with_stable_id.at(tile_map_id)->DynamicCast<TileMap>();
+            if(!tile_map){
+                Console::PrintLine("Invalid cast to ufo::TileMap");
+                return;
+            }
+
             for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
                 for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
 
@@ -154,6 +178,12 @@ public:
         }
 
         void Undo(){
+            ufo::TileMap* tile_map = level_editor_tab->this_level->actors_with_stable_id.at(tile_map_id)->DynamicCast<TileMap>();
+            if(!tile_map){
+                Console::PrintLine("Invalid cast to ufo::TileMap");
+                return;
+            }
+
             int xx = left_bound_tile;
             int yy = lower_bound_tile;
             int c = right_bound_tile - left_bound_tile;
@@ -170,6 +200,11 @@ public:
         }
 
         void Redo(){
+            ufo::TileMap* tile_map = level_editor_tab->this_level->actors_with_stable_id.at(tile_map_id)->DynamicCast<TileMap>();
+            if(!tile_map){
+                Console::PrintLine("Invalid cast to ufo::TileMap");
+                return;
+            }
 
             int xx = left_bound_tile;
             int yy = lower_bound_tile;
@@ -229,7 +264,7 @@ public:
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-    void OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
+    bool OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 

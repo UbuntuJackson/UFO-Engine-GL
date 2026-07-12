@@ -29,14 +29,16 @@ namespace UFOEngineStudio{
 void LevelEditorTab::SubmitUndoRedoAction(){
 
     if(current_undo_redo_action.actor_id != ufo::Maths::NULL_ID){
-        this_level->RemoveFutureChanges();
 
-        this_level->actors_with_stable_id.at(current_undo_redo_action.actor_id)->OnEndUndoRedoAction(this);
-        this_level->level_changes.push_back(std::move(current_undo_redo_action.actor_change));
-
-        this_level->level_changes.back()->Do();
+        bool did_action = this_level->actors_with_stable_id.at(current_undo_redo_action.actor_id)->OnEndUndoRedoAction(this);
+        if(did_action){
+            this_level->RemoveFutureChanges();
+            this_level->level_changes.push_back(std::move(current_undo_redo_action.actor_change));
+            this_level->level_changes.back()->Do();
+            current_undo_redo_action = UndoRedoAction{ufo::Maths::NULL_ID, Tools::NONE, nullptr};
+        }
     }
-    current_undo_redo_action = UndoRedoAction{ufo::Maths::NULL_ID, Tools::NONE, nullptr};
+
 }
 
 LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
@@ -103,9 +105,9 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
         _editor->refresh_entire_project = true;
     }
 
-    if(ImGui::IsMouseReleased(ImGuiMouseButton_Left)){
-        SubmitUndoRedoAction();
-    }
+
+    SubmitUndoRedoAction();
+
 
     if(reset_selection_status){
         this_level->ResetSelectionStatus();
