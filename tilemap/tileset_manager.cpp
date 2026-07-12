@@ -167,6 +167,9 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
 
     if(ImGui::Button("Brush")){
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
+        for(const auto& tileset : tileset_data){
+             if(tileset.name == current_tileset) currently_selected_tiles = ManyTiles{{tileset.tileset_start_id},0,0,1,1};
+        }
     }
 
     if(ImGui::Button("Eraser")){
@@ -178,7 +181,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET;
     }
 
-    if(ImGui::Button("Recangle Selection")){
+    if(ImGui::Button("Rectangle Selection")){
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION;
     }
 

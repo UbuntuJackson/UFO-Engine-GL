@@ -338,33 +338,14 @@ void TileMap::CancelAllResizeDialogues(){
 }
 
 void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    if(
-        !(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
-        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
-        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
-    )) return;
 
     float scale = _camera->scale;
 
-    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
-
-    current_world_mouse_x = world_mouse.x;
-    current_world_mouse_y = world_mouse.y;
-
-    //Console::PrintLine("World position",_level_editor_tab->mouse_position_over_screenspace);
-
-    int hovered_tile_x = int(world_mouse.x)/tile_width;
-    int hovered_tile_y = int(world_mouse.y)/tile_height;
-
-    if(hovered_tile_x < 0) hovered_tile_x = 0;
-    if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
-    if(hovered_tile_y < 0) hovered_tile_y = 0;
-    if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
-
-    currently_hovered_tile_x = hovered_tile_x;
-    currently_hovered_tile_y = hovered_tile_y;
-
-    {
+    if(
+        (_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
+    )){
 
         int xx = 0;
         int yy = 0;
@@ -374,7 +355,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 
                 int tile_id = i;
 
-                olc::vd2d tile_position = {(hovered_tile_x+ xx)*tileset.tile_width, (hovered_tile_y+yy)*tileset.tile_height};
+                olc::vd2d tile_position = {(currently_hovered_tile_x+ xx)*tileset.tile_width, (currently_hovered_tile_y+yy)*tileset.tile_height};
 
                 if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
                     int sprite_width = 0;
@@ -410,6 +391,54 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 
             xx++;
             if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                xx = 0;
+                yy++;
+            }
+
+        }
+    }
+
+    //For copy paste
+    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
+
+        int xx = 0;
+        int yy = 0;
+        for(const int tile_id : level->tileset_manager.tilemap_selected_tiles){
+
+            for(auto&& tileset : level->tileset_manager.tileset_data){
+
+                olc::vd2d tile_position = {(currently_hovered_tile_x+ xx)*tileset.tile_width, (currently_hovered_tile_y+yy)*tileset.tile_height};
+
+                if(tileset.tileset_start_id <= tile_id && tile_id < tileset.tileset_start_id+tileset.tile_count){
+                    int sprite_width = 0;
+                    try{
+                        sprite_width = engine->asset_manager.textures.at(tileset.name).width;
+
+                        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(sprite_width,tile_id-tileset.tileset_start_id,{tileset.tile_width, tileset.tile_height});
+                        //Console::Out("sample rectangle:", sample_rectangle.position, sample_rectangle.size);
+                        _graphics->DrawPartialSprite(
+                            tileset.name,
+                            _camera->Transform(tile_position),
+                            {0.0f, 0.0f},
+                            {scale, scale},
+                            sample_rectangle.position,
+                            sample_rectangle.size,
+                            0.0f,
+                            tint,
+                            shader_key
+                        );
+
+                    }
+                    catch(const std::exception& _error){
+                        Console::PrintLine("TileMap error");
+                        continue;
+                    }
+                }
+
+            }
+
+            xx++;
+            if(xx >= (int)level->tileset_manager.tilemap_rectangular_selection.size.x){
                 xx = 0;
                 yy++;
             }
@@ -640,28 +669,27 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     if(!is_selected && level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->GetTileMap() != this) return;
 
+    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+
+    current_world_mouse_x = world_mouse.x;
+    current_world_mouse_y = world_mouse.y;
+
+    int hovered_tile_x = int(world_mouse.x)/tile_width;
+    int hovered_tile_y = int(world_mouse.y)/tile_height;
+
+    if(hovered_tile_x < 0) hovered_tile_x = 0;
+    if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
+    if(hovered_tile_y < 0) hovered_tile_y = 0;
+    if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
+
+    currently_hovered_tile_x = hovered_tile_x;
+    currently_hovered_tile_y = hovered_tile_y;
+
     if(is_selected &&
         (_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
         _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_ERASER ||
-        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET ||
-        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION
+        _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET
     )){
-
-        Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
-
-        current_world_mouse_x = world_mouse.x;
-        current_world_mouse_y = world_mouse.y;
-
-        int hovered_tile_x = int(world_mouse.x)/tile_width;
-        int hovered_tile_y = int(world_mouse.y)/tile_height;
-
-        if(hovered_tile_x < 0) hovered_tile_x = 0;
-        if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
-        if(hovered_tile_y < 0) hovered_tile_y = 0;
-        if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
-
-        currently_hovered_tile_x = hovered_tile_x;
-        currently_hovered_tile_y = hovered_tile_y;
 
         if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
             tilemap_data_before_change = tilemap_data;
@@ -670,10 +698,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
             right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
-            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
-                level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
-            }
-            else{
+            {
                 //If normal tool
                 _level_editor_tab->current_undo_redo_action = UFOEngineStudio::LevelEditorTab::UndoRedoAction{
                     editor_id, _level_editor_tab->current_tool, nullptr
@@ -711,6 +736,14 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     }
 
+    if(is_selected && _level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
+        if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
+            level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
+            _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION_RESIZE;
+        }
+
+    }
+
     {
         Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
         Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
@@ -735,7 +768,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
     }
 
     //Draw selection
-    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
+    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION_RESIZE){
 
         level->tileset_manager.tilemap_rectangular_selection.size = Vector2f(currently_hovered_tile_x+1, currently_hovered_tile_y+1)-level->tileset_manager.tilemap_rectangular_selection.position;
 
@@ -759,7 +792,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
         if(ImGui::IsItemHovered() && ImGui::IsMouseReleased(0)){
             level->tileset_manager.tilemap_rectangular_selection = ufo::Rectangle(Vector2f(x0, y0),Vector2f(x1-x0, y1-y0));
-            _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
+            _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION;
         }
 
         ImU32 colour = 0xFFFFFFFF;
@@ -769,7 +802,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
         ImGui::GetWindowDrawList()->AddRect(selection_min, selection_max, colour, 1.0f,ImDrawFlags_RoundCornersAll);
     }
-    else{
+    if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION){
         int x0 = level->tileset_manager.tilemap_rectangular_selection.position.x;
         int x1 = level->tileset_manager.tilemap_rectangular_selection.position.x+level->tileset_manager.tilemap_rectangular_selection.size.x;
         int y0 = level->tileset_manager.tilemap_rectangular_selection.position.y;

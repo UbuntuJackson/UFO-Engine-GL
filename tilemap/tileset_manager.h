@@ -44,6 +44,7 @@ public:
 
     bool in_editor = false;
 
+    //Selection tool for copying, moving arond and pasting
     ufo::Rectangle tilemap_rectangular_selection = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
     std::vector<int> tilemap_selected_tiles;
 
