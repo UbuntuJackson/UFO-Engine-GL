@@ -17,6 +17,7 @@ public:
         }
 
         auto level = _engine->actor_generator->JsonToActorTree(&gc,level_json);
+        level->DynamicCast<ufo::Level>()->path = _level;
         return level;
      }
 };

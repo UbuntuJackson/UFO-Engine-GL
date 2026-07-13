@@ -161,6 +161,7 @@ void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngi
 void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::Button("Add Tileset")){
         SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+        _level_editor_tab->spawn_cursor->actors.clear();
     }
 
     ImGui::SameLine();
@@ -170,19 +171,29 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
         for(const auto& tileset : tileset_data){
              if(tileset.name == current_tileset) currently_selected_tiles = ManyTiles{{tileset.tileset_start_id},0,0,1,1};
         }
+        _level_editor_tab->spawn_cursor->actors.clear();
     }
+
+    ImGui::SameLine();
 
     if(ImGui::Button("Eraser")){
         currently_selected_tiles = ManyTiles{{0},0,0,1,1};
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH;
+        _level_editor_tab->spawn_cursor->actors.clear();
     }
+
+    ImGui::SameLine();
 
     if(ImGui::Button("Fill Bucket")){
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET;
+        _level_editor_tab->spawn_cursor->actors.clear();
     }
+
+    ImGui::SameLine();
 
     if(ImGui::Button("Rectangle Selection")){
         _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION;
+        _level_editor_tab->spawn_cursor->actors.clear();
     }
 
     if(ImGui::BeginTabBar("TilesetManager")){
@@ -211,8 +222,6 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                     currently_selected_tile = tileset.tileset_start_id;
                 }
                 current_tileset = tileset.name;
-
-                ImGui::Text("Contents");
                 ImGui::Image(
                     (void*)(intptr_t)(engine->asset_manager.textures.at(tileset.name).id),
                     ImVec2(engine->asset_manager.textures.at(tileset.name).width, engine->asset_manager.textures.at(tileset.name).height),

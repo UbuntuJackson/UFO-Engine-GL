@@ -161,10 +161,17 @@ void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         float blue = j_colour[2]->AsFloat();
         float alpha = j_colour[3]->AsFloat();
         tint = ufo::Colour(red, green, blue, alpha);
-        #ifdef UFO_ENGINE_STUDIO
-                    im_colour = ImVec4(red,green,blue,alpha);
-        #endif
+#ifdef UFO_ENGINE_STUDIO
+            im_colour = ImVec4(red/255.0f,green/255.0f,blue/255.0f,alpha/255.0f);
+#endif
     }
+}
+
+bool TileMap::IsTileWithinBounds(int _x, int _y){
+
+    if(_x >= 0 && _x < number_of_columns && _y >= 0 && _y < number_of_rows) return true;
+    return false;
+
 }
 
 #ifdef UFO_ENGINE_STUDIO
@@ -243,6 +250,14 @@ void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edit
             ImGui::EndChild();
         }
 
+
+        ImGui::EndTabItem();
+
+    }
+
+    if(ImGui::BeginTabItem("Tiles")){
+
+        level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
 
         ImGui::EndTabItem();
 
@@ -580,7 +595,24 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     ImGui::Separator();
 
-    level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
+    ImGui::Checkbox("Enable Autotiling", &is_autotiling_enabled);
+    if(is_autotiling_enabled){
+        if(autotiling_file == ""){
+            if(ImGui::Button("Add autotile file")){
+                SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenAutoTileFile, this, _level_editor_tab->engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), false);
+            }
+        }
+        else{
+            ImGui::Text("%s", autotiling_file.c_str()); ImGui::SameLine();
+            if(ImGui::Button("Clear###Clear Autotile File")){
+                autotiling_file = "";
+                auto_tiling_tilemap_owner = nullptr;
+                auto_tiling_tilemap = nullptr;
+            }
+        }
+    }
+
+    //ImGui::Separator(); level->tileset_manager.EditorTilesetWidget(_level_editor_tab);
 }
 
 bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
@@ -630,6 +662,8 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             int yy = t/(int)(x1-x0);
             Console::PrintLine(t);
 
+            if(!IsTileWithinBounds(currently_hovered_tile_x+xx, currently_hovered_tile_y+yy)) continue;
+
             tilemap_data[currently_hovered_tile_x+xx+(currently_hovered_tile_y+yy)*number_of_columns] = level->tileset_manager.tilemap_selected_tiles[t];
 
         }
@@ -641,6 +675,8 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             currently_hovered_tile_y,
             currently_hovered_tile_x+(x1-x0),
             currently_hovered_tile_y+(y1-y0));
+
+        level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
 
         return true;
 
@@ -657,6 +693,19 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
                 right_bound_tile,
                 upper_bound_tile
             );
+
+            /*if(is_autotiling_enabled && autotiling_file != ""){
+                for(int t = 2; t < (int)auto_tiling_tilemap->tilemap_data.size(); t+=4){
+
+                    int xx = t%(int)(auto_tiling_tilemap->number_of_columns);
+                    int yy = t/(int)(auto_tiling_tilemap->number_of_columns);
+
+                    if(!IsTileWithinBounds(xx, yy)){
+                        t+=number_of_columns*4;
+                    }
+
+                }
+            }*/
         }
         else if(_level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET){
             bool tiles_are_being_added = true;

@@ -208,6 +208,7 @@ void Editor::OnUpdate(float _delta_time){
                 if(ImGui::MenuItem("Level (.ason)")){
                     auto tab = std::make_unique<LevelEditorTab>(engine,this);
                     tab->Initialise();
+                    tab->this_level->editor_name = "Root";
                     tabs.push_back(std::move(tab));
                 }
                 if(ImGui::MenuItem("Textfile (.txt)")){

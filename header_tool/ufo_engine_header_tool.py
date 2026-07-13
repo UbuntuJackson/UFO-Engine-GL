@@ -28,9 +28,12 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
                 if len(ufo_macro["args"]) != 0:
                     actor_ason = json.load(open(_path + "/" + ufo_macro["args"][0]))
 
+                    found_Main_actor : bool = False
+
                     for actor in actor_ason["actors"]:
                         if actor["name"] == "Main":
                             base_class = actor["class_name"]
+                            found_Main_actor = True
                             if len(cl["class"]["extends"]):
                                 # Replace class name only if using alias from generated file
 
@@ -41,6 +44,9 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
                                     == cl["class"]["extends"][0]
                                 ):
                                     cl["class"]["extends"][0] = base_class
+
+                    if not found_Main_actor:
+                        cl['errors'].append({'class':cl['class']['name'],'file':ufo_macro["args"][0],'type':"No Actor Named Main"})
 
                     typedef = (
                         "typedef "
@@ -75,6 +81,7 @@ def make_generated_file(_path, _classes, _engine_includes):
     for cl in _classes:
         if cl["class"]["header_file"] not in header_files:
             header_files.append(cl["class"]["header_file"])
+        cl['errors'] = []
 
     for i in header_files:
         includes += '#include "' + i + '"\n'

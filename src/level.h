@@ -25,7 +25,9 @@ public:
 
     TilesetManager tileset_manager;
 
-    Vector2f size = {20000.0f, 3000.0f};
+    Vector2f size = {3000.0f, 2500.0f};
+
+    std::string path;
 
     enum CleanUpModes{
         EACH_FRAME,

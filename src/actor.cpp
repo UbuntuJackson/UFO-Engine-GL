@@ -492,6 +492,10 @@ void Actor::OnAdditionalButtonsForTreeItem(){
 
 void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
+    if(editor_name == "ControllableCamera (Editor Tool)" || editor_name == "SpawnCursor (Editor Tool)"){
+        return;
+    }
+
     bool button_pressed = ImGui::InvisibleButton(std::string("###InvisibleButton"+editor_name+std::to_string(_index)).c_str(),ImVec2(100,3));
 
     if(ImGui::BeginDragDropTarget()){

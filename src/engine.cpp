@@ -483,6 +483,8 @@ void Engine::Update(){
     float fElapsedTime = elapsedTime.count();
     fLastElapsed = fElapsedTime;
 
+    if(fLastElapsed > 0.05f) fLastElapsed = 0.05f;
+
     level_handle->UpdatePhase(fLastElapsed);
 
     if(pending_levels.size() > 0){

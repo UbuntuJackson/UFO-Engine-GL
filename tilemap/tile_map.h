@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
@@ -35,6 +36,11 @@ public:
     ufo::Colour tint = ufo::Colour(255,255,255,255);
     std::string shader_key = "partial_sprite_shader";
 
+    bool is_autotiling_enabled = false;
+    std::string autotiling_file = "";
+    ufo::TileMap* auto_tiling_tilemap = nullptr;
+    std::unique_ptr<ufo::Actor> auto_tiling_tilemap_owner = nullptr;
+
     TileMap(Vector2f _);
 
     void OnSpawn() override;
@@ -69,6 +75,8 @@ public:
         };
 
     }
+
+    bool IsTileWithinBounds(int _x, int _y);
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 

@@ -492,6 +492,19 @@ void LevelEditorTab::SelectionUpdate(){
     }
 
     if(current_tool == Tools::MOVE_ACTOR_CLUSTER && engine->mouse.is_left_button_released){
+        for(const int& actor_id : selected_actors){
+            ufo::Actor* actor = this_level->actors_with_stable_id.at(actor_id);
+
+            auto local_tile_map = actor->GetTileMap();
+
+            if(local_tile_map){
+
+                actor->local_position = Vector2f(
+                    std::floor(actor->local_position.x/local_tile_map->tile_width)*local_tile_map->tile_width,
+                    std::floor(actor->local_position.y/local_tile_map->tile_height)*local_tile_map->tile_height) - actor->editor_hitbox.position;
+            }
+        }
+
         ufo::ActorChange_MultipleActorChange* movement_change = dynamic_cast<ufo::ActorChange_MultipleActorChange*>(this_level->level_changes.back().get());
         if(movement_change){
             for(size_t a = 0; a < movement_change->changes.size(); a++){
@@ -507,19 +520,6 @@ void LevelEditorTab::SelectionUpdate(){
         }else{
             Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::OnActive: Error converting from ufo::ActorChange to ActorChange_MultipleActorChange");
             throw;
-        }
-
-        for(const int& actor_id : selected_actors){
-            ufo::Actor* actor = this_level->actors_with_stable_id.at(actor_id);
-
-            auto local_tile_map = actor->GetTileMap();
-
-            if(local_tile_map){
-
-                actor->local_position = Vector2f(
-                    std::floor(actor->local_position.x/local_tile_map->tile_width)*local_tile_map->tile_width,
-                    std::floor(actor->local_position.y/local_tile_map->tile_height)*local_tile_map->tile_height) - actor->editor_hitbox.position;
-            }
         }
 
         Console::PrintLine("Set tool Tools::MULTI_SELECT");
