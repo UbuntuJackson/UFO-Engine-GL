@@ -456,7 +456,7 @@ void LevelEditorTab::SelectionUpdate(){
 
                 this_level->RemoveFutureChanges();
 
-                std::unique_ptr<ufo::ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+                std::unique_ptr<ufo::ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
 
                 for(const auto& inner_actor_id : selected_actors){
 

@@ -270,8 +270,10 @@ class ActorChange_MultipleActorChange : public ActorChange{
 public:
     std::vector<std::unique_ptr<ActorChange>> changes;
 
+    bool undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree = false;
+
 public:
-    ActorChange_MultipleActorChange();
+    ActorChange_MultipleActorChange(bool _undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree);
 
     void Undo() override;
     void Redo() override;

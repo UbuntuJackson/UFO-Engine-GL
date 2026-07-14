@@ -426,6 +426,15 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
     if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
     if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
 
+    ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
+        tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+        Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+    }
+
+    ImGui::Text("Shader: %s", shader_key.c_str());
+
 }
 
 #endif //UFO_ENGINE_STUDIO

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <exception>
 #include <stdexcept>
 #include <vector>
@@ -267,8 +268,72 @@ void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edit
 void TileMap::DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top){
     level->RemoveFutureChanges();
 
-    level->level_changes.push_back(
-        std::make_unique<TileMapChange_TileMapSize>(_level_editor_tab, this->editor_id, _left, _right, _bottom, _top)
+    std::unique_ptr<ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ActorChange_MultipleActorChange>(false);
+
+    std::unique_ptr<TileMapChange_Paint> paint_action_backup = BackupTilesBeforeResize(_level_editor_tab,_left,_right,_bottom,_top);
+    if(paint_action_backup) paint_action_backup->Do(); // Only do backup of tiles with paint action if part of tilemap is removed
+
+    if(_right != 0) ResizeRight(number_of_tiles_to_insert);
+    if(_left != 0) ResizeLeft(number_of_tiles_to_insert);
+    if(_top != 0) ResizeTop(number_of_tiles_to_insert);
+    if(_bottom != 0) ResizeBottom(number_of_tiles_to_insert);
+
+    if(paint_action_backup) multiple_actor_change->changes.push_back(std::move(paint_action_backup)); // Only do backup of tiles with paint action if part of tilemap is removed
+    multiple_actor_change->changes.push_back(std::make_unique<TileMap::TileMapChange_TileMapSize>(_level_editor_tab,editor_id,_left,_right,_bottom,_top));
+
+    level->level_changes.push_back(std::move(multiple_actor_change));
+
+    resize_right = false;
+
+}
+
+std::unique_ptr<ufo::TileMap::TileMapChange_Paint> TileMap::BackupTilesBeforeResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top){
+
+    //No need to do a backup of tiles if there is no negative resizing done. Tiles aren't removed, so you don't need to back up.
+    if(_left > -1 && _right > -1 && _top > -1 && _bottom > -1) return nullptr;
+
+    int x0 = 0;
+    int x1 = number_of_columns;
+    int y0 = 0;
+    int y1 = number_of_rows;
+
+    if(_left < 0){
+        x0 = 0;
+        x1 = std::abs(_left);
+    }
+    if(_right < 0){
+        x0 = number_of_columns-std::abs(_right);
+        x1 = number_of_columns;
+    }
+
+    //I'm not very comfortable with how _top is top of the screen (0.0) here. It's inconsistent with my other usages of _top and _bottom.
+    if(_top < 0){
+        y0 = 0;
+        y1 = std::abs(_top);
+    }
+    if(_bottom < 0){
+        y0 = number_of_rows-std::abs(_bottom);
+        y1 = number_of_rows;
+    }
+
+    tilemap_data_before_change = tilemap_data;
+
+    for(int t = 0; t < (x1-x0)*(y1-y0); t++){
+        int xx = t%(int)(x1-x0);
+        int yy = t/(int)(x1-x0);
+        Console::PrintLine(t);
+
+        tilemap_data[(x0+xx)+(y0+yy)*number_of_columns] = 0;
+
+    }
+
+    return std::make_unique<TileMapChange_Paint>(
+        _level_editor_tab,
+        this->editor_id,
+        x0,
+        y0,
+        x1,
+        y1
     );
 }
 
@@ -505,6 +570,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     if(!resize_right){
         if(ImGui::Button("Resize Right")){
+            CancelAllResizeDialogues();
             resize_right = true;
             _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
@@ -512,12 +578,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeRight(number_of_tiles_to_insert);
 
             DoResize(_level_editor_tab,0,number_of_tiles_to_insert,0,0);
 
-
-            resize_right = false;
         }
         ImGui::SameLine();
         if(ImGui::Button("Cancel")){
@@ -527,6 +590,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     if(!resize_left){
         if(ImGui::Button("Resize Left")){
+            CancelAllResizeDialogues();
             resize_left = true;
             _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
@@ -534,11 +598,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeLeft(number_of_tiles_to_insert);
 
             DoResize(_level_editor_tab,number_of_tiles_to_insert,0,0,0);
 
-            resize_left = false;
         }
         ImGui::SameLine();
         if(ImGui::Button("Cancel")){
@@ -548,6 +610,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     if(!resize_bottom){
         if(ImGui::Button("Resize Bottom")){
+            CancelAllResizeDialogues();
             resize_bottom = true;
             _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
@@ -555,11 +618,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeBottom(number_of_tiles_to_insert);
 
             DoResize(_level_editor_tab,0,0,number_of_tiles_to_insert,0);
 
-            resize_bottom = false;
         }
         ImGui::SameLine();
         if(ImGui::Button("Cancel")){
@@ -569,6 +630,7 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     if(!resize_top){
         if(ImGui::Button("Resize Top")){
+            CancelAllResizeDialogues();
             resize_top = true;
             _level_editor_tab->current_undo_redo_action.tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RESIZE;
         }
@@ -576,11 +638,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     else{
         ImGui::InputInt("Number of tiles:", &number_of_tiles_to_insert);
         if(ImGui::Button("Ok")){
-            ResizeTop(number_of_tiles_to_insert);
 
             DoResize(_level_editor_tab,0,0,0,number_of_tiles_to_insert);
 
-            resize_top = false;
         }
         ImGui::SameLine();
         if(ImGui::Button("Cancel")){
@@ -660,7 +720,6 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
         for(int t = 0; t < (int)level->tileset_manager.tilemap_selected_tiles.size(); t++){
             int xx = t%(int)(x1-x0);
             int yy = t/(int)(x1-x0);
-            Console::PrintLine(t);
 
             if(!IsTileWithinBounds(currently_hovered_tile_x+xx, currently_hovered_tile_y+yy)) continue;
 
@@ -694,18 +753,67 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
                 upper_bound_tile
             );
 
-            /*if(is_autotiling_enabled && autotiling_file != ""){
-                for(int t = 2; t < (int)auto_tiling_tilemap->tilemap_data.size(); t+=4){
+            if(is_autotiling_enabled && autotiling_file != ""){
+                int tilemap_top = (currently_hovered_tile_x+(currently_hovered_tile_y-1)*number_of_columns);
+                int tilemap_top_right = (currently_hovered_tile_x+1)+(currently_hovered_tile_y-1)*number_of_columns;
+                int tilemap_top_left = (currently_hovered_tile_x-1)+(currently_hovered_tile_y-1)*number_of_columns;
+
+                int tilemap_bottom = (currently_hovered_tile_x+(currently_hovered_tile_y+1)*number_of_columns);
+                int tilemap_bottom_right = (currently_hovered_tile_x+1)+(currently_hovered_tile_y+1)*number_of_columns;
+                int tilemap_bottom_left = (currently_hovered_tile_x-1)+(currently_hovered_tile_y+1)*number_of_columns;
+
+                int tilemap_right = ((currently_hovered_tile_x+1)+currently_hovered_tile_y*number_of_columns);
+                int tilemap_left = ((currently_hovered_tile_x-1)+currently_hovered_tile_y*number_of_columns);
+                int tilemap_centre = currently_hovered_tile_x+currently_hovered_tile_y*number_of_columns;
+
+                for(int t = 2+auto_tiling_tilemap->number_of_columns*2; t < (int)auto_tiling_tilemap->tilemap_data.size(); t+=4){
 
                     int xx = t%(int)(auto_tiling_tilemap->number_of_columns);
                     int yy = t/(int)(auto_tiling_tilemap->number_of_columns);
 
-                    if(!IsTileWithinBounds(xx, yy)){
-                        t+=number_of_columns*4;
+
+                    if(xx > auto_tiling_tilemap->number_of_columns){
+                        t+=auto_tiling_tilemap->number_of_columns*4;
+                        t-= 4;
+                    }
+
+                    Console::PrintLine("autotiling: analysing tiles",auto_tiling_tilemap->tilemap_data[t]);
+
+                    int top = xx+(yy-1)*auto_tiling_tilemap->number_of_columns;
+                    int top_right = (xx+1)+(yy-1)*auto_tiling_tilemap->number_of_columns;
+                    int top_left = (xx-1)+(yy-1)*auto_tiling_tilemap->number_of_columns;
+                    int bottom = xx+(yy+1)*auto_tiling_tilemap->number_of_columns;
+                    int bottom_right = (xx+1)+(yy+1)*auto_tiling_tilemap->number_of_columns;
+                    int bottom_left = (xx-1)+(yy+1)*auto_tiling_tilemap->number_of_columns;
+                    int right = (xx+1)+yy*auto_tiling_tilemap->number_of_columns;
+                    int left = (xx-1)+yy*auto_tiling_tilemap->number_of_columns;
+                    int centre = t;
+
+                    if(ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[top]) == ufo::Maths::SignInt(tilemap_data[tilemap_top]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[bottom]) == ufo::Maths::SignInt(tilemap_data[tilemap_bottom]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[right]) == ufo::Maths::SignInt(tilemap_data[tilemap_right]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[left]) == ufo::Maths::SignInt(tilemap_data[tilemap_left]) &&
+
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[top_left]) == ufo::Maths::SignInt(tilemap_data[tilemap_top_left]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[top_right]) == ufo::Maths::SignInt(tilemap_data[tilemap_top_right]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[bottom_left]) == ufo::Maths::SignInt(tilemap_data[tilemap_bottom_left]) &&
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[bottom_right]) == ufo::Maths::SignInt(tilemap_data[tilemap_bottom_right]) &&
+
+                        ufo::Maths::SignInt(auto_tiling_tilemap->tilemap_data[centre]) == ufo::Maths::SignInt(tilemap_data[tilemap_centre])
+                    ){
+                        tilemap_data[tilemap_top] = auto_tiling_tilemap->tilemap_data[top];
+                        tilemap_data[tilemap_top_right] = auto_tiling_tilemap->tilemap_data[top_right];
+                        tilemap_data[tilemap_top_left] = auto_tiling_tilemap->tilemap_data[top_left];
+                        tilemap_data[tilemap_bottom] = auto_tiling_tilemap->tilemap_data[bottom];
+                        tilemap_data[tilemap_bottom_right] = auto_tiling_tilemap->tilemap_data[bottom_right];
+                        tilemap_data[tilemap_bottom_left] = auto_tiling_tilemap->tilemap_data[bottom_left];
+                        tilemap_data[tilemap_right] = auto_tiling_tilemap->tilemap_data[right];
+                        tilemap_data[tilemap_left] = auto_tiling_tilemap->tilemap_data[left];
+                        tilemap_data[tilemap_centre] = auto_tiling_tilemap->tilemap_data[centre];
                     }
 
                 }
-            }*/
+            }
         }
         else if(_level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_FILL_BUCKET){
             bool tiles_are_being_added = true;
@@ -737,25 +845,21 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
                     };
 
                     for(Vector2i tile_direction : directions){
-                        if(tile_direction.x < 0 || tile_direction.x >= number_of_columns) continue;
-                        if(tile_direction.y < 0 || tile_direction.y >= number_of_rows) continue;
+                        if(!IsTileWithinBounds(tile_direction.x, tile_direction.y)) continue;
 
                         int tile_index = tile_direction.y*number_of_columns + tile_direction.x;
 
-                        if(tile_index > -1 && tile_index < (int)tilemap_data.size()){
-                            if(tilemap_data[tile_index] == tile_to_replace){
+                        if(tilemap_data[tile_index] == tile_to_replace){
 
-                                tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
+                            tilemap_data[tile_index] = level->tileset_manager.currently_selected_tiles.first_selected_tile;
 
-                                additional_tiles.push_back(tile_direction);
+                            additional_tiles.push_back(tile_direction);
+                            all_filled_tiles.push_back(tile_direction);
 
-                                all_filled_tiles.push_back(tile_direction);
-
-                                tiles_are_being_added = true;
-
-                            }
+                            tiles_are_being_added = true;
 
                         }
+
                     }
                 }
 
@@ -848,7 +952,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
                     int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
 
-                    if(tile_to_be_set > -1 && tile_to_be_set < (int)tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
+                    if(IsTileWithinBounds(hovered_tile_x+xx, hovered_tile_y+yy)) tilemap_data[tile_to_be_set] = i;
 
                     xx++;
                     if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){

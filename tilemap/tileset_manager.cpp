@@ -280,6 +280,7 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                             1,1,
                             currently_selected_tile
                         };
+                        _level_editor_tab->spawn_cursor->actors.clear();
                     }
                     if(ImGui::IsMouseDragging(0) || ImGui::IsMouseReleased(0)){
                         currently_selected_tiles.tiles.clear();

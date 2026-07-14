@@ -507,7 +507,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             if(_editor->active_tab){
                 UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
 
-                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(true);
 
                 level->RemoveFutureChanges();
 
@@ -516,7 +516,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
                    return _second.index > _first.index;
                 });
 
-                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
+                for(int where_abouts_index = 0; where_abouts_index < (int)level_editor_tab->drag_dropped_actors.size(); where_abouts_index++){
                     const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
 
                     Actor* drag_dropped_actor = dragged_actor_where_abouts_.parent->actors[dragged_actor_where_abouts_.index].get();
@@ -704,11 +704,11 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
                    return _second.index > _first.index;
                 });
 
-                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>();
+                std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(true);
 
                 level->RemoveFutureChanges();
 
-                for(int where_abouts_index = level_editor_tab->drag_dropped_actors.size()-1; where_abouts_index != -1; where_abouts_index--){
+                for(int where_abouts_index = 0; where_abouts_index < (int)level_editor_tab->drag_dropped_actors.size(); where_abouts_index++){
 
                     const auto dragged_actor_where_abouts_ = level_editor_tab->drag_dropped_actors[where_abouts_index];
 

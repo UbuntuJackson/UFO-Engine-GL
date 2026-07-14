@@ -248,6 +248,7 @@ public:
     std::vector<int> tilemap_data_before_change;
 
     void DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top);
+    std::unique_ptr<TileMapChange_Paint> BackupTilesBeforeResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _left, int _right, int _bottom, int _top);
 
     int lower_bound_tile;
     int upper_bound_tile;

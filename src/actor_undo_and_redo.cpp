@@ -315,17 +315,21 @@ void ActorChange_CustomVariableVector2fHandle::Do() {}
 
 // ...
 
-ActorChange_MultipleActorChange::ActorChange_MultipleActorChange(){}
+ActorChange_MultipleActorChange::ActorChange_MultipleActorChange(bool _undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree)
+:undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree{_undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree}{}
 
 void ActorChange_MultipleActorChange::Undo() {
-    for(int a = 0; a < (int)changes.size(); a++) changes[a]->Undo();
+    for(int a = (int)changes.size()-1; a != -1; a--) changes[a]->Undo();
 
 }
 
 void ActorChange_MultipleActorChange::Redo() {
-    for(int a = 0; a < (int)changes.size(); a++) changes[a]->Redo();
+    if(!undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree) for(int a = 0; a < (int)changes.size(); a++) changes[a]->Redo();
+    else for(int a = (int)changes.size()-1; a != -1; a--) changes[a]->Redo();
 
 }
-void ActorChange_MultipleActorChange::Do() {}
+void ActorChange_MultipleActorChange::Do() {
+    //for(int a = 0; a < (int)changes.size(); a++) changes[a]->Do();
+}
 
 }
