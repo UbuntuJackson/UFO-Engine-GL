@@ -16,6 +16,7 @@
 #include "console.h"
 #include "im_vec.h"
 #include "tileset_manager.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -139,12 +140,17 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
 }
 
 void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
-    auto tiles = _json->map.at("tiles")->AsArray();
-    tilemap_data.clear();
-    tilemap_data.reserve(tiles.size());
+    if(_json->map.count("tiles")){
+        auto tiles = _json->map.at("tiles")->AsArray();
+        tilemap_data.clear();
+        tilemap_data.reserve(tiles.size());
 
-    for(const auto& tile : tiles){
-        tilemap_data.push_back((int)tile->AsFloat());
+        for(const auto& tile : tiles){
+            tilemap_data.push_back((int)tile->AsFloat());
+        }
+    }
+    else{
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, tiles do not exist");
     }
 
     number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
@@ -283,7 +289,7 @@ void TileMap::DoResize(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _
 
     level->level_changes.push_back(std::move(multiple_actor_change));
 
-    resize_right = false;
+    CancelAllResizeDialogues();
 
 }
 
@@ -318,14 +324,14 @@ std::unique_ptr<ufo::TileMap::TileMapChange_Paint> TileMap::BackupTilesBeforeRes
 
     tilemap_data_before_change = tilemap_data;
 
-    for(int t = 0; t < (x1-x0)*(y1-y0); t++){
-        int xx = t%(int)(x1-x0);
-        int yy = t/(int)(x1-x0);
+    /*for(int t = 0; t < (x1-x0)*(y1-y0); t++){
+        int xx = t%(x1-x0);
+        int yy = t/(x1-x0);
         Console::PrintLine(t);
 
         tilemap_data[(x0+xx)+(y0+yy)*number_of_columns] = 0;
 
-    }
+        }*/
 
     return std::make_unique<TileMapChange_Paint>(
         _level_editor_tab,
@@ -369,7 +375,7 @@ void TileMap::ResizeLeft(int _number_of_tiles_to_insert){
         }
     }
     else{
-        int start_index = _number_of_tiles_to_insert;
+        int start_index = 0;
         for(int i = 0; i < number_of_rows; i++){
             for(int j = 0; j < _number_of_tiles_to_insert*-1; j++) tilemap_data.erase(tilemap_data.begin()+start_index);
             start_index+=(_number_of_tiles_to_insert+number_of_columns);

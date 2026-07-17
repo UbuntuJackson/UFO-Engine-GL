@@ -2,26 +2,17 @@ import json
 import os.path
 import sys
 
-IMPORT_MODE_UNWRAPPED = 2
-IMPORT_MODE_WRAPPED = 0
 
-
-def get_inheritence_map(_working_directory):
+def get_inheritence_map(_structured_classes_dict):
     inheritence_map = {}
 
-    f_structured_classes = open(_working_directory + "/structured_classes.json")
-
-    j_strucured_classes = json.loads(f_structured_classes.read())
-
-    for entry in j_strucured_classes["contents"]:
+    for entry in _structured_classes_dict["contents"]:
         class_name = entry["class"]["name"]
 
         extends_classes = entry["class"]["extends"]
 
         if len(entry["class"]["extends"]) > 0:
             inheritence_map[class_name] = extends_classes[0]
-
-    f_structured_classes.close()
 
     return inheritence_map
 
@@ -493,8 +484,8 @@ def get_actor_loading_code(_base_class_name, _instance, actor_json):
 
 
 # Entry point for this feature. This is called from function ufo_engine_header_tool.make_generated_file
-def main(_working_directory):
-    inheritence_map = get_inheritence_map(_working_directory)
+def main(_working_directory, _structured_classes_dict):
+    inheritence_map = get_inheritence_map(_structured_classes_dict)
 
     # Counter to generate unique identifiers present in <project>/generated.h, inside namespace ufo::Generated
     class ActorCounter:
@@ -507,21 +498,11 @@ def main(_working_directory):
 
     actor_counter = ActorCounter()
 
-    # Load structured_classes.json to get all classes
-    # if structured classes doesn't exist yet, then add nothing to generated code
-    if not os.path.isfile(_working_directory + "/structured_classes.json"):
-        return ""
-
-    structured_classes_file = open(_working_directory + "/structured_classes.json")
-    structured_classes_dict = json.loads(structured_classes_file.read())
-
-    structured_classes_file.close()
-
     # This is part of generated.h and will end up after the custom actor generator ufo::Generated::ActorGenerator
     generated_spawner_functions = ""
 
     # Iterate through all classes
-    for content in structured_classes_dict["contents"]:
+    for content in _structured_classes_dict["contents"]:
         # This is the object that is returned by the spawner function
         this_actor_id = actor_counter.get_count()
 

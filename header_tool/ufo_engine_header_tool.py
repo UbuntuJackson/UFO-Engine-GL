@@ -73,7 +73,7 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
     f_inheritence_map.close()
 
 
-def make_generated_file(_path, _classes, _engine_includes):
+def make_generated_file(_path, _classes, _engine_includes, _structured_classes_dict):
     includes = _engine_includes
 
     header_files = []
@@ -90,7 +90,7 @@ def make_generated_file(_path, _classes, _engine_includes):
 
     namespace_string = "namespace ufo::Generated{\n\n"
 
-    namespace_string += generate_actor_spawner_functions.main(_path)
+    namespace_string += generate_actor_spawner_functions.main(_path, _structured_classes_dict)
 
     class_string = "class ActorGenerator : public ufo::GenericGenerator{\n\n"
     class_string += "    public:\n"
@@ -213,11 +213,11 @@ def main():
     engine_includes += '#include "UFO-Engine/src/camera.h"\n'
     engine_includes += '#include "UFO-Engine/src/platformer_rectangle_collision.h"\n'
 
+    classes_as_dictionary = {"contents": grand_class_list}
+
     make_generated_base_classes_file(arg_path, grand_class_list, engine_includes)
 
-    make_generated_file(arg_path, grand_class_list, engine_includes)
-
-    classes_as_dictionary = {"contents": grand_class_list}
+    make_generated_file(arg_path, grand_class_list, engine_includes, classes_as_dictionary)
 
     structured_classes = json.dumps(classes_as_dictionary, indent=4)
     f_structured_classes = open(arg_path + "/structured_classes.json", "w")

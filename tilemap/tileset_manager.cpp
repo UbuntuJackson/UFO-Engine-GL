@@ -101,61 +101,64 @@ void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
 }
 
 void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    Console::PrintLine(_path, _level_editor_tab->editor->opened_directory_path);
-    Console::PrintLine(ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path));
+    try{
 
-    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+        std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-    engine->asset_manager.LoadTexture(_path, relative_path, true);
-    int width = engine->asset_manager.textures.at(relative_path).width;
-    int height = engine->asset_manager.textures.at(relative_path).height;
+        engine->asset_manager.LoadTexture(_path, relative_path, true);
+        int width = engine->asset_manager.textures.at(relative_path).width;
+        int height = engine->asset_manager.textures.at(relative_path).height;
 
-    int columns = (int)width/16;
+        int columns = (int)width/16;
 
-    int rows = (int)height/16;
+        int rows = (int)height/16;
 
-    int tileset_start_id = 1;
+        int tileset_start_id = 1;
 
-    if(!tileset_data.empty()) tileset_start_id = tileset_data.back().tileset_start_id+tileset_data.back().tile_count;
+        if(!tileset_data.empty()) tileset_start_id = tileset_data.back().tileset_start_id+tileset_data.back().tile_count;
 
-    tileset_data.push_back(
-        TilesetData{
-            relative_path,
-            columns,
-            tileset_start_id,
-            (float)width, (float)height,
-            16.0f, 16.0f,
-            columns*rows
-        }
-    );
+        tileset_data.push_back(
+            TilesetData{
+                relative_path,
+                columns,
+                tileset_start_id,
+                (float)width, (float)height,
+                16.0f, 16.0f,
+                columns*rows
+            }
+        );
+    } catch (const std::runtime_error& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+    }
 }
 
 void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    Console::PrintLine(_path, _level_editor_tab->editor->opened_directory_path);
-    Console::PrintLine(ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path));
+    try{
+        std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+        engine->asset_manager.LoadTexture(_path, relative_path, true);
+        int width = engine->asset_manager.textures.at(relative_path).width;
+        int height = engine->asset_manager.textures.at(relative_path).height;
 
-    engine->asset_manager.LoadTexture(_path, relative_path, true);
-    int width = engine->asset_manager.textures.at(relative_path).width;
-    int height = engine->asset_manager.textures.at(relative_path).height;
+        int columns = (int)width/16;
 
-    int columns = (int)width/16;
+        int rows = (int)height/16;
 
-    int rows = (int)height/16;
+        int tileset_start_id = 1;
 
-    int tileset_start_id = 1;
+        tileset_start_id = tileset_data[_index].tileset_start_id;
 
-    tileset_start_id = tileset_data[_index].tileset_start_id;
-
-    tileset_data[_index] = TilesetData{
-            relative_path,
-            columns,
-            tileset_start_id,
-            (float)width, (float)height,
-            16.0f, 16.0f,
-            columns*rows
-        };
+        tileset_data[_index] = TilesetData{
+                relative_path,
+                columns,
+                tileset_start_id,
+                (float)width, (float)height,
+                16.0f, 16.0f,
+                columns*rows
+            };
+    } catch (const std::runtime_error& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+    }
 }
 
 void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab){

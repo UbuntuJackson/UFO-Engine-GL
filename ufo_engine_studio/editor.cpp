@@ -1,3 +1,4 @@
+#include "ufo_macros.h"
 #define SDL_MAIN_HANDLED
 #include <exception>
 #include <level.h>
@@ -229,39 +230,42 @@ void Editor::OnUpdate(float _delta_time){
 
             ImGui::EndMenu();
         }
-        if(ImGui::BeginMenu("Project")){
+        if(opened_directory_path != ""){
+            if(ImGui::BeginMenu("Project")){
 
-            if(ImGui::MenuItem("Reload Project")){
-                refresh_entire_project = true;
+                if(ImGui::MenuItem("Reload Project")){
+                    refresh_entire_project = true;
+                }
+
+                if(ImGui::MenuItem("Compile Game")){
+                    refresh_entire_project = true;
+                    will_compile_game = true;
+                }
+
+                if(ImGui::MenuItem("Debug Game")){
+                    const std::string build_directory = opened_directory_path+"/build";
+                    std::thread t(&DebugGame, build_directory, opened_directory_path);
+                    t.detach();
+                }
+
+                if(ImGui::MenuItem("Run Game")){
+                    const std::string build_directory = opened_directory_path+"/build";
+                    std::thread t(&RunGame, build_directory, opened_directory_path);
+                    t.detach();
+                }
+
+                if(ImGui::MenuItem("Settings")){
+                    project_settings_open = true;
+                }
+
+                if(ImGui::MenuItem("Make release build")){
+                    SDL_ShowOpenFolderDialog(&OnSelectDirectoryForDebugBuild, (void*)this, engine->window, "/home", false);
+                }
+
+                ImGui::EndMenu();
             }
-
-            if(ImGui::MenuItem("Compile Game")){
-                refresh_entire_project = true;
-                will_compile_game = true;
-            }
-
-            if(ImGui::MenuItem("Debug Game")){
-                const std::string build_directory = opened_directory_path+"/build";
-                std::thread t(&DebugGame, build_directory, opened_directory_path);
-                t.detach();
-            }
-
-            if(ImGui::MenuItem("Run Game")){
-                const std::string build_directory = opened_directory_path+"/build";
-                std::thread t(&RunGame, build_directory, opened_directory_path);
-                t.detach();
-            }
-
-            if(ImGui::MenuItem("Settings")){
-                project_settings_open = true;
-            }
-
-            if(ImGui::MenuItem("Make release build")){
-                SDL_ShowOpenFolderDialog(&OnSelectDirectoryForDebugBuild, (void*)this, engine->window, "/home", false);
-            }
-
-            ImGui::EndMenu();
         }
+
         if(ImGui::BeginMenu("Tools")){
             if(ImGui::MenuItem("Calculator")){
                 view_calculator = true;
@@ -368,7 +372,7 @@ void Editor::OnUpdate(float _delta_time){
 
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
 
-    if(refresh_entire_project){
+    if(opened_directory_path != "" && refresh_entire_project){
         //Here I'm forcing an update on the new actor queue to make sure there are actors in level are loaded before
         // making potential modifications to them, like adding or removing ufo-variables.
         AddNewActors();
@@ -517,7 +521,11 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
 
 void Editor::ReloadSpawnableActorMap(){
 
-    auto exported_actors_json = ufo::gc::JsonRead(&gc, opened_directory_path+"/structured_classes.json");
+    const std::string structured_classes_full_path = opened_directory_path+"/structured_classes.json";
+
+    if(!ufo::FileSystem::FileExists(structured_classes_full_path)) return;
+
+    auto exported_actors_json = ufo::gc::JsonRead(&gc, structured_classes_full_path);
 
     if(exported_actors_json->IsNull()){
         Console::PrintLine("[UFO-Engine Studio] Warning: Could not find file with exported actors",opened_directory_path+"/structured_classes.json");
@@ -594,6 +602,12 @@ void Editor::ReloadSpawnableActorMap(){
 
             //This function is full of potential conversion errors due to faulty syntax. At least try handle them.
 
+            if(member->AsArray().size() != 2){
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,
+                    "Error, members is incorrectly structured, should have two sections, one for macros and one for the variable type, name and value.");
+                continue;
+            }
+
             if(member->AsArray()[1]->AsMap().count("name")) name = member->AsArray()[1]->AsMap().at("name")->AsString();
             else{
                 Console::PrintLine("[UFO-Engine Studio] Editor::ReloadSpawnableActorMap: Faulty variable name");
@@ -619,11 +633,14 @@ void Editor::ReloadSpawnableActorMap(){
 
                 auto args = macro->AsMap().at("args")->AsArray();
 
-                if(macro_name == "ufo_alias") alias = args[0]->AsString();
+                if(macro_name == "ufo_alias"){
+                    if(args.size() == 1) alias = args[0]->AsString();
+                    else Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, ufo_alias requires 1 argument, here it takes", args.size());
+                }
 
                 if(macro_name == "ufo_int_slider"){
 
-                    try{
+                    if(args.size() == 2){
                         act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyIntSlider>(
                             name,
                             alias,
@@ -632,17 +649,14 @@ void Editor::ReloadSpawnableActorMap(){
                             std::stoi(args[1]->AsString())
                         ));
                     }
-                    catch(const std::out_of_range& _error){
-                        Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_int_slider takes 2 args", _error.what());
-                    }
-                    catch(const std::exception& _error){
-                        Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
+                    else{
+                        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, ufo_int_slider requires 2 arguments, here it takes", args.size());
                     }
                 }
 
                 if(macro_name == "ufo_float_slider"){
 
-                    try{
+                    if(args.size() == 3){
                         act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyFloatSlider>(
                             name,
                             alias,
@@ -652,11 +666,8 @@ void Editor::ReloadSpawnableActorMap(){
                             std::stof(args[2]->AsString())
                         ));
                     }
-                    catch(const std::out_of_range& _error){
-                        Console::PrintLine("Error in",class_.at("name")->AsString(), "ufo_float_slider takes 3 args", _error.what());
-                    }
-                    catch(const std::exception& _error){
-                        Console::PrintLine("Error in",class_.at("name")->AsString(), _error.what());
+                    else{
+                        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, ufo_float_slider requires 3 arguments, here it takes", args.size());
                     }
                 }
 
@@ -750,7 +761,7 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
 #ifdef __MINGW32__
     int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb -O0\" -DUFO_ENGINE_STUDIO=ON -GNinja && ninja -j16 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
 #else
-    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb\" && make -j8 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS=\"-O0 -ggdb\" && make -j8 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 #endif
 

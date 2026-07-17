@@ -40,10 +40,12 @@ public:
     ufo::Rectangle viewport = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
 
     Camera(olc::vf2d _position);
-    void OnSpawn();
+    void OnSpawn() override;
     void EarlyUpdate();
     void ClampLocalPosition();
     void HandleUpdate();
+    void OnKilled() override;
+
     olc::vf2d Transform(const olc::vf2d& _position);
     olc::vf2d TransformScreenToWorld(const olc::vf2d& _screen_position);
     //SpriteReference Transform(const SpriteReference& _sprite);

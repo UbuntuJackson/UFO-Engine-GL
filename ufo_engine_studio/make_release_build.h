@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include "../utils/file_utils.h"
 #include "../shared_json/shared_json.h"
+#include "../src/ufo_macros.h"
 
 namespace UFOEngineStudio{
 
@@ -36,12 +37,13 @@ inline void MakeReleaseBuild(const std::string& _development_build_directory, co
 
             std::string dir = std::string(directory_entry.path().generic_string());
 
-            Console::PrintLine("mkdir",
-                _release_build_directory+"/"+ufo::FileSystem::GetRelativePath(directory_entry.path().generic_string(), _development_build_directory)
-            );
-
-            std::filesystem::create_directory(std::string(_release_build_directory+"/"+ufo::FileSystem::GetRelativePath(directory_entry.path().generic_string(), _development_build_directory)).c_str());
-
+            try{
+                std::string relative_path = ufo::FileSystem::GetRelativePath(directory_entry.path().generic_string(), _development_build_directory);
+                std::filesystem::create_directory(std::string(_release_build_directory+"/"+relative_path).c_str());
+            }
+            catch (const std::runtime_error& _error){
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+            }
         }
         //if file
         else{

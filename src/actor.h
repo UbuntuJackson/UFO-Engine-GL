@@ -102,6 +102,7 @@ public:
     void CleanUpDeadActors();
     void StashActors();
     void MarkAllDead();
+    virtual void OnKilled();
 
     virtual void OnSpawn();
 
@@ -174,12 +175,12 @@ public:
     TileMap* GetTileMap();
 
     enum ImportModes{
-        WRAPPED,
-        MODIFIABLE,
-        UNWRAPPED
+        CUSTOM_CLASS,
+        VARIATION_OF_CUSTOM_CLASS,
+        BUILT_IN_CLASS
     };
 
-    int import_mode = ImportModes::UNWRAPPED;
+    int import_mode = ImportModes::BUILT_IN_CLASS;
 
     static inline int editor_id_counter = 0;
     int editor_id = 0;
@@ -222,9 +223,6 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     void ResetSelectionStatus();
 
-    bool to_replace = false;
-    void ReplaceActors(UFOEngineStudio::Editor* _editor);
-
     bool marked_for_drag = false;
     bool marked_for_drop = false;
 
@@ -242,7 +240,8 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     void TurnOnEditMode();
 
-    void UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool  _parent_is_modifiable);
+    void ReplaceCustomActors(UFOEngineStudio::Editor* _editor, std::vector<std::unique_ptr<Actor>>& _actor_queue);
+    void UpdateActorStructure(UFOEngineStudio::Editor* _editor);
 
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 

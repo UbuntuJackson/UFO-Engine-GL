@@ -52,8 +52,7 @@ void Sprite::OnSpawn(){
     if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";
     }
-    //if(frame_size.x > engine->asset_manager.at(key).w) frame_size.x = engine->asset_manager.at(key).w;
-    //if(frame_size.y > engine->asset_manager.at(key).h) frame_size.y = engine->asset_manager.at(key).h;
+
 }
 
 ufo::Rectangle
@@ -101,14 +100,11 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
-    if(import_mode == WRAPPED) return parent_class_as_json;
+    if(import_mode == CUSTOM_CLASS) return parent_class_as_json;
 
     //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
     // However they need to be recovered.
 
-    //I'm gonna make it so all default properties are excluded if the object is wrapped
-
-    //if(import_mode == ImportModes::UNWRAPPED){
     parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
     parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
     parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));
@@ -127,8 +123,6 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.a));
 
     parent_class_as_json->map.emplace("tint", j_colour);
-
-    //}
 
     return parent_class_as_json;
 }
@@ -253,8 +247,6 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                     }
                     ImGui::SameLine();
                     if(ImGui::Button(std::string("Assign Texture to Current Sprite###AddCostume"+name).c_str())){
-                        float w = (float)engine->asset_manager.textures.at(name).width;
-                        float h = (float)engine->asset_manager.textures.at(name).height;
                         key = name;
                         frame_size = Vector2f(w,h);
                         number_of_frames = 1;
@@ -369,23 +361,27 @@ void Sprite::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _e
 void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Actor::OnViewProperties(_level_editor_tab, _index);
 
-    ImGui::InputFloat("offset.x",&offset.x);
-    ImGui::InputFloat("offset.y",&offset.y);
-    ImGui::InputFloat("frame_size.x",&frame_size.x);
-    ImGui::InputFloat("frame_size.y",&frame_size.y);
-    ImGui::InputFloat("scale.x",&scale.x);
-    ImGui::InputFloat("scale.y",&scale.y);
-    ImGui::InputFloat("rotation (degrees)",&rotation);
-    ImGui::InputFloat("current_frame_index",&current_frame_index);
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
 
-    ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+        ImGui::InputFloat("offset.x",&offset.x);
+        ImGui::InputFloat("offset.y",&offset.y);
+        ImGui::InputFloat("frame_size.x",&frame_size.x);
+        ImGui::InputFloat("frame_size.y",&frame_size.y);
+        ImGui::InputFloat("scale.x",&scale.x);
+        ImGui::InputFloat("scale.y",&scale.y);
+        ImGui::InputFloat("rotation (degrees)",&rotation);
+        ImGui::InputFloat("current_frame_index",&current_frame_index);
 
-    if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
-        tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
-        Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+        ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+        if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
+            tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+            Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+        }
+
+        ImGui::Text("Shader: %s", shader_key.c_str());
+
     }
-
-    ImGui::Text("Shader: %s", shader_key.c_str());
 
 }
 
@@ -402,6 +398,9 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
 void Sprite::OnResourcesEdited(){
     if(!engine->asset_manager.textures.count(key)){
         key = "placeholder_icon";
+    }
+    if(!engine->asset_manager.shaders.count(key)){
+        shader_key = "partial_sprite_shader";
     }
 }
 

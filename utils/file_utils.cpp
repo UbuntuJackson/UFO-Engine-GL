@@ -1,20 +1,13 @@
 #include "file_utils.h"
 #include "console.h"
 #include <exception>
+#include <filesystem>
 #include <stdexcept>
 
 namespace ufo::FileSystem{
 
 std::string GetFilenameFromPath(const std::string& _path){
-    size_t last_slash_index = _path.find_last_of("/")+1;
-
-    std::string res = _path.substr(last_slash_index);
-
-    if (last_slash_index == _path.npos){
-        return _path;
-    }
-
-    return res;
+    return std::filesystem::path(_path).filename();
 }
 
 bool FileExists(const std::string& _path){

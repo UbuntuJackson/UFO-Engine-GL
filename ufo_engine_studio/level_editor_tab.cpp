@@ -84,7 +84,7 @@ void LevelEditorTab::Initialise(){
 void LevelEditorTab::Refresh(){
     Tab::Refresh();
     Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::Refresh: Updating actor structure");
-    this_level->UpdateActorStructure(editor, false);
+    this_level->UpdateActorStructure(editor);
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
 
@@ -180,46 +180,46 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::Separator();
 
             if(ImGui::BeginChild("MyAssetsChildWindow")){
+                if(categories.size() > 0){
+                    if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
+                    {
+                        UFOEngineStudio::PushStyleCompact();
+                        for(const auto& [k,v] : categories){
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%s",k.c_str());
 
-                if (ImGui::BeginTable("table_columns_flags_checkboxes", categories.size(), ImGuiTableFlags_None))
-                {
-                    UFOEngineStudio::PushStyleCompact();
-                    for(const auto& [k,v] : categories){
-                        ImGui::TableNextColumn();
-                        ImGui::Text("%s",k.c_str());
+                            for(const auto& s : v){
+                                int w = engine->asset_manager.textures.at("actor_icon").width;
+                                int h = engine->asset_manager.textures.at("actor_icon").height;
 
-                        for(const auto& s : v){
-                            int w = engine->asset_manager.textures.at("actor_icon").width;
-                            int h = engine->asset_manager.textures.at("actor_icon").height;
+                                bool pressed = ImGui::ImageButton(
 
-                            bool pressed = ImGui::ImageButton(
+                                    std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
+                                    (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
+                                    ImVec2(w, h));
 
-                                std::string("Add "+s->class_name+"###Add"+k+s->class_name).c_str(),
-                                (ImTextureID)(intptr_t)engine->asset_manager.textures.at("actor_icon").id,
-                                ImVec2(w, h));
+                                if(editor->currently_selected_actor_type == s->class_name){
+                                    ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 0x55FFFFFF);
+                                }
 
-                            if(editor->currently_selected_actor_type == s->class_name){
-                                ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 0x55FFFFFF);
+                                if(pressed){
+                                    editor->currently_selected_actor_type = s->class_name;
+                                    current_tool = Tools::PLACE;
+
+                                    spawn_cursor->actors.clear();
+                                    spawn_cursor->AddActorUniquePtr(editor->spawnable_actor_map.at(s->class_name)->Spawn(editor));
+                                }
+
+                                ImGui::SameLine();
+
+                                ImGui::TextWrapped("%s", (s->comment == "" ? s->class_name.c_str() : std::string(s->class_name+"\n-- Description --\n"+s->comment)).c_str());
                             }
-
-                            if(pressed){
-                                editor->currently_selected_actor_type = s->class_name;
-                                current_tool = Tools::PLACE;
-
-                                spawn_cursor->actors.clear();
-                                spawn_cursor->AddActorUniquePtr(editor->spawnable_actor_map.at(s->class_name)->Spawn(editor));
-                            }
-
-                            ImGui::SameLine();
-
-                            ImGui::TextWrapped("%s", (s->comment == "" ? s->class_name.c_str() : std::string(s->class_name+"\n-- Description --\n"+s->comment)).c_str());
                         }
+                        UFOEngineStudio::PopStyleCompact();
+
+                        ImGui::EndTable();
                     }
-                    UFOEngineStudio::PopStyleCompact();
-
-                    ImGui::EndTable();
                 }
-
             }
 
             ImGui::EndChild();
@@ -227,7 +227,9 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::EndTabItem();
         }
 
-        if(inspected_actor != ufo::Maths::NULL_ID) this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
+        if(inspected_actor != ufo::Maths::NULL_ID){
+            if(this_level->actors_with_stable_id.at(inspected_actor)->import_mode == ufo::Actor::ImportModes::BUILT_IN_CLASS) this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
+        }
 
         ImGui::EndTabBar();
 

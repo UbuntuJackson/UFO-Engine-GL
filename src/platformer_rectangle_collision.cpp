@@ -18,7 +18,7 @@ namespace ufo{
 #ifdef UFO_ENGINE_STUDIO
 void PlatformerRectangleCollision::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    if(import_mode == ImportModes::WRAPPED) return;
+    if(import_mode == ImportModes::CUSTOM_CLASS) return;
 
     auto cam = _level_editor_tab->this_level->active_camera_handles.back();
 

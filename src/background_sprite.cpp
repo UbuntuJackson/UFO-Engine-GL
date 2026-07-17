@@ -61,14 +61,11 @@ ufo::gc::JsonMap* BackgroundSprite::GetAsJson(ufo::GarbageCollector* _gc){
 
 void BackgroundSprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
-    try{
-        Sprite::OnLoadDefaultProperties(_json);
+    Sprite::OnLoadDefaultProperties(_json);
 
-        parallax.x = _json->map.at("parallax_x")->AsFloat();
-        parallax.y = _json->map.at("parallax_y")->AsFloat();
-    } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
-    }
+    _json->TryToGetValueAsFloat("parallax_x", parallax.x);
+    _json->TryToGetValueAsFloat("parallax_y", parallax.y);
+
 }
 
 #ifdef UFO_ENGINE_STUDIO

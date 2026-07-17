@@ -35,7 +35,7 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
 
         auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
 
-        actor_from_file->import_mode = ufo::Actor::ImportModes::WRAPPED;
+        actor_from_file->import_mode = ufo::Actor::ImportModes::CUSTOM_CLASS;
         act = std::move(actor_from_file);
 
     }
@@ -49,6 +49,8 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
 
     if(!act->is_editor_hit_box_unique_per_instance && _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.count(act->class_name)){
         ufo::gc::JsonMap* class_json = _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(act->class_name);
+
+        //Some actor types don't have a default editor_hitbox
         if(class_json->map.count("editor_hitbox")){
             auto j_editor_hitbox = class_json->map.at("editor_hitbox")->AsMap();
             act->editor_hitbox = ufo::Rectangle(

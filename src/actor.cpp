@@ -127,8 +127,11 @@ void Actor::AddNewActors(){
 }
 
 void Actor::MarkAllDead(){
+    OnKilled();
+
     for(auto& actor : actors){
         actor->is_dead = true;
+        actor->MarkAllDead();
         Console::PrintLine("Deleted Actor", actor.get());
     }
 }
@@ -137,14 +140,21 @@ void Actor::CleanUpDeadActors(){
 
     for(int i = actors.size()-1; i != -1; i--){
         if(actors[i]->is_dead){
+
+            //All the actors which are used by level needs to be cleaned up here, by calling OnKilled for all dead actors
             actors[i]->MarkAllDead();
             Console::PrintLine("Deleted", actors[i].get());
+
             actors.erase(actors.begin()+i);
         }
         else{
             actors[i]->CleanUpDeadActors();
         }
     }
+
+}
+
+void Actor::OnKilled(){
 
 }
 
@@ -320,7 +330,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     ufo::gc::JsonArray* children = _gc->New<ufo::gc::JsonArray>();
 
 #ifdef UFO_ENGINE_STUDIO
-    if(import_mode == ImportModes::UNWRAPPED){
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
         for(const auto& actor : actors){
             if(actor->is_savable) children->array.push_back(actor->GetAsJson(_gc));
         }
@@ -361,16 +371,6 @@ TileMap* Actor::GetTileMap(){
 
 // UFO-Engine Studio
 #ifdef UFO_ENGINE_STUDIO
-
-void Actor::ReplaceActors([[maybe_unused]] UFOEngineStudio::Editor* _editor){
-    /*for(int i = 0; i < actors.size(); i++){
-        actors[i]->ReplaceActors(_editor);
-
-        if(actors[i]->to_replace){
-            actors.at(i) = _editor->replace_with_actor;
-        }
-    }*/
-}
 
 void Actor::StashActors(){
 
@@ -414,66 +414,44 @@ void Actor::ResetSelectionStatus(){
     }
 }
 
-void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor, bool _parent_is_modifiable){
+void Actor::ReplaceCustomActors(UFOEngineStudio::Editor* _editor, std::vector<std::unique_ptr<Actor>>& _actor_queue){
+    for(int a = 0; a < (int)_actor_queue.size(); a++){
+        if(_actor_queue[a]->import_mode == ImportModes::CUSTOM_CLASS){
 
-    for(int a = 0; a < (int)actors.size(); a++){
-        if(actors[a]->import_mode == ImportModes::WRAPPED){
-            Console::PrintLine("UpdateActorStructure actors",actors[a]->editor_name);
+            if(!_editor->spawnable_actor_map.count(_actor_queue[a]->class_name)) continue;
 
-            auto old_actor = std::move(actors[a]);
+            auto old_actor = std::move(_actor_queue[a]);
 
-            actors[a] = std::move(_editor->spawnable_actor_map.at(old_actor->class_name)->Spawn(_editor));
+            _actor_queue[a] = std::move(_editor->spawnable_actor_map.at(old_actor->class_name)->Spawn(_editor));
 
-            actors[a]->local_position = old_actor->local_position;
-            actors[a]->parent = old_actor->parent;
-            actors[a]->level = old_actor->level;
-            actors[a]->engine = old_actor->engine;
-            actors[a]->properties_open = old_actor->properties_open;
-            actors[a]->editor_name = old_actor->editor_name;
-            actors[a]->editor_id = old_actor->editor_id;
-            if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
-            level->actors_with_stable_id.at(actors[a]->editor_id) = actors[a].get();
+            _actor_queue[a]->local_position = old_actor->local_position;
+            _actor_queue[a]->parent = old_actor->parent;
+            _actor_queue[a]->level = old_actor->level;
+            _actor_queue[a]->engine = old_actor->engine;
+            _actor_queue[a]->properties_open = old_actor->properties_open;
+            _actor_queue[a]->editor_name = old_actor->editor_name;
+            _actor_queue[a]->editor_id = old_actor->editor_id;
+            if(old_actor->is_editor_hit_box_unique_per_instance) _actor_queue[a]->editor_hitbox = old_actor->editor_hitbox;
+            level->actors_with_stable_id.at(_actor_queue[a]->editor_id) = _actor_queue[a].get();
 
-            actors[a]->OnSpawn();
+            _actor_queue[a]->OnSpawn();
 
-            actors[a]->editor_properties.clear();
+            _actor_queue[a]->editor_properties.clear();
             for(auto&& property : old_actor->editor_properties){
-                actors[a]->editor_properties.push_back(property->Copy());
+                _actor_queue[a]->editor_properties.push_back(property->Copy());
             }
 
         }
 
-        actors[a]->UpdateActorStructure(_editor, _parent_is_modifiable);
+        _actor_queue[a]->UpdateActorStructure(_editor);
     }
+}
 
-    for(int a = 0; a < (int)new_actor_queue.size(); a++){
-        if(new_actor_queue[a]->import_mode == ImportModes::WRAPPED){
+void Actor::UpdateActorStructure(UFOEngineStudio::Editor* _editor){
 
-            auto old_actor = std::move(new_actor_queue[a]);
+    ReplaceCustomActors(_editor, actors);
 
-            new_actor_queue[a] = std::move(_editor->spawnable_actor_map.at(old_actor->class_name)->Spawn(_editor));
-
-            new_actor_queue[a]->local_position = old_actor->local_position;
-            new_actor_queue[a]->parent = old_actor->parent;
-            new_actor_queue[a]->level = old_actor->level;
-            new_actor_queue[a]->engine = old_actor->engine;
-            new_actor_queue[a]->properties_open = old_actor->properties_open;
-            new_actor_queue[a]->editor_name = old_actor->editor_name;
-            new_actor_queue[a]->editor_id = old_actor->editor_id;
-            if(old_actor->is_editor_hit_box_unique_per_instance) actors[a]->editor_hitbox = old_actor->editor_hitbox;
-            level->actors_with_stable_id.at(new_actor_queue[a]->editor_id) = new_actor_queue[a].get();
-
-            new_actor_queue[a]->OnSpawn();
-
-            new_actor_queue[a]->editor_properties.clear();
-            for(auto&& property : old_actor->editor_properties){
-                new_actor_queue[a]->editor_properties.push_back(property->Copy());
-            }
-
-        }
-
-        new_actor_queue[a]->UpdateActorStructure(_editor, _parent_is_modifiable);
-    }
+    ReplaceCustomActors(_editor, new_actor_queue);
 
 }
 
@@ -553,7 +531,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         ImGui::EndDragDropTarget();
     }
 
-    std::string imported_or_not_str = (import_mode != ImportModes::WRAPPED) ? "" : "(.ason)";
+    std::string imported_or_not_str = (import_mode != ImportModes::CUSTOM_CLASS) ? "" : "(.ason)";
 
     std::string visible_text = std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
 
@@ -562,7 +540,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         (visible_text+"###Actor"+std::to_string(editor_id)).c_str();
 
     bool tree_node_opened = false;
-    if(import_mode == ImportModes::UNWRAPPED){
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
         std::string label = std::string("###ActorTree"+std::to_string(editor_id));
 
         //if(level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->editor_id == this->editor_id) ImGui::SetNextItemOpen(true);
@@ -778,7 +756,7 @@ void Actor::GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle
         return;
     }
 
-    if(import_mode == ImportModes::WRAPPED) return;
+    if(import_mode == ImportModes::CUSTOM_CLASS) return;
 
     for(const auto& actor : actors){
         actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
@@ -910,7 +888,7 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
 
     ImGui::Text("%s",std::string(editor_name+" "+"("+class_name+")").c_str());
     ImGui::Text("%s", std::string("Base-class: "+base_class_name).c_str());
-    if(import_mode == ImportModes::WRAPPED) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
+    if(import_mode == ImportModes::CUSTOM_CLASS) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
     ImGui::Separator();
 
     if(search_field_active){
@@ -951,7 +929,7 @@ void Actor::OnUtiliseAssetManager([[maybe_unused]] UFOEngineStudio::LevelEditorT
 }
 
 Actor* Actor::GetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace){
-    if(import_mode != ImportModes::WRAPPED){
+    if(import_mode != ImportModes::CUSTOM_CLASS){
         for(const auto& actor : actors){
             Actor* act = actor->GetFocusedActor(_mouse_position_over_screenspace);
             if(act) return act;
@@ -976,7 +954,7 @@ void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_
 
 void Actor::UpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    if(import_mode != ImportModes::WRAPPED){
+    if(import_mode != ImportModes::CUSTOM_CLASS){
         for(const auto& actor : actors){
             actor->UpdateEditorViewport(_editor, _level_editor_tab);
 

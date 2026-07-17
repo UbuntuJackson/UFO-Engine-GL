@@ -66,6 +66,8 @@ public:
 
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
+    void OnResourcesEdited() override;
+
 #endif //UFO_ENGINE_STUDIO
 
 };

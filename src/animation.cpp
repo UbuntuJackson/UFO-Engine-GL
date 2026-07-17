@@ -102,7 +102,7 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
-    if(import_mode == WRAPPED) return parent_class_as_json;
+    if(import_mode == CUSTOM_CLASS) return parent_class_as_json;
 
     auto j_costumes = _gc->New<ufo::gc::JsonArray>();
 
@@ -263,8 +263,6 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
                 }
                 ImGui::SameLine();
                 if(ImGui::Button(std::string("Add Texture as Costume###AddCostume"+name).c_str())){
-                    float w = (float)engine->asset_manager.textures.at(name).width;
-                    float h = (float)engine->asset_manager.textures.at(name).height;
                     AddCostume(name, Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(w,h), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
                     SetCostume(name);
                 }
@@ -372,69 +370,84 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
 
     Actor::OnViewProperties(_level_editor_tab, _index);
 
-    std::string removed_costume_key;
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
 
-    if(ImGui::Button(preview ? "||" : ">")){
-        preview = !preview;
-    }
+        std::string removed_costume_key;
 
-    std::vector<std::string> costumes_to_erase;
+        if(ImGui::Button(preview ? "||" : ">")){
+            preview = !preview;
+        }
 
-    for(const auto& [k,v] : costumes){
-        if(!engine->asset_manager.textures.count(v.key)) costumes_to_erase.push_back(k);
-    }
-
-    for(const std::string& costume_name : costumes_to_erase) costumes.erase(costume_name);
-
-    //Actor::OnViewProperties(_level_editor_tab, _index);
-    if(ImGui::BeginCombo(std::string("Costume###Costume"+std::to_string(editor_id)).c_str(), key.c_str())){
+        std::vector<std::string> costumes_to_erase;
 
         for(const auto& [k,v] : costumes){
-            bool is_selected = (key == k);
+            if(!engine->asset_manager.textures.count(v.key)) costumes_to_erase.push_back(k);
+        }
 
-            bool selectable_pressed = ImGui::Selectable(k.c_str(), &is_selected);
+        for(const std::string& costume_name : costumes_to_erase) costumes.erase(costume_name);
 
-            if(selectable_pressed){
-                SetCostume(k);
+        //Actor::OnViewProperties(_level_editor_tab, _index);
+        if(ImGui::BeginCombo(std::string("Costume###Costume"+std::to_string(editor_id)).c_str(), key.c_str())){
+
+            for(const auto& [k,v] : costumes){
+                bool is_selected = (key == k);
+
+                bool selectable_pressed = ImGui::Selectable(k.c_str(), &is_selected);
+
+                if(selectable_pressed){
+                    SetCostume(k);
+                }
+
+                if(is_selected){
+                    ImGui::SetItemDefaultFocus();
+                }
             }
 
-            if(is_selected){
-                ImGui::SetItemDefaultFocus();
+            ImGui::EndCombo();
+        }
+
+        //This could be faulty. Better to have assets marked removable and non-removable.
+        if(key != "placeholder_icon"){
+            ImGui::SameLine();
+
+            if(ImGui::Button(std::string("Remove###RemoveAnimationDialogue"+std::to_string(editor_id)).c_str())){
+                costumes.erase(key);
+                SetCostume("placeholder_icon");
             }
         }
 
-        ImGui::EndCombo();
-    }
+        if(ImGui::InputFloat("offset.x",&costumes.at(key).offset.x)) offset.x = costumes.at(key).offset.x;
+        if(ImGui::InputFloat("offset.y",&costumes.at(key).offset.y)) offset.y = costumes.at(key).offset.y;
+        if(ImGui::InputFloat("frame_size.x",&costumes.at(key).frame_size.x)) frame_size.x = costumes.at(key).frame_size.x;
+        if(ImGui::InputFloat("frame_size.y",&costumes.at(key).frame_size.y)) frame_size.y = costumes.at(key).frame_size.y;
+        if(ImGui::InputFloat("scale.x",&costumes.at(key).scale.x)) scale.x = costumes.at(key).scale.x;
+        if(ImGui::InputFloat("scale.y",&costumes.at(key).scale.y)) scale.y = costumes.at(key).scale.y;
+        if(ImGui::InputFloat("rotation (degrees)",&costumes.at(key).rotation)) rotation = costumes.at(key).rotation;
+        if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
+        if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
 
-    //This could be faulty. Better to have assets marked removable and non-removable.
-    if(key != "placeholder_icon"){
-        ImGui::SameLine();
+        ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-        if(ImGui::Button(std::string("Remove###RemoveAnimationDialogue"+std::to_string(editor_id)).c_str())){
-            costumes.erase(key);
-            SetCostume("placeholder_icon");
+        if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
+            tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+            Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
         }
+
+        ImGui::Text("Shader: %s", shader_key.c_str());
+
     }
 
-    if(ImGui::InputFloat("offset.x",&costumes.at(key).offset.x)) offset.x = costumes.at(key).offset.x;
-    if(ImGui::InputFloat("offset.y",&costumes.at(key).offset.y)) offset.y = costumes.at(key).offset.y;
-    if(ImGui::InputFloat("frame_size.x",&costumes.at(key).frame_size.x)) frame_size.x = costumes.at(key).frame_size.x;
-    if(ImGui::InputFloat("frame_size.y",&costumes.at(key).frame_size.y)) frame_size.y = costumes.at(key).frame_size.y;
-    if(ImGui::InputFloat("scale.x",&costumes.at(key).scale.x)) scale.x = costumes.at(key).scale.x;
-    if(ImGui::InputFloat("scale.y",&costumes.at(key).scale.y)) scale.y = costumes.at(key).scale.y;
-    if(ImGui::InputFloat("rotation (degrees)",&costumes.at(key).rotation)) rotation = costumes.at(key).rotation;
-    if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
-    if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
+}
 
-    ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-    if(ImGui::ColorPicker4(std::string("MyColor##4"+std::to_string(editor_id)).c_str(), (float*)&im_colour, ImGuiColorEditFlags_AlphaBar, (float*)&start_colour)){
-        tint = ufo::Colour(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
-        Console::PrintLine(im_colour.x*255.0f, im_colour.y*255.0f, im_colour.z*255.0f, im_colour.w*255.0f);
+void Animation::OnResourcesEdited(){
+    if(!engine->asset_manager.textures.count(key)){
+        costumes.erase(key);
+        key = "placeholder_icon";
+        SetCostume(key);
     }
-
-    ImGui::Text("Shader: %s", shader_key.c_str());
-
+    if(!engine->asset_manager.shaders.count(key)){
+        shader_key = "partial_sprite_shader";
+    }
 }
 
 #endif //UFO_ENGINE_STUDIO

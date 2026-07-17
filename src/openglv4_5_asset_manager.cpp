@@ -8,6 +8,7 @@
 #include "openglv4_5_asset_manager.h"
 #include "asset_json.h"
 #include "../src/engine.h"
+#include "ufo_macros.h"
 #include <filesystem>
 
 #ifdef UFO_ENGINE_STUDIO
@@ -49,10 +50,7 @@ void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::s
         Console::PrintLine("[UFO-Engine] OpenGLv4_5_AssetManager::LoadTexture: Error, could not find image at path",_path);
         return;
     }
-    textures[_name] = LoadTextureFromFile(_path, _alpha);
-}
 
-ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _path, bool _alpha){
     ufo::Texture2D texture;
     if(_alpha){
         texture.internal_format = GL_RGBA;
@@ -63,8 +61,8 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
         texture.image_format = GL_RGB;
     }
 
-    int width;
-    int height;
+    int width = 0;
+    int height = 0;
     int number_of_channels;
 
     //In LearnOpenGL they apparently don't do much more than passing in the number_of_channels variable
@@ -73,13 +71,25 @@ ufo::Texture2D OpenGLv4_5_AssetManager::LoadTextureFromFile(const std::string& _
     // replacing 0 with _alpha ? 4 : 3
     unsigned char* data = stbi_load(_path.c_str(), &width, &height, &number_of_channels, _alpha ? 4 : 3);
 
+
+    if(data == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", _path);
+    }
+
+    if(width == 0 || height == 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", _path);
+        stbi_image_free(data);
+
+        return;
+    }
+
     texture.Generate((int)width, (int)height, data);
 
     Console::PrintLine("[UFO-Engine] Loading texture of size", width, height);
 
     stbi_image_free(data);
 
-    return texture;
+    textures[_name] = texture;
 }
 
 #ifdef UFO_ENGINE_STUDIO
@@ -98,13 +108,14 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
 }
 
 void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+    try{
+        std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
+        _level_editor_tab->engine->asset_manager.LoadTexture(_path, relative_path, true);
+        _level_editor_tab->engine->asset_manager.textures.at(relative_path).permanent = true;
 
-    Console::PrintLine("OnAddTexture",relative_path);
-
-    _level_editor_tab->engine->asset_manager.LoadTexture(_path, relative_path, true);
-
-    _level_editor_tab->engine->asset_manager.textures.at(relative_path).permanent = true;
+    } catch (const std::runtime_error& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+    }
 
 }
 #endif

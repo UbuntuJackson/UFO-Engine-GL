@@ -59,6 +59,12 @@ Camera::HandleUpdate(){ //Updates as a handle.
     }
 }
 
+void Camera::OnKilled(){
+    for(int c = level->active_camera_handles.size()-1; c != -1; c--){
+        if(level->active_camera_handles[c] == this) level->active_camera_handles.erase(level->active_camera_handles.begin()+c);
+    }
+}
+
 olc::vf2d
 Camera::Transform(const olc::vf2d& _position){ //position is supposed to be in the middle, everything else is drawn in the middle
 

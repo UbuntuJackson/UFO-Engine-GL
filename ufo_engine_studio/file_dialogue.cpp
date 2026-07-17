@@ -12,17 +12,18 @@
 #include "../tilemap/tileset_manager.h"
 #include "../src/openglv4_5_asset_manager.h"
 #include "make_release_build.h"
-#include "tile_map.h"
-#include "tileset_data.h"
+#include "../tilemap/tile_map.h"
+#include "../tilemap/tileset_data.h"
+#include "../src/ufo_macros.h"
 
 namespace UFOEngineStudio{
 
 void OnOpenFolder(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
-        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
         return; //Should file not have been selected
     }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     Editor* program = (Editor*)_userdata;
 
@@ -34,11 +35,11 @@ void OnOpenFolder(void *_userdata, const char * const *_filelist, [[maybe_unused
 }
 
 void OnOpenAutoTileFile(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
-        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open auto tile file"+std::string(*_filelist));
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
         return; //Should file not have been selected
     }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     ufo::TileMap* tile_map = (ufo::TileMap*)_userdata;
 
@@ -55,17 +56,17 @@ void OnOpenAutoTileFile(void *_userdata, const char * const *_filelist, [[maybe_
         tile_map->autotiling_file = my_path;
     }
     catch(const std::runtime_error& _error){
-        Console::PrintLine("Should push an error dialog here, but for now, no layer named Tiles inside of "+my_path);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Should push an error dialog here, but for now, no layer named Tiles inside of "+my_path);
     }
 
 }
 
 void OnNewActorFile(void *_tab, const char * const *_filelist,[[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
-        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
         return; //Should file not have been selected
     }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     LevelEditorTab* tab = (LevelEditorTab*)_tab;
 
@@ -81,11 +82,11 @@ void OnNewActorFile(void *_tab, const char * const *_filelist,[[maybe_unused]] i
 }
 
 void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
     if(_filelist == nullptr){
-        Console::PrintLine("UFOEngineStudio::OnOpenFolder, Error occurred trying to open folder");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
         return; //Should file not have been selected
     }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 
@@ -94,7 +95,11 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unuse
 }
 
 void OnRecoverTileset(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 
@@ -111,7 +116,11 @@ void OnRecoverTileset(void *_userdata, const char * const *_filelist, [[maybe_un
 }
 
 void OnOpenTexture(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     while(*_filelist != nullptr){
         Console::PrintLine(*_filelist);
@@ -125,7 +134,11 @@ void OnOpenTexture(void *_userdata, const char * const *_filelist, [[maybe_unuse
 }
 
 void OnOpenShader(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
 
     while(*_filelist != nullptr){
         Console::PrintLine(*_filelist);
@@ -134,30 +147,38 @@ void OnOpenShader(void *_userdata, const char * const *_filelist, [[maybe_unused
         const std::string vertex_shader_path = std::string(*_filelist)+".vertex.cs";
         const std::string fragment_shader_path = std::string(*_filelist)+".fragment.cs";
         const std::string geometry_shader_path = std::string(*_filelist)+".geometry.cs"; //Unused for now
+        try{
+            const std::string relative_path = ufo::FileSystem::GetRelativePath(std::string(*_filelist),level_editor_tab->editor->opened_directory_path);
 
-        const std::string relative_path = ufo::FileSystem::GetRelativePath(std::string(*_filelist),level_editor_tab->editor->opened_directory_path);
+            bool shader_loaded_successfully = level_editor_tab->engine->asset_manager.LoadShader(vertex_shader_path.c_str(), fragment_shader_path.c_str(), nullptr, relative_path);
 
-        bool shader_loaded_successfully = level_editor_tab->engine->asset_manager.LoadShader(vertex_shader_path.c_str(), fragment_shader_path.c_str(), nullptr, relative_path);
+            glm::mat4 projection = glm::ortho(
+                0.0f, static_cast<float>(level_editor_tab->engine->width),
+                static_cast<float>(level_editor_tab->engine->height), 0.0f,
+                -1.0f, 0.0f
+            );
 
-        glm::mat4 projection = glm::ortho(
-            0.0f, static_cast<float>(level_editor_tab->engine->width),
-            static_cast<float>(level_editor_tab->engine->height), 0.0f,
-            -1.0f, 0.0f
-        );
+            level_editor_tab->engine->asset_manager.GetShader(relative_path).Use();
+            level_editor_tab->engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
+            level_editor_tab->engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
 
-        level_editor_tab->engine->asset_manager.GetShader(relative_path).Use();
-        level_editor_tab->engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
-        level_editor_tab->engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
+            if(!shader_loaded_successfully) Console::PrintLine("Failed to load shader",*_filelist);
 
-        if(!shader_loaded_successfully) Console::PrintLine("Failed to load shader",*_filelist);
-
-        _filelist++;
+            _filelist++;
+        } catch (const std::runtime_error& _error){
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+        }
     }
 
 }
 
 void OnNewTextFile(void *_tab, const char * const *_filelist, [[maybe_unused]] int _filter){
-    if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
+
     TextEditorTab* tab = (TextEditorTab*)_tab;
 
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
@@ -172,23 +193,16 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, [[maybe_unused]] i
 
 void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, [[maybe_unused]] int _filter){
 
-    if(*_filelist == nullptr) return; //Should file not have been selected
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
+
     UFOEngineStudio::Editor* editor = (UFOEngineStudio::Editor*)_editor;
 
     MakeReleaseBuild(editor->opened_directory_path, std::string(*_filelist));
 
-}
-
-std::string GetFilenameFromPath(const std::string& _path){
-    size_t last_slash_index = _path.find_last_of("/")+1;
-
-    std::string res = _path.substr(last_slash_index);
-
-    if (last_slash_index == _path.npos){
-        return _path;
-    }
-
-    return res;
 }
 
 bool IsExtension(const std::string& _path, const std::string& _ext){

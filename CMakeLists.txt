@@ -87,6 +87,9 @@ set(
     ufo_garbage_collector/object.cpp
     ufo_garbage_collector/gc_json.cpp
 
+    #visual_scripting_language/virtual_machine.cpp
+    #visual_scripting_language/block.cpp
+
 )
 
 if(UFO_ENGINE_STUDIO)

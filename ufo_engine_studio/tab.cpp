@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <string>
 #include "../imgui/imgui.h"
 #include "tab.h"
@@ -16,7 +17,7 @@ Tab::Tab(Editor* _editor) : editor{_editor}{
 }
 
 void Tab::Refresh(){
-    name = GetFilenameFromPath(path);
+    name = std::filesystem::path(path).filename();
 }
 
 void Tab::Update(Editor* _editor, float _delta_time){
