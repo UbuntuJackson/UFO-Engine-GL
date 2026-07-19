@@ -17,11 +17,17 @@ Tab::Tab(Editor* _editor) : editor{_editor}{
 }
 
 void Tab::Refresh(){
-    name = std::filesystem::path(path).filename();
+    name = ufo::FileSystem::GetFilenameFromPath(path);
+}
+
+void Tab::ResourcesEdited(){
+
 }
 
 void Tab::Update(Editor* _editor, float _delta_time){
     gc.Collect();
+
+    bool tab_was_not_opened = _editor->active_tab != this;
 
     if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+name_and_imgui_id).c_str(), &opened, ImGuiTabItemFlags_None)){
 
@@ -39,6 +45,8 @@ void Tab::Update(Editor* _editor, float _delta_time){
         ImGui::EndTabItem();
 
     }
+
+    if(tab_was_not_opened && _editor->active_tab == this) Refresh();
 
 }
 

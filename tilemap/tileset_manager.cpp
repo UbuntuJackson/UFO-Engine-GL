@@ -214,8 +214,6 @@ void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level
                     );
                     tileset_being_recovered = tileset.name;
                 }
-
-                Console::PrintLine("[UFO-Engine] TilesetManager::EditorTilesetWidget: Error, missing asset", tileset.name);
                 continue;
             }
 

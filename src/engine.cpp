@@ -56,7 +56,7 @@ Engine::~Engine(){
     SDL_DestroyWindow(window);
     SDL_Quit();
 
-    Console::PrintLine("[UFO-Engine] ufo::Application::~Application()");
+    Console::PrintLine("UFO-Engine exited",__UFO_PRETTY_FUNCTION__);
 }
 
 void Engine::InitIndependant(){

@@ -90,6 +90,7 @@ public:
 
     //This refreshes the tree, as well as actor trees and runs the UFO-Engine Header Tool, and generates generated.h.
     void Refresh();
+    void ResourcesEdited();
 
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);

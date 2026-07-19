@@ -47,7 +47,7 @@ OpenGLv4_5_AssetManager::~OpenGLv4_5_AssetManager(){
 
 void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::string& _name, bool _alpha){
     if(!ufo::FileSystem::FileExists(_path)){
-        Console::PrintLine("[UFO-Engine] OpenGLv4_5_AssetManager::LoadTexture: Error, could not find image at path",_path);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, could not find image at path",_path);
         return;
     }
 

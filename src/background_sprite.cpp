@@ -63,8 +63,8 @@ void BackgroundSprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
     Sprite::OnLoadDefaultProperties(_json);
 
-    _json->TryToGetValueAsFloat("parallax_x", parallax.x);
-    _json->TryToGetValueAsFloat("parallax_y", parallax.y);
+    _json->TryToGetValueAsFloat("parallax_x", parallax.x, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsFloat("parallax_y", parallax.y, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
 }
 

@@ -11,6 +11,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "texture_2d.h"
 #include "engine.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/file_dialogue.h"
@@ -42,12 +43,12 @@ void Animation::SetCostume(const std::string& _configuration_key){
         animation_speed = costume.animation_speed;
     }
     else{
-        Console::PrintLine("[UFO-Engine] Animation::SetCostume: Could not find costume with key:", _configuration_key);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Could not find costume with key:", _configuration_key);
 
     }
 
     if(!engine->asset_manager.textures.count(_configuration_key)){
-        Console::PrintLine("[UFO-Engine] Animation::SetCostume: Could not find texture with key:", _configuration_key);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Could not find texture with key:", _configuration_key);
         costumes.erase(_configuration_key);
         SetCostume("placeholder_icon");
         return;
@@ -57,7 +58,7 @@ void Animation::SetCostume(const std::string& _configuration_key){
     number_of_frames = (float)((unsigned int)ref_texture.width/(unsigned int)frame_size.x * (unsigned int)ref_texture.height/(unsigned int)frame_size.y);
 
     if(frame_size.x == 0.0f || frame_size.y == 0.0f){
-        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", frame_size.x, frame_size.y);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"frame_size has invalid proportions:", frame_size.x, frame_size.y);
         SetCostume("placeholder_icon");
     }
 }
@@ -75,7 +76,7 @@ void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2
     };
 
     if(costume.frame_size.x == 0.0f || costume.frame_size.y == 0.0f){
-        Console::PrintLine("[UFO-Engine] Animation::SetCostume: frame_size has invalid proportions:", costume.frame_size.x, costume.frame_size.y);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"frame_size has invalid proportions:", costume.frame_size.x, costume.frame_size.y);
         return;
     }
 
@@ -146,43 +147,47 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
     //if(import_mode == Actor::ImportModes::UNWRAPPED){
 
-    try{
+    if(!_json->map.count("costumes")){
+        if(import_mode == ImportModes::BUILT_IN_CLASS) Console::PrintLine(GetInfo(), __UFO_PRETTY_FUNCTION__, "Error, costumes don't exist");
+        else return;
+    }
 
-        for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
-            Animation::Costume costume;
-            costume.key = j_costume->AsMap().at("key")->AsString();
-            costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
-            costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
-            costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
-            costume.frame_size.y = j_costume->AsMap().at("frame_size_y")->AsFloat();
-            costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
-            costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
-            costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
-            costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
-            costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
+    for(const auto& j_costume : _json->map.at("costumes")->AsArray()){
+        Animation::Costume costume;
+        costume.key = j_costume->AsMap().at("key")->AsString();
+        costume.offset.x = j_costume->AsMap().at("offset_x")->AsFloat();
+        costume.offset.y = j_costume->AsMap().at("offset_y")->AsFloat();
+        costume.frame_size.x = j_costume->AsMap().at("frame_size_x")->AsFloat();
+        costume.frame_size.y = j_costume->AsMap().at("frame_size_y")->AsFloat();
+        costume.scale.x = j_costume->AsMap().at("scale_x")->AsFloat();
+        costume.scale.y = j_costume->AsMap().at("scale_y")->AsFloat();
+        costume.rotation = j_costume->AsMap().at("rotation")->AsFloat();
+        costume.frame_index = j_costume->AsMap().at("frame_index")->AsFloat();
+        costume.animation_speed = j_costume->AsMap().at("animation_speed")->AsFloat();
 
-            costumes.emplace(costume.key, costume);
-        }
-        key = _json->map.at("current_costume")->AsString();
-        preview = _json->map.at("preview")->AsFloat();
+        costumes.emplace(costume.key, costume);
+    }
 
-        _json->TryToGetValueAsString("shader_key", shader_key);
+    _json->TryToGetValueAsString("current_costume", key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
-        std::vector<gc::Json *> j_colour;
-        _json->TryToGetValueAsArray("tint", j_colour);
-        if((int)j_colour.size() == 4){
-            float red = j_colour[0]->AsFloat();
-            float green = j_colour[1]->AsFloat();
-            float blue = j_colour[2]->AsFloat();
-            float alpha = j_colour[3]->AsFloat();
-            tint = ufo::Colour(red, green, blue, alpha);
+    float f_preview = 0.0f;
+    _json->TryToGetValueAsFloat("preview", f_preview, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+
+    preview = (float)f_preview;
+
+    _json->TryToGetValueAsString("shader_key", shader_key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+
+    std::vector<gc::Json *> j_colour;
+    _json->TryToGetValueAsArray("tint", j_colour, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+    if((int)j_colour.size() == 4){
+        float red = j_colour[0]->AsFloat();
+        float green = j_colour[1]->AsFloat();
+        float blue = j_colour[2]->AsFloat();
+        float alpha = j_colour[3]->AsFloat();
+        tint = ufo::Colour(red, green, blue, alpha);
 #ifdef UFO_ENGINE_STUDIO
-            im_colour = ImVec4(red/255.0f,green/255.0f,blue/255.0f,alpha/255.0f);
+        im_colour = ImVec4(red/255.0f,green/255.0f,blue/255.0f,alpha/255.0f);
 #endif
-        }
-
-    } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Animation instance");
     }
 
     //}
@@ -290,7 +295,7 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
     if(ImGui::BeginTabItem("Shaders")){
 
         if(ImGui::Button("[+] Add Shader")){
-            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+            SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, _level_editor_tab->editor->opened_directory_path.c_str(), true);
         }
 
         if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
@@ -351,7 +356,7 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
             if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
                 engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
                 engine->asset_manager.shaders.erase(name_of_erased_shader);
-                _level_editor_tab->this_level->ResourcesEdited();
+                _level_editor_tab->editor->ResourcesEdited();
 
                 if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
 
@@ -445,7 +450,7 @@ void Animation::OnResourcesEdited(){
         key = "placeholder_icon";
         SetCostume(key);
     }
-    if(!engine->asset_manager.shaders.count(key)){
+    if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";
     }
 }

@@ -62,8 +62,19 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
     float scale = _camera->scale;
 
+    if(!engine->asset_manager.shaders.count(shader_key)){
+        Console::PrintLine(GetInfo() + " " + __UFO_PRETTY_FUNCTION__,"Error, shader_key",shader_key,"does not exist");
+        return;
+    }
+
     //Haven't made a TilesetManager yet.
     for(auto&& tileset : level->tileset_manager.tileset_data){
+
+        if(!engine->asset_manager.textures.count(tileset.name)){
+            Console::PrintLine(GetInfo() + " " + __UFO_PRETTY_FUNCTION__," Error, tileset:",tileset.name,"does not exist");
+            continue;
+        }
+
         ufo::Rectangle screen_rectangle = _camera->GetOnScreenRectangleInWorld({tileset.tile_width, tileset.tile_height});
 
         int tile_start_x = int(std::floor(screen_rectangle.position.x/tileset.tile_width));
@@ -102,7 +113,7 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                         );
                     }
                     catch(const std::exception& _error){
-                        Console::PrintLine("[UFO-Engine] TileMap::OnDraw Error, missing asset:",tileset.name);
+                        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"TileMap::OnDraw Error, something went wrong trying to draw tilemap");
                         continue;
                     }
                 }
@@ -150,7 +161,7 @@ void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         }
     }
     else{
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, tiles do not exist");
+        Console::PrintLine(GetInfo() + " " + __UFO_PRETTY_FUNCTION__, "Error, tiles do not exist");
     }
 
     number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
@@ -158,10 +169,10 @@ void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
     visible = (int)_json->map.at("visible")->AsFloat();
 
-    _json->TryToGetValueAsString("shader_key", shader_key);
+    _json->TryToGetValueAsString("shader_key", shader_key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
     std::vector<gc::Json *> j_colour;
-    _json->TryToGetValueAsArray("tint", j_colour);
+    _json->TryToGetValueAsArray("tint", j_colour, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
     if((int)j_colour.size() == 4){
         float red = j_colour[0]->AsFloat();
         float green = j_colour[1]->AsFloat();
@@ -187,7 +198,7 @@ void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edit
     if(ImGui::BeginTabItem("Shaders")){
 
         if(ImGui::Button("[+] Add Shader")){
-            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+            SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, _level_editor_tab->editor->opened_directory_path.c_str(), true);
         }
 
         if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
@@ -245,10 +256,10 @@ void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edit
 
             }
 
-            if(shader_was_erased && name_of_erased_shader != shader_key){
+            if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
                 engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
                 engine->asset_manager.shaders.erase(name_of_erased_shader);
-                _level_editor_tab->this_level->ResourcesEdited();
+                _level_editor_tab->editor->ResourcesEdited();
 
                 if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
 
@@ -527,7 +538,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
             }
 
             xx++;
-            if(xx >= (int)level->tileset_manager.tilemap_rectangular_selection.size.x){
+            if(xx >= (int)level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.size.x){
                 xx = 0;
                 yy++;
             }
@@ -716,10 +727,10 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
 
     if(_level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_PASTE){
 
-        int x0 = level->tileset_manager.tilemap_rectangular_selection.position.x;
-        int x1 = level->tileset_manager.tilemap_rectangular_selection.position.x+level->tileset_manager.tilemap_rectangular_selection.size.x;
-        int y0 = level->tileset_manager.tilemap_rectangular_selection.position.y;
-        int y1 = level->tileset_manager.tilemap_rectangular_selection.position.y+level->tileset_manager.tilemap_rectangular_selection.size.y;
+        int x0 = level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.position.x;
+        int x1 = level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.position.x+level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.size.x;
+        int y0 = level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.position.y;
+        int y1 = level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.position.y+level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.size.y;
 
         tilemap_data_before_change = tilemap_data;
 
@@ -742,6 +753,7 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             currently_hovered_tile_y+(y1-y0));
 
         level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
+        level->tileset_manager.tilemap_rectangular_selection.size = level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles.size;
 
         return true;
 
@@ -977,7 +989,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
         if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
             level->tileset_manager.tilemap_rectangular_selection.size = Vector2f(0.0f, 0.0f);
             level->tileset_manager.tilemap_rectangular_selection.position = Vector2f(currently_hovered_tile_x, currently_hovered_tile_y);
-            level->tileset_manager.tilemap_selected_tiles.clear();
+            //level->tileset_manager.tilemap_selected_tiles.clear();
             _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION_RESIZE;
         }
     }
@@ -1050,6 +1062,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
         int y1 = level->tileset_manager.tilemap_rectangular_selection.position.y+level->tileset_manager.tilemap_rectangular_selection.size.y;
 
         if(ImGui::IsKeyPressed(ImGuiKey_C) && ImGui::IsKeyDown(ImGuiKey_LeftCtrl)){
+            level->tileset_manager.tilemap_rectangular_selection_for_copied_tiles = level->tileset_manager.tilemap_rectangular_selection;
             level->tileset_manager.tilemap_selected_tiles.clear();
             for(int yy = y0; yy < y1; yy++){
                 for(int xx = x0; xx < x1; xx++){
@@ -1089,6 +1102,15 @@ void TileMap::OnAdditionalButtonsForTreeItem(){
         (visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))
     ){
         visible = !visible;
+    }
+}
+
+void TileMap::OnResourcesEdited(){
+    /*if(!engine->asset_manager.textures.count(key)){
+        key = "placeholder_icon";
+    }*/
+    if(!engine->asset_manager.shaders.count(shader_key)){
+        shader_key = "partial_sprite_shader";
     }
 }
 

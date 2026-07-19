@@ -521,7 +521,7 @@ public:
             editor_hitbox = ufo::Rectangle(Vector2f(x, y), Vector2f(width,height));
             get_current_shape = [=](){return ufo::Rectangle(editor_hitbox.position, editor_hitbox.size);};
         } catch(const std::exception& _error){
-            Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for "+class_name);
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for "+class_name);
         }
 
     }

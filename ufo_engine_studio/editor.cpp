@@ -1,4 +1,5 @@
 #include "ufo_macros.h"
+#include <stdexcept>
 #define SDL_MAIN_HANDLED
 #include <exception>
 #include <level.h>
@@ -181,12 +182,13 @@ void Editor::OnUpdate(float _delta_time){
     {
         if (ImGui::BeginMenu("File"))
         {
+            if(ImGui::MenuItem("Crash Test")) throw std::runtime_error("Crash Test");
 
             if (ImGui::BeginMenu("Open Recent"))
             {
                 for(const std::string& recent : recently_opened){
                     if(ImGui::MenuItem(recent.c_str())){
-                        OpenFolder(recent);
+                        if(ufo::FileSystem::FileExists(recent)) OpenFolder(recent);
                     }
                 }
                 ImGui::EndMenu();
@@ -196,35 +198,36 @@ void Editor::OnUpdate(float _delta_time){
             if(ImGui::MenuItem("Open Folder")){
                 SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenFolder, this, engine->window, "/home", false);
             }
-
-            if(ImGui::MenuItem("Save")){
-                if(active_tab){
-                    active_tab->OnSave(this);
-                    refresh_entire_project = true;
-                }
-            }
-
-            if (ImGui::BeginMenu("New File"))
-            {
-                if(ImGui::MenuItem("Level (.ason)")){
-                    auto tab = std::make_unique<LevelEditorTab>(engine,this);
-                    tab->Initialise();
-                    tab->this_level->editor_name = "Root";
-                    tabs.push_back(std::move(tab));
-                }
-                if(ImGui::MenuItem("Textfile (.txt)")){
-                    tabs.push_back(std::make_unique<TextEditorTab>("","",this));
-                }
-                if(ImGui::MenuItem("C++ class (.cpp)")){
-
-                    std::string template_file_header = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.h");
-                    std::string template_file_source = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.cpp");
-
-                    tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this));
-                    tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this));
+            if(opened_directory_path != ""){
+                if(ImGui::MenuItem("Save")){
+                    if(active_tab){
+                        active_tab->OnSave(this);
+                        refresh_entire_project = true;
+                    }
                 }
 
-                ImGui::EndMenu();
+                if (ImGui::BeginMenu("New File"))
+                {
+                    if(ImGui::MenuItem("Level (.ason)")){
+                        auto tab = std::make_unique<LevelEditorTab>(engine,this);
+                        tab->Initialise();
+                        tab->this_level->editor_name = "Root";
+                        tabs.push_back(std::move(tab));
+                    }
+                    if(ImGui::MenuItem("Textfile (.txt)")){
+                        tabs.push_back(std::make_unique<TextEditorTab>("","",this));
+                    }
+                    if(ImGui::MenuItem("C++ class (.cpp)")){
+
+                        std::string template_file_header = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.h");
+                        std::string template_file_source = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.cpp");
+
+                        tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this));
+                        tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this));
+                    }
+
+                    ImGui::EndMenu();
+                }
             }
 
 
@@ -401,7 +404,7 @@ void Editor::OnUpdate(float _delta_time){
 
     if(will_compile_game){
 
-        const std::string build_directory = opened_directory_path+"/build";
+        const std::string build_directory = opened_directory_path;
         std::thread t(&BuildAndRunProgram, build_directory, opened_directory_path);
         t.detach();
         will_compile_game = false;
@@ -759,9 +762,10 @@ void BuildAndRunProgram(const std::string& _build_directory, const std::string& 
 
     //Could build with max available CPU here.
 #ifdef __MINGW32__
-    int success = std::system(std::string("cd "+_build_directory+" && cmake .. -DCMAKE_CXX_FLAGS=\"-ggdb -O0\" -DUFO_ENGINE_STUDIO=ON -GNinja && ninja -j16 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && ../../build/python.exe build.py && \"Press any key to continue...\" && read p\"").c_str());
 #else
-    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS=\"-O0 -ggdb\" && make -j8 && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
+    //int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS='-O0 -ggdb' && make -j16 && echo 'Press any key to continue...' && read p\"").c_str());
+    int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"python3 build.py && echo 'Press any key to continue...' && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 #endif
 

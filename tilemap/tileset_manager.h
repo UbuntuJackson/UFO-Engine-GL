@@ -46,6 +46,7 @@ public:
 
     //Selection tool for copying, moving arond and pasting
     ufo::Rectangle tilemap_rectangular_selection = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
+    ufo::Rectangle tilemap_rectangular_selection_for_copied_tiles = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(0.0f, 0.0f));
     std::vector<int> tilemap_selected_tiles;
 
     int currently_selected_tile = 0;

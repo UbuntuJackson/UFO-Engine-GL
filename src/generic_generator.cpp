@@ -135,7 +135,7 @@ void GenericGenerator::Initialise(){
                 instance->OnLoadDefaultProperties(_json);
 
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing TileMap instance", _error.what());
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing TileMap instance", _error.what());
             }
             return instance;
         }
@@ -154,7 +154,7 @@ void GenericGenerator::Initialise(){
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Text instance", _error.what());
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing Text instance", _error.what());
             }
             return instance;
         }
@@ -174,7 +174,7 @@ void GenericGenerator::Initialise(){
                 }
                 instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator, Error finding attribute in json representing Button instance", _error.what());
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing Button instance", _error.what());
             }
             return instance;
         }
@@ -205,7 +205,7 @@ void GenericGenerator::Initialise(){
                 instance->scale = _json->map.at("scale")->AsFloat();
 
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Camera instance", _error.what());
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Camera instance", _error.what());
             }
 
             return instance;
@@ -224,7 +224,7 @@ void GenericGenerator::Initialise(){
                 instance->size.x = size_x;
                 instance->size.y = size_y;
             } catch(const std::exception& _error){
-                Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Level instance", _error.what());
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Level instance", _error.what());
             }
 
             ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
@@ -398,7 +398,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                         instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name, name, value));
     				} catch(const std::exception& _error){
     				    Console::PrintLine(
-    								"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyCheckBox of type",
+    								__UFO_PRETTY_FUNCTION__,"Failed loading custom property of type EditorPropertyCheckBox of type",
     								instance->class_name, "and name",
     								instance->editor_name);
     				}
@@ -411,7 +411,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                         instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name, name, value));
                     } catch(const std::exception& _error){
                         Console::PrintLine(
-                    				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyInt of type",
+                    				__UFO_PRETTY_FUNCTION__,"Failed at loading custom property of type EditorPropertyInt of type",
                     				instance->class_name, "and name",
                     				instance->editor_name);
                     }
@@ -424,7 +424,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                         instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name, name, value));
                     } catch(const std::exception& _error){
                         Console::PrintLine(
-                    				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
+                        				__UFO_PRETTY_FUNCTION__,"Failed at loading custom property of type EditorPropertyFloat of type",
                     				instance->class_name, "and name",
                     				instance->editor_name);
                     }
@@ -437,7 +437,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
                         instance->editor_properties.push_back(std::make_unique<ufo::EditorPropertyString>(name, name, value));
                     } catch(const std::exception& _error){
                         Console::PrintLine(
-                    				"[UFO-Engine] GenericGenerator::FromJson: Failed at loading custom property of type EditorPropertyFloat of type",
+                    				__UFO_PRETTY_FUNCTION__,"Failed at loading custom property of type EditorPropertyFloat of type",
                     				instance->class_name, "and name",
                     				instance->editor_name);
                     }

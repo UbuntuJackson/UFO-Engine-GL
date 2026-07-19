@@ -2,10 +2,13 @@ import json
 import os
 import pprint
 import sys
+import traceback
 
 sys.path.append(".")
 
 import generate_actor_spawner_functions
+
+import ufo_header_tool_log
 
 
 def make_generated_base_classes_file(_path, _classes, _engine_includes):
@@ -61,8 +64,6 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
         inheritence_map[cl["class"]["name"]] = base_class
 
     base_classes_file += "}\n"
-
-    print(base_classes_file)
 
     f = open(_path + "/generated_base_classes.h", "w")
     f.write(base_classes_file)
@@ -224,6 +225,10 @@ def main():
     f_structured_classes.write(structured_classes)
     f_structured_classes.close()
 
+    header_tool_log_file = open("../../build/header_tool_log_file.txt", "w")
+    header_tool_log_file.write(ufo_header_tool_log.ufo_header_tool_log)
+    header_tool_log_file.close()
+
 
 def search_folders_for_ufo_classes(
     _grand_class_list, _working_directory, _local_path, _grand_header_tool_log
@@ -247,7 +252,7 @@ def search_folders_for_ufo_classes(
 
             if extension in [".ufo.hpp", ".ufo.h"]:
                 file_to_parse = _working_directory + "/" + _local_path + "/" + directory
-                print("[UFO-Header Tool] Parsing file", file_to_parse)
+                ufo_header_tool_log.ufo_header_tool_print("[UFO-Header Tool] Parsing file", file_to_parse)
                 local_classes, header_tool_log_for_file = search_file(
                     file_to_parse,
                     _local_path,
@@ -329,7 +334,7 @@ def search_file(_path, _local_path, _file_name):
 
     for i in dictionary:
         i["class"]["header_file"] = (_local_path + "/" + _file_name)[1:]
-        # print("UFO-Header Tool: path", _path)
+        # ufo_header_tool_log.ufo_header_tool_print("UFO-Header Tool: path", _path)
 
     return (dictionary, header_tool_file_log)
 
@@ -403,7 +408,7 @@ def detect_scopes(_file_contents_as_clean_list, _depth):
         if i == "{":
             should_continue = False
             if squiggly_bracket_count == 0:
-                # print(_depth * "    " + "Scope start")
+                # ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "Scope start")
                 should_continue = True
 
             squiggly_bracket_count += 1
@@ -414,10 +419,10 @@ def detect_scopes(_file_contents_as_clean_list, _depth):
             squiggly_bracket_count -= 1
             if squiggly_bracket_count == 0:
                 # for j in scope_contents:
-                #    print(_depth * "    " + "'" + j + "'")
+                #    ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "'" + j + "'")
                 complete_scope.append(detect_scopes(scope_contents_temp, _depth + 1))
 
-                # print(_depth * "    " + "Scope end")
+                # ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "Scope end")
                 scope_contents_temp.clear()
                 continue
 
@@ -425,7 +430,7 @@ def detect_scopes(_file_contents_as_clean_list, _depth):
             scope_contents_temp.append(i)
         else:
             complete_scope.append(i)
-            # print(_depth * "    " + "deep content '" + i + "'")
+            # ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "deep content '" + i + "'")
 
     return complete_scope
 
@@ -439,7 +444,7 @@ class GlobalScope:
         self.scopes = []
 
     def print_tree(self):
-        print("In GlobalScope:")
+        ufo_header_tool_log.ufo_header_tool_print("In GlobalScope:")
         for i in self.scopes:
             i.print_tree(1)
 
@@ -455,7 +460,7 @@ class NamespaceObject:
         self.macros = []
 
     def print_tree(self, _depth):
-        print(_depth * "    " + "namespace", self.name)
+        ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "namespace", self.name)
         for i in self.scopes:
             i.print_tree(_depth + 1)
 
@@ -475,9 +480,9 @@ class ClassObject:
         self.macros = []
 
     def print_tree(self, _depth):
-        print(_depth * "    " + "class", self.name, self.extends)
+        ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "class", self.name, self.extends)
         for i in self.macros:
-            print(_depth * "    " + "  " + i.name, i.args)
+            ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "  " + i.name, i.args)
         for i in self.scopes:
             i.print_tree(_depth + 1)
 
@@ -527,16 +532,16 @@ class VariableObject:
 
     def print_tree(self, _depth):
         if self.data_type in ["std::string", "int"]:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 _depth * "    " + "variable",
                 self.data_type,
                 self.name,
                 "'" + self.value + "'",
             )
         else:
-            print(_depth * "    " + "variable", self.data_type, self.name, self.value)
+            ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "variable", self.data_type, self.name, self.value)
         for i in self.macros:
-            print(_depth * "    " + "  " + i.name, i.args)
+            ufo_header_tool_log.ufo_header_tool_print(_depth * "    " + "  " + i.name, i.args)
 
     def __repr__(self) -> str:
         macros_as_string = ""
@@ -649,13 +654,13 @@ def extract_macro_arguments(_list):
 def analyse_class_or_variable(_object):
     def extract_string(_list):
         if len(_list) > 3:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, string",
                 _object,
                 "contains more than 3 elements",
             )
         elif len(_list) < 2:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, string",
                 _object,
                 "less than 2 elements",
@@ -668,7 +673,7 @@ def analyse_class_or_variable(_object):
                     return _list[1]
 
             else:
-                print("[UFO Header Tool Warning] Parsing error, odd tokens:", _object)
+                ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Parsing error, odd tokens:", _object)
 
         return ""
 
@@ -677,7 +682,7 @@ def analyse_class_or_variable(_object):
             return "0"
         elif len(_list) == 1:
             if not _list[0].isnumeric():
-                print(
+                ufo_header_tool_log.ufo_header_tool_print(
                     "[UFO Header Tool Warning] Parsing error, parameter has to be numeric",
                     _list,
                 )
@@ -685,17 +690,17 @@ def analyse_class_or_variable(_object):
                 return _list[0]
         elif len(_list) == 2:
             if _list[0] != "-":
-                print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
+                ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
             else:
                 if not _list[1].isnumeric():
-                    print(
+                    ufo_header_tool_log.ufo_header_tool_print(
                         "[UFO Header Tool Warning] Parsing error, second parameter has to be numeric",
                         _list,
                     )
                 else:
                     return _list[0] + _list[1]
         elif len(_list) > 2:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, int can't be more than two elements",
                 _list,
             )
@@ -708,11 +713,11 @@ def analyse_class_or_variable(_object):
             elif _list[0] == "false":
                 return "0"
             else:
-                print(
+                ufo_header_tool_log.ufo_header_tool_print(
                     "[UFO Header Tool Warning] Parsing error, parameter has to be boolean litteral"
                 )
         else:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, parameter has to be single litteral"
             )
 
@@ -721,7 +726,7 @@ def analyse_class_or_variable(_object):
             return "0.0"
         elif len(_list) == 1:
             if not is_float_litteral(_list[0]):
-                print(
+                ufo_header_tool_log.ufo_header_tool_print(
                     "[UFO Header Tool Warning] Parsing error, parameter has to be float litteral",
                     _list,
                 )
@@ -729,17 +734,17 @@ def analyse_class_or_variable(_object):
                 return _list[0][:-1]
         elif len(_list) == 2:
             if _list[0] != "-":
-                print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
+                ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Parsing error, weird prefix", _list)
             else:
                 if not is_float_litteral(_list[1]):
-                    print(
+                    ufo_header_tool_log.ufo_header_tool_print(
                         "[UFO Header Tool Warning] Parsing error, second parameter has to be float litteral",
                         _list,
                     )
                 else:
                     return _list[0] + _list[1][:-1]
         elif len(_list) > 2:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, int can't be more than two elements",
                 _list,
             )
@@ -787,12 +792,12 @@ def analyse_class_or_variable(_object):
         parantheses_syntax_confirmed = open_parantheses and close_parantheses
 
         if not parantheses_syntax_confirmed:
-            print("[UFO Header Tool Warning] Parantheses syntax not confirmed")
+            ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Parantheses syntax not confirmed")
         if not vector_syntax_confirmed:
-            print("[UFO Header Tool Warning] Vector syntax not confirmed")
+            ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Vector syntax not confirmed")
 
         if len(vec) < 2:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Parsing error, only one default value provided",
                 _list,
             )
@@ -862,7 +867,7 @@ def analyse_class_or_variable(_object):
         elif data_type == "ufo::Colour":
             value = extract_colour(value)
         else:
-            print(
+            ufo_header_tool_log.ufo_header_tool_print(
                 "[UFO Header Tool Warning] Error, unknown datatype: '" + data_type + "'"
             )
             return VariableObject("std::string", name, "")
@@ -882,7 +887,7 @@ def analyse_compound_object(_compound_object, _line_number):
     macro_part = []
     variable_or_class_as_list = []
 
-    # print("compound_object", _compound_object)
+    # ufo_header_tool_log.ufo_header_tool_print("compound_object", _compound_object)
 
     is_namespace = analyse_namespace(_compound_object)
     if is_namespace is not None:
@@ -931,7 +936,7 @@ def analyse_compound_object(_compound_object, _line_number):
     for i in macro_part:
         class_or_variable.macros.append(extract_macro_arguments(i))
 
-    print(
+    ufo_header_tool_log.ufo_header_tool_print(
         "[UFO Header Tool]",
         "Found ufo-macro at line",
         _line_number,
@@ -1156,7 +1161,18 @@ def separate_with_separators(_file_contents: str) -> list:
     return words
 
 
-print(
+ufo_header_tool_log.ufo_header_tool_print(
     "[Running UFO-Engine Header Tool] (UFO-Engine/header_tool/ufo_engine_header_tool.py)"
 )
-main()
+try:
+    main()
+except Exception as exception:
+    ufo_header_tool_log.ufo_header_tool_print(
+        "UFO-Engine Header Tool encountered a problem:",str(exception)
+    )
+
+    ufo_header_tool_log.ufo_header_tool_print("Details:",traceback.format_exc())
+
+    header_tool_log_file = open("../../build/header_tool_log_file.txt", "w")
+    header_tool_log_file.write(ufo_header_tool_log.ufo_header_tool_log)
+    header_tool_log_file.close()

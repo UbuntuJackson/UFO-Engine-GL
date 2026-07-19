@@ -28,7 +28,6 @@ void Camera::OnSpawn(){
     class_name = "ufo::Camera";
     base_class_name = class_name;
 
-    Console::PrintLine("Camera Spawned", editor_name);
 }
 
 void

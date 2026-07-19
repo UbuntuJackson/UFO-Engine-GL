@@ -28,6 +28,8 @@ public:
     virtual ~Tab() = default;
     virtual void Refresh();
 
+    virtual void ResourcesEdited();
+
     virtual void Update(Editor* _program_state, float _delta_time);
     virtual bool DetermineIfEdited();
     virtual void OnActive(ImGuiID _local_dockspace_id, Editor* _program_state, float _delta_time);

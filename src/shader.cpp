@@ -5,7 +5,6 @@
 #include "../utils/console.h"
 #include "../utils/file_utils.h"
 #include "shader.h"
-#include "../utils/opengl_utils.h"
 #include "ufo_macros.h"
 
 namespace ufo{
@@ -27,15 +26,18 @@ bool Shader::Compile(const char* _vertex_shader_path, const char* _fragment_shad
     unsigned int fragment_shader;
     unsigned int geometry_shader;
 
-    if(!FileSystem::FileExists(_vertex_shader_path) || !FileSystem::FileExists(_fragment_shader_path)){
-        Console::PrintLine("One of the shaders don't exist");
+    if(!FileSystem::FileExists(_vertex_shader_path)){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, vertex shader", _vertex_shader_path, "does not exist");
+        return false;
+    }
+
+    if(!FileSystem::FileExists(_fragment_shader_path)){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, fragment shader", _fragment_shader_path, "does not exist");
         return false;
     }
 
     std::string vertex_shader_source_str = FileSystem::Read(_vertex_shader_path);
     std::string fragment_shader_source_str = FileSystem::Read(_fragment_shader_path);
-
-    Console::PrintLine(vertex_shader_source_str, fragment_shader_source_str);
 
     const char* vertex_shader_source = vertex_shader_source_str.c_str();
     const char* fragment_shader_source = fragment_shader_source_str.c_str();
@@ -146,7 +148,6 @@ void Shader::AttachGeometryShader(std::string _path){
 void Shader::Use(){
     if(shader_program_id == 0) Console::PrintLine("Error, shader is uninitialised");
     glUseProgram(shader_program_id);
-    GetGLError(__UFO_PRETTY_FUNCTION__, -1);
 
 }
 
@@ -204,7 +205,7 @@ void Shader::CheckCompileErrors(unsigned int _object, const std::string& _type){
 
 void Shader::Delete(){
 
-    glDeleteShader(shader_program_id);
+    glDeleteProgram(shader_program_id);
 
 }
 

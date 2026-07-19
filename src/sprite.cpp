@@ -147,10 +147,10 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         rotation = _json->map.at("rotation")->AsFloat();
         current_frame_index = (float)_json->map.at("frame_index")->AsFloat();
 
-        _json->TryToGetValueAsString("shader_key", shader_key);
+        _json->TryToGetValueAsString("shader_key", shader_key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
         std::vector<gc::Json *> j_colour;
-        _json->TryToGetValueAsArray("tint", j_colour);
+        _json->TryToGetValueAsArray("tint", j_colour, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
         if((int)j_colour.size() == 4){
             float red = j_colour[0]->AsFloat();
             float green = j_colour[1]->AsFloat();
@@ -262,7 +262,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
                 engine->asset_manager.textures.at(name_of_erased_texture).Delete();
                 engine->asset_manager.textures.erase(name_of_erased_texture);
-                _level_editor_tab->this_level->ResourcesEdited();
+                _level_editor_tab->editor->ResourcesEdited();
 
                 if(key == name_of_erased_texture) key = "placeholder_icon";
 
@@ -278,7 +278,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
     if(ImGui::BeginTabItem("Shaders")){
 
         if(ImGui::Button("[+] Add Shader")){
-            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+            SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, _level_editor_tab->editor->opened_directory_path.c_str(), true);
         }
 
         if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
@@ -338,7 +338,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
                 engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
                 engine->asset_manager.shaders.erase(name_of_erased_shader);
-                _level_editor_tab->this_level->ResourcesEdited();
+                _level_editor_tab->editor->ResourcesEdited();
 
                 if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
 
@@ -399,7 +399,7 @@ void Sprite::OnResourcesEdited(){
     if(!engine->asset_manager.textures.count(key)){
         key = "placeholder_icon";
     }
-    if(!engine->asset_manager.shaders.count(key)){
+    if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";
     }
 }

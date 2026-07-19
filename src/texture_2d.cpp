@@ -1,7 +1,6 @@
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
 #include "ufo_macros.h"
-#include "../utils/opengl_utils.h"
 #include "texture_2d.h"
 
 namespace ufo{
@@ -24,7 +23,7 @@ void Texture2D::Generate(unsigned int _width, unsigned int _height, unsigned cha
     //std::memcpy(&pixel_data, _data, sizeof(unsigned char) * _width * _height * 4);
 
     glGenTextures(1, &id);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     width = _width;
     height = _height;

@@ -25,9 +25,9 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
 
             Console::PrintLine("AssetJson::Read:",_opened_directory_path+relative_shader_path);
 
-            const std::string vertex_shader_path = _opened_directory_path+"/"+relative_shader_path+".vertex.cs";
-            const std::string fragment_shader_path = _opened_directory_path+"/"+relative_shader_path+".fragment.cs";
-            const std::string geometry_shader_path = _opened_directory_path+"/"+relative_shader_path+".geometry.cs"; //Unused for now
+            const std::string vertex_shader_path = _opened_directory_path+"/"+relative_shader_path+"/vertex.glsl";
+            const std::string fragment_shader_path = _opened_directory_path+"/"+relative_shader_path+"/fragment.glsl";
+            const std::string geometry_shader_path = _opened_directory_path+"/"+relative_shader_path+"/geometry.glsl"; //Unused for now
 
             //Here the first two characters are removed, which always have to be ..
             // would be simpler if the default path was just the project root after all
@@ -75,9 +75,9 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
 
             Console::PrintLine("AssetJson::Read: Loading Shader",_opened_directory_path+relative_shader_path);
 
-            const std::string vertex_shader_path = _opened_directory_path+"/"+relative_shader_path+".vertex.cs";
-            const std::string fragment_shader_path = _opened_directory_path+"/"+relative_shader_path+".fragment.cs";
-            const std::string geometry_shader_path = _opened_directory_path+"/"+relative_shader_path+".geometry.cs"; //Unused for now
+            const std::string vertex_shader_path = _opened_directory_path+"/"+relative_shader_path+"/vertex.glsl";
+            const std::string fragment_shader_path = _opened_directory_path+"/"+relative_shader_path+"/fragment.glsl";
+            const std::string geometry_shader_path = _opened_directory_path+"/"+relative_shader_path+"/geometry.glsl"; //Unused for now
 
             //Here the first two characters are removed, which always have to be ..
             // would be simpler if the default path was just the project root after all

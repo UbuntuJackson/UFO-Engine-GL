@@ -17,6 +17,7 @@
 #include "dock_utils.h"
 #include "file_dialogue.h"
 #include "editor.h"
+#include "file_utils.h"
 #include "imgui_utils.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "tile_map.h"
@@ -83,22 +84,21 @@ void LevelEditorTab::Initialise(){
 
 void LevelEditorTab::Refresh(){
     Tab::Refresh();
-    Console::PrintLine("[UFO-Engine Studio] LevelEditorTab::Refresh: Updating actor structure");
+
+    if(ufo::FileSystem::FileExists("header_tool_log_file.txt")){
+        Console::PrintLine(ufo::FileSystem::Read("header_tool_log_file.txt"));
+    }
+
+    this_level->ResourcesEdited();
     this_level->UpdateActorStructure(editor);
     this_level->RemoveAndAddEditorPropertiesDuringRuntime(editor);
 }
 
+void LevelEditorTab::ResourcesEdited(){
+    this_level->ResourcesEdited();
+}
+
 void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
-
-    ImGui::Begin("Undo & Redo");
-
-    ImGui::TextWrapped("Current level change: %s", std::to_string(this_level->current_level_change).c_str());
-
-    for(const auto& change : this_level->level_changes){
-        ImGui::TextWrapped("%s", change->GetInfo().c_str());
-    }
-
-    ImGui::End();
 
     //Shortcuts for testing purposes
     if(ImGui::IsKeyPressed(ImGuiKey_F5)){
@@ -228,7 +228,33 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
         }
 
         if(inspected_actor != ufo::Maths::NULL_ID){
-            if(this_level->actors_with_stable_id.at(inspected_actor)->import_mode == ufo::Actor::ImportModes::BUILT_IN_CLASS) this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
+            if(this_level->actors_with_stable_id.at(inspected_actor)->import_mode == ufo::Actor::ImportModes::BUILT_IN_CLASS){
+                this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
+            }
+        }
+
+        if(ImGui::BeginTabItem("Output###LevelEditorTabOutput")){
+            ImGui::BeginChild("Output###LevelEditorTabOutputChildWindow");
+
+            ImGui::TextWrapped("%s", Console::string_stream.str().c_str());
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        if(ImGui::BeginTabItem("Change log###LevelEditorTabUndoAndRedo")){
+            ImGui::BeginChild("Change log###LevelEditorTabLevelEditorTabUndoAndRedoChildWindow");
+
+            ImGui::TextWrapped("Current level change: %s", std::to_string(this_level->current_level_change).c_str());
+
+            for(const auto& change : this_level->level_changes){
+                ImGui::TextWrapped("%s", change->GetInfo().c_str());
+            }
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
         }
 
         ImGui::EndTabBar();

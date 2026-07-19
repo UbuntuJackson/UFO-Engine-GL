@@ -41,7 +41,7 @@ void RectangularArea::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         editor_hitbox.size.y = rectangle_h;
         editor_hitbox = rectangle;
     } catch(const std::exception& _error){
-        Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::RectangularArea instance");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for "+class_name);
     }
 }
 

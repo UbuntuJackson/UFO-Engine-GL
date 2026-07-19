@@ -282,6 +282,8 @@ public:
 
     void OnAdditionalButtonsForTreeItem() override;
 
+    void OnResourcesEdited() override;
+
 #endif //UFO_ENGINE_STUDIO
 
 };

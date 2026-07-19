@@ -7,7 +7,7 @@
 namespace ufo::FileSystem{
 
 std::string GetFilenameFromPath(const std::string& _path){
-    return std::filesystem::path(_path).filename();
+    return std::filesystem::path(_path).filename().generic_string();
 }
 
 bool FileExists(const std::string& _path){

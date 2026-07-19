@@ -1,7 +1,7 @@
 import json
 import os.path
 import sys
-
+import ufo_header_tool_log
 
 def get_inheritence_map(_structured_classes_dict):
     inheritence_map = {}
@@ -110,10 +110,10 @@ def add_imported_actor(
             macros = content["macros"]
             klass = content["class"]
 
-            print("Adding imported actor", _actor_json["class_name"], macros)
+            ufo_header_tool_log.ufo_header_tool_print("Adding imported actor", _actor_json["class_name"], macros)
 
     if klass == None:
-        print(
+        ufo_header_tool_log.ufo_header_tool_print(
             "add_imported_actor Error, klass is None", _parent_actor_name, _actor_json
         )
         sys.exit()
@@ -197,7 +197,7 @@ def add_imported_actor(
                     main = i
 
             if not main:
-                print(
+                ufo_header_tool_log.ufo_header_tool_print(
                     "generate_actor_spawner_functions.py",
                     "Error, could not find Main actor",
                 )
@@ -292,8 +292,6 @@ def get_sprite_loading_code(_instance, _actor_json):
 # Generate code to set default properties for build-in class
 def get_animation_loading_code(_instance, _actor_json):
     default_properties_string = ""
-
-    print("get_animation_loading_code", _actor_json["name"])
 
     for costume in _actor_json["costumes"]:
         key = costume["key"]
@@ -541,7 +539,7 @@ def main(_working_directory, _structured_classes_dict):
                         main = i
 
                 if not main:
-                    print(
+                    ufo_header_tool_log.ufo_header_tool_print(
                         "[UFO-Engine Header Tool] generate_actor_spawner_functions.py",
                         "Error, could not find Main actor",
                     )

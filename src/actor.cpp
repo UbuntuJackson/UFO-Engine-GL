@@ -46,7 +46,7 @@ Actor::Actor(Vector2f _local_position) : local_position{_local_position}, former
 }
 
 std::string Actor::GetInfo(){
-    return "[Instance of type "+class_name+"] "+"name: "+editor_name+", address:"+ufo::MemoryAddressToString(this);
+    return "[Instance of type "+class_name+"] "+"name: "+editor_name+", address: "+ufo::MemoryAddressToString(this) + " editor_id: " + std::to_string(editor_id);
 }
 
 Vector2f Actor::GetGlobalPosition(){

@@ -17,7 +17,7 @@ def search_file(_header_file):
 
     for variable in variables:
         print("-------------------------")
-        
+
         actor_json["exported_variables"].append({
             "data_type" : variable.data_type,
             "name" : variable.name,

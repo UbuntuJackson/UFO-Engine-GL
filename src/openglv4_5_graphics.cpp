@@ -5,7 +5,6 @@
 #include "../utils/console.h"
 #include "ufo_macros.h"
 #include "openglv4_5_asset_manager.h"
-#include "../utils/opengl_utils.h"
 #include <glm/gtx/string_cast.hpp>
 #include "input.h"
 #include <SDL3/SDL.h>
@@ -142,31 +141,31 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
     };
 
     glGenVertexArrays(1, &quadVAO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glGenBuffers(1, &VBO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindVertexArray(quadVAO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glEnableVertexAttribArray(0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindBuffer(GL_ARRAY_BUFFER,0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindVertexArray(0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 }
 
 void OpenGLv4_5_Graphics::DrawSprite(
@@ -192,16 +191,16 @@ void OpenGLv4_5_Graphics::DrawSprite(
     sprite_shader.SetVector3f("spriteColor", _colour);
 
     glActiveTexture(GL_TEXTURE0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 
     engine->asset_manager.textures.at(_texture_key).Bind();
 
     glBindVertexArray(quadVAO);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glBindVertexArray(0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 }
 
 void OpenGLv4_5_Graphics::glm_DrawCircle(glm::vec2 _position, float _radius, glm::vec4 _colour){
@@ -243,28 +242,28 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
     };
 
     glGenBuffers(1, &VBO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindVertexArray(quadVAO);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glEnableVertexAttribArray(0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glVertexAttribPointer(0,4,GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindBuffer(GL_ARRAY_BUFFER,0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     glBindVertexArray(0);
-    GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+
 
     rectangle_shader.Use();
 
@@ -285,16 +284,16 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
     rectangle_shader.SetVector4f("spriteColor", _colour);
 
     glActiveTexture(GL_TEXTURE0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 
     //_texture.Bind();
 
     glBindVertexArray(quadVAO);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glBindVertexArray(0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 
     glDeleteBuffers(1, &VBO);
 
@@ -371,16 +370,16 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     local_partial_sprite_shader.SetVector2f("sample_size", sample_size_normalised);
 
     glActiveTexture(GL_TEXTURE0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 
     _texture.Bind();
 
     glBindVertexArray(quadVAO);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
     glBindVertexArray(0);
-    //GetGLError(__UFO_PRETTY_FUNCTION__, __LINE__);
+    //
 
     glDeleteBuffers(1, &VBO);
 
