@@ -34,8 +34,8 @@ void
 Camera::HandleUpdate(){ //Updates as a handle.
 
     if(clamp){
-        int scaled_width_half = (1.0f/scale)*viewport.size.x/2.0f; //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
-        int scaled_height_half = (1.0f/scale)*viewport.size.y/2.0f;
+        int scaled_width_half = (1.0f/scale)*view.GetWidthHalf(); //bigger scale -> distance on screen smaller -> less world-space needed to clamp.
+        int scaled_height_half = (1.0f/scale)*view.GetHeightHalf();
 
         if(GetGlobalPosition().x < world.x0 + scaled_width_half){
             local_position.x -= (GetGlobalPosition().x - (world.x0 + scaled_width_half));
