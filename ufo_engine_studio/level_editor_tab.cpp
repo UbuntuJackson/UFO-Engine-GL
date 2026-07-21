@@ -21,6 +21,7 @@
 #include "imgui_utils.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "tile_map.h"
+#include "ufo_macros.h"
 #include "utility_objects/spawn_cursor.h"
 #include "utility_objects/new_actor_placeholder.h"
 #include "im_vec.h"
@@ -385,6 +386,10 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
 }
 
 void LevelEditorTab::PlaceActors(){
+    if(spawn_cursor->actors.size() == 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "PlaceActors tool active but spawn_cursor hosts incorrect number of actors:", spawn_cursor->actors.size());
+        return;
+    }
 
     if(actor_dedicated_to_viewport){
         ufo::Actor* place_inside_actor = nullptr;
@@ -411,7 +416,12 @@ void LevelEditorTab::PlaceActors(){
 
                         ufo::Actor* inst_ptr = inst.get();
 
-                        inst->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
+                        if(inst_ptr->base_class_name == "ufo::TileMap" || inst_ptr->base_class_name == "ufo::CollisionGrid" || inst_ptr->base_class_name == "ufo::Level"){
+                            inst_ptr->local_position = Vector2f(0.0f, 0.0f);
+                        }
+                        else{
+                            inst_ptr->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
+                        }
 
                         //Undo&redo
 

@@ -266,8 +266,6 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
     void ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
-    void GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
-    void SetActorsUnselectedInViewport();
 
     virtual void OnAdditionalButtonsForTreeItem();
 

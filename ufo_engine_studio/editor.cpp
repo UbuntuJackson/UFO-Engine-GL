@@ -145,6 +145,53 @@ void Editor::OnUpdate(float _delta_time){
         finished_loading_folder = true;
     }
 
+    if(!finished_importing_assets){
+        for(const std::string& texture : queued_textures){
+            engine->asset_manager.OnAddTexture(texture, this);
+        }
+
+        for(const std::string& shader_folder_full_path : queued_shaders){
+
+            try{
+                const std::string relative_path = ufo::FileSystem::GetRelativePath(shader_folder_full_path,opened_directory_path);
+
+                const std::string vertex_shader_path = shader_folder_full_path+"/vertex.glsl";
+                const std::string fragment_shader_path = shader_folder_full_path+"/fragment.glsl";
+                const std::string geometry_shader_path = shader_folder_full_path+"/geometry.glsl"; //Unused for now
+
+                bool shader_loaded_successfully = engine->asset_manager.LoadShader(vertex_shader_path.c_str(), fragment_shader_path.c_str(), nullptr, relative_path);
+
+                if(!shader_loaded_successfully){
+                    Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to load shader",shader_folder_full_path);
+                    continue;
+                }
+
+                glm::mat4 projection = glm::ortho(
+                    0.0f, static_cast<float>(engine->width),
+                    static_cast<float>(engine->height), 0.0f,
+                    -1.0f, 0.0f
+                );
+
+                engine->asset_manager.GetShader(relative_path).Use();
+                engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
+                engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
+
+            } catch (const std::runtime_error& _error){
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+            }
+        }
+
+        for(const std::string& tileset : queued_tilesets){
+            auto level_editor = dynamic_cast<LevelEditorTab*>(active_tab);
+            level_editor->this_level->tileset_manager.AddTileset(tileset, level_editor);
+        }
+
+        finished_importing_assets = true;
+        queued_shaders.clear();
+        queued_textures.clear();
+        queued_tilesets.clear();
+    }
+
     ImGuiWindowFlags im_gui_window_flags = ImGuiWindowFlags_NoDocking |
             ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoCollapse |

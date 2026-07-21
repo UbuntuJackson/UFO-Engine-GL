@@ -3,6 +3,7 @@
 #include <unordered_map>
 #include <string>
 #include <SDL3_mixer/SDL_mixer.h>
+#include "bit_map_font.h"
 #include "texture_2d.h"
 #include "shader.h"
 #include "../utils/file_utils.h"
@@ -29,7 +30,7 @@ public:
 #ifdef UFO_ENGINE_STUDIO
     void Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine);
     //This is a callback function that is called upon reading a .png from an SDL file dialogue.
-    void OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnAddTexture(const std::string& _path, UFOEngineStudio::Editor* _editor);
 
 #endif
 
@@ -57,11 +58,15 @@ public:
      std::unordered_map<std::string, MIX_Audio*> audio;
      //void LoadAudio(const std::string& _path, const std::string& _name){}
 
+     std::unordered_map<std::string, BitMapFont> bit_map_fonts;
+     void LoadBitMapFont(const std::string& _name, int _character_width, int _character_height);
+
     //Editor only. Todo: When the editor refreshes or closes I want the assets to be saved in the project folder. However,
     // right now it only does so upon closing the editor.
     void SaveAssets();
 
     //This is called somewhere in the Main class together with the other cleanup function calls.
     void Clear();
+
 };
 }

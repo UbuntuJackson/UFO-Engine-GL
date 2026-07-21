@@ -194,6 +194,10 @@ bool TileMap::IsTileWithinBounds(int _x, int _y){
 
 #ifdef UFO_ENGINE_STUDIO
 
+Actor* TileMap::OnGetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace) {
+    return nullptr;
+}
+
 void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::BeginTabItem("Shaders")){
 
@@ -548,14 +552,6 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 }
 
 void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
-    if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->currently_edited_actor_in_viewport = this->editor_id;
-    }
-    ImGui::Separator();
-
-    Actor::OnViewProperties(_level_editor_tab, _index);
-
-    ImGui::Separator();
 
     if(ImGui::CollapsingHeader("Custom Colouring###TileMap::OnViewProperties_show_colour_picker")){
         ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -841,6 +837,8 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             std::vector<Vector2i> tiles_to_fill;
 
             int tile_to_replace = tilemap_data[currently_hovered_tile_y*number_of_columns+currently_hovered_tile_x];
+
+            if(tile_to_replace == level->tileset_manager.currently_selected_tiles.first_selected_tile) return false;
 
             tiles_to_fill.push_back(Vector2i(currently_hovered_tile_x, currently_hovered_tile_y));
 

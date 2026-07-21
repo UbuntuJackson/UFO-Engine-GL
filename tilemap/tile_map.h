@@ -87,6 +87,8 @@ public:
     ufo::Rectangle GetRectangle(int _x, int _y, Vector2f _frame_size);
 
 #ifdef UFO_ENGINE_STUDIO
+    Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) override;
+
     ImVec4 im_colour = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;

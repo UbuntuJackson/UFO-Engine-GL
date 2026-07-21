@@ -60,6 +60,7 @@ set(
     src/rectangular_area.cpp
     src/platformer_rectangle_collision.cpp
     src/text.cpp
+    src/bit_map_font.cpp
     src/button.cpp
     src/font.cpp
     src/collision_grid.cpp

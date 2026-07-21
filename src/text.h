@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "bit_map_font.h"
 #include "widget.h"
 #include <unordered_map>
 #include "texture_2d.h"
@@ -18,6 +19,12 @@ private:
     Texture2D texture;
 
 public:
+    bool use_bit_map_font = true;
+    std::string bit_map_font_key = "";
+    bool add_bit_map_font = false;
+    int character_width = 1;
+    int character_height = 1;
+
     bool is_wrapping = false;
 
     std::unordered_map<std::string, std::string> language_to_text;
@@ -45,6 +52,8 @@ public:
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+
+    void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
 

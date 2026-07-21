@@ -750,7 +750,8 @@ void Actor::GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle
 
     if(
         ufo::Maths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
-        && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
+        && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)" && editor_name != "Awaiting ..." &&
+        base_class_name != "ufo::TileMap" && base_class_name != "ufo::CollisionGrid" && base_class_name != "ufo::Level"
     ){
         _selected_actors.push_back(this->editor_id);
         return;
@@ -760,30 +761,6 @@ void Actor::GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle
 
     for(const auto& actor : actors){
         actor->GetSelectedActors(_selected_actors, _selection_rectangle_world_space);
-    }
-}
-
-void Actor::GetPreviouslySelectedActors(std::vector<Actor*>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
-
-    if(
-        editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)"
-    ){
-        if(is_selected_in_viewport){
-            _selected_actors.push_back(this);
-            return;
-        }
-    }
-
-    for(const auto& actor : actors){
-        actor->GetPreviouslySelectedActors(_selected_actors, _selection_rectangle_world_space);
-    }
-}
-
-void Actor::SetActorsUnselectedInViewport(){
-    is_selected_in_viewport = false;
-
-    for(const auto& actor : actors){
-        actor->SetActorsUnselectedInViewport();
     }
 }
 

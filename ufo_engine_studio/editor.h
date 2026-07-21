@@ -48,6 +48,10 @@ public:
 
     std::set<std::string> recently_opened;
 
+    bool finished_importing_assets = true;
+    std::vector<std::string> queued_textures;
+    std::vector<std::string> queued_shaders;
+    std::vector<std::string> queued_tilesets;
 
     bool finished_loading_folder = true;
 

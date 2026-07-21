@@ -15,6 +15,7 @@
 #include "../tilemap/tile_map.h"
 #include "../tilemap/tileset_data.h"
 #include "../src/ufo_macros.h"
+#include "../utils/file_utils.h"
 
 namespace UFOEngineStudio{
 
@@ -90,7 +91,8 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unuse
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 
-    level_editor_tab->this_level->tileset_manager.AddTileset(*_filelist, level_editor_tab);
+    level_editor_tab->editor->queued_tilesets.push_back(ufo::FileSystem::GetGenericString(*_filelist));
+    level_editor_tab->editor->finished_importing_assets = false;
 
 }
 
@@ -122,14 +124,17 @@ void OnOpenTexture(void *_userdata, const char * const *_filelist, [[maybe_unuse
     }
     else if(*_filelist == nullptr) return; //Should file not have been selected
 
+    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
+
     while(*_filelist != nullptr){
         Console::PrintLine(*_filelist);
-        UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
 
-        level_editor_tab->engine->asset_manager.OnAddTexture(*_filelist, level_editor_tab);
+        level_editor_tab->editor->queued_textures.push_back(ufo::FileSystem::GetGenericString(*_filelist));
 
         _filelist++;
     }
+
+    level_editor_tab->editor->finished_importing_assets = false;
 
 }
 
@@ -140,38 +145,17 @@ void OnOpenShader(void *_userdata, const char * const *_filelist, [[maybe_unused
     }
     else if(*_filelist == nullptr) return; //Should file not have been selected
 
+    UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
+
     while(*_filelist != nullptr){
         Console::PrintLine(*_filelist);
-        UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*) _userdata;
 
-        const std::string vertex_shader_path = std::string(*_filelist)+"/vertex.glsl";
-        const std::string fragment_shader_path = std::string(*_filelist)+"/fragment.glsl";
-        const std::string geometry_shader_path = std::string(*_filelist)+"/geometry.glsl"; //Unused for now
-        try{
-            const std::string relative_path = ufo::FileSystem::GetRelativePath(std::string(*_filelist),level_editor_tab->editor->opened_directory_path);
+        level_editor_tab->editor->queued_shaders.push_back(ufo::FileSystem::GetGenericString(*_filelist));
 
-            bool shader_loaded_successfully = level_editor_tab->engine->asset_manager.LoadShader(vertex_shader_path.c_str(), fragment_shader_path.c_str(), nullptr, relative_path);
-
-            if(!shader_loaded_successfully){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to load shader",*_filelist);
-                return;
-            }
-
-            glm::mat4 projection = glm::ortho(
-                0.0f, static_cast<float>(level_editor_tab->engine->width),
-                static_cast<float>(level_editor_tab->engine->height), 0.0f,
-                -1.0f, 0.0f
-            );
-
-            level_editor_tab->engine->asset_manager.GetShader(relative_path).Use();
-            level_editor_tab->engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
-            level_editor_tab->engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
-
-            _filelist++;
-        } catch (const std::runtime_error& _error){
-            Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
-        }
+        _filelist++;
     }
+
+    level_editor_tab->editor->finished_importing_assets = false;
 
 }
 

@@ -16,6 +16,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../utils/file_utils.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/file_dialogue.h"
@@ -95,7 +96,7 @@ void TilesetManager::UpdateSelectedTilesetTile(const TilesetData& _tileset){
 void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
     for(const auto& tileset : tileset_data){
         std::string path = _editor->opened_directory_path + "/" + tileset.name.substr(2,tileset.name.size());
-        Console::PrintLine("Full Tileset Path",path);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Initialising texture:",path);
         if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
     }
 }

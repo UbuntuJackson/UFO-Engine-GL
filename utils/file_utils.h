@@ -11,6 +11,8 @@ namespace ufo::FileSystem{
 
 std::string GetFilenameFromPath(const std::string& _path);
 
+std::string GetGenericString(const std::string& _path);
+
 bool FileExists(const std::string& _path);
 
 bool HasExtension(const std::string& _path, const std::string& _extension);

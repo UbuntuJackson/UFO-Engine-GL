@@ -33,6 +33,8 @@ public:
 
     void OnUpdate(float _delta_time);
 #ifdef UFO_ENGINE_STUDIO
+    Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) override;
+
     void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 #endif
 

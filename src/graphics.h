@@ -5,12 +5,13 @@
 #include <glm/glm.hpp>
 #include "../external/olcPixelGameEngine.h"
 #include "../ufo_maths/ufo_maths.h"
-#include "engine.h"
 #include "texture_2d.h"
 
 namespace ufo{
 
 typedef olc::Pixel Colour;
+
+class Engine;
 
 class Graphics{
 public:

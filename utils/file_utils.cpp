@@ -10,6 +10,10 @@ std::string GetFilenameFromPath(const std::string& _path){
     return std::filesystem::path(_path).filename().generic_string();
 }
 
+std::string GetGenericString(const std::string& _path){
+    return std::filesystem::path(_path).generic_string();
+}
+
 bool FileExists(const std::string& _path){
     return std::filesystem::exists(_path);
 }

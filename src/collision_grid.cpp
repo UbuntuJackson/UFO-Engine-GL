@@ -110,10 +110,12 @@ void CollisionGrid::OnUpdate([[maybe_unused]] float _delta_time){
 }
 
 #ifdef UFO_ENGINE_STUDIO
+
+Actor* CollisionGrid::OnGetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace) {
+    return nullptr;
+}
+
 void CollisionGrid::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, [[maybe_unused]] int _index){
-    if(ImGui::Button("Edit in viewport")){
-        _level_editor_tab->currently_edited_actor_in_viewport = this->editor_id;
-    }
 
 }
 #endif

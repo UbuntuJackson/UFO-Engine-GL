@@ -10,6 +10,7 @@
 #include "../src/engine.h"
 #include "ufo_macros.h"
 #include <filesystem>
+#include "bit_map_font.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -107,11 +108,11 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
 
 }
 
-void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::Editor* _editor){
     try{
-        std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
-        _level_editor_tab->engine->asset_manager.LoadTexture(_path, relative_path, true);
-        _level_editor_tab->engine->asset_manager.textures.at(relative_path).permanent = true;
+        std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _editor->opened_directory_path);
+        _editor->engine->asset_manager.LoadTexture(_path, relative_path, true);
+        _editor->engine->asset_manager.textures.at(relative_path).permanent = true;
 
     } catch (const std::runtime_error& _error){
         Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
@@ -137,6 +138,10 @@ bool OpenGLv4_5_AssetManager::LoadShader(const char* _vertex_shader_path, const 
 
 ufo::Shader& OpenGLv4_5_AssetManager::GetShader(const std::string& _name){
     return shaders.at(_name);
+}
+
+void OpenGLv4_5_AssetManager::LoadBitMapFont(const std::string& _name, int _character_width, int _character_height){
+     bit_map_fonts.emplace(_name, ufo::BitMapFont(this, _name, _character_width, _character_height));
 }
 
 void OpenGLv4_5_AssetManager::SaveAssets(){
