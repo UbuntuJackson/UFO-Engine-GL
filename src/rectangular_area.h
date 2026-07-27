@@ -4,7 +4,6 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "../shapes/rectangle.h"
 #include "animation.h"
-#include "../ufo_garbage_collector/gc_json.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "im_vec.h"

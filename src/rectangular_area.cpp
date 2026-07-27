@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "engine.h"
 #include "level.h"
+#include "../ufo_garbage_collector/gc_json.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "im_vec.h"

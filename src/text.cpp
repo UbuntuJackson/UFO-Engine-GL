@@ -11,6 +11,7 @@
 #include "actor.h"
 #include "text.h"
 #include "engine.h"
+#include "camera.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
