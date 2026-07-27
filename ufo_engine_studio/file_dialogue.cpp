@@ -19,6 +19,18 @@
 
 namespace UFOEngineStudio{
 
+void OnSelectStartLevel(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
+    if(_filelist == nullptr){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to select start level");
+        return; //Should file not have been selected
+    }
+    else if(*_filelist == nullptr) return; //Should file not have been selected
+
+    Editor* editor = (Editor*)_userdata;
+    editor->project_settings.start_level = ufo::FileSystem::GetRelativePath(std::string(*_filelist), editor->opened_directory_path);
+
+}
+
 void OnOpenFolder(void *_userdata, const char * const *_filelist, [[maybe_unused]] int _filter){
     if(_filelist == nullptr){
         Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error occurred trying to open file");

@@ -2,6 +2,8 @@
 #include <string>
 
 namespace UFOEngineStudio{
+
+void OnSelectStartLevel(void *_userdata, const char * const *_filelist, int _filter);
 void OnWriteProjectFile(void *_userdata, const char * const *_filelist, int _filter);
 void OnOpenProjectFile(void *_userdata, const char * const *_filelist, int _filter);
 void OnOpenFolder(void *_userdata, const char * const *_filelist, int _filter);

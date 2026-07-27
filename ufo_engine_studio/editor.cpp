@@ -80,6 +80,7 @@ void Editor::OpenFolder(std::string _path){
             if(!j_settings->map.count("game_height")) j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(default_settings.game_height);
             if(!j_settings->map.count("game_window_title")) j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(default_settings.game_window_title);
             if(!j_settings->map.count("compile_command")) j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(default_settings.compile_command);
+            if(!j_settings->map.count("start_level")) j_settings->map["start_level"] = gc.New<ufo::gc::JsonString>(default_settings.start_level);
 
              project_settings.v_sync = (bool)j_settings->map["vsync"]->AsFloat();
              project_settings.multi_player = (bool)j_settings->map["multi_player"]->AsFloat();
@@ -87,6 +88,7 @@ void Editor::OpenFolder(std::string _path){
              project_settings.game_height = (int)j_settings->map["game_height"]->AsFloat();
              project_settings.game_window_title = j_settings->map["game_window_title"]->AsString();
              project_settings.compile_command = j_settings->map["compile_command"]->AsString();
+             project_settings.start_level = j_settings->map["start_level"]->AsString();
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -104,6 +106,7 @@ void Editor::OpenFolder(std::string _path){
             j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(default_settings.multi_player));
             j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(default_settings.game_window_title);
             j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(default_settings.compile_command);
+            j_settings->map["start_level"] = gc.New<ufo::gc::JsonString>(default_settings.start_level);
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -322,6 +325,10 @@ void Editor::OnUpdate(float _delta_time){
 
                 ImGui::EndMenu();
             }
+
+            if(active_tab){
+                active_tab->TabSpecificMainMenuBarItems();
+            }
         }
 
         if(ImGui::BeginMenu("Tools")){
@@ -330,18 +337,6 @@ void Editor::OnUpdate(float _delta_time){
             }
 
             ImGui::EndMenu();
-        }
-        if(ImGui::MenuItem("Undo")){
-            if(active_tab){
-                LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
-                tab->this_level->Undo();
-            }
-        }
-        if(ImGui::MenuItem("Redo")){
-            if(active_tab){
-                LevelEditorTab* tab = dynamic_cast<LevelEditorTab*>(active_tab);
-                tab->this_level->Redo();
-            }
         }
 
         ImGui::EndMainMenuBar();
@@ -381,6 +376,11 @@ void Editor::OnUpdate(float _delta_time){
 
         ImGui::InputText("Game Window Title:", &project_settings.game_window_title);
 
+        if(ImGui::Button("Select Start Level")){
+            SDL_ShowOpenFileDialog(&OnSelectStartLevel, this, engine->window, nullptr, 0, opened_directory_path.c_str(), false);
+        }
+        ImGui::SameLine(); ImGui::Text("%s", project_settings.start_level.c_str());
+
         ImGui::InputTextMultiline("Compile command:", &project_settings.compile_command);
 
         if(ImGui::Button("Apply & Save")){
@@ -393,6 +393,7 @@ void Editor::OnUpdate(float _delta_time){
                     if(!j_settings->map.count("game_height")) j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(900.0f);
                     if(!j_settings->map.count("game_window_title")) j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>("");
                     if(!j_settings->map.count("compile_command")) j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>("");
+                    if(!j_settings->map.count("start_level")) j_settings->map["start_level"] = gc.New<ufo::gc::JsonString>("");
 
                     j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(int(project_settings.v_sync));
                     j_settings->map["game_width"] = gc.New<ufo::gc::JsonNumber>(int(project_settings.game_width));
@@ -400,6 +401,7 @@ void Editor::OnUpdate(float _delta_time){
                     j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(project_settings.multi_player));
                     j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(project_settings.game_window_title);
                     j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(project_settings.compile_command);
+                    j_settings->map["start_level"] = gc.New<ufo::gc::JsonString>(project_settings.start_level);
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }
@@ -414,6 +416,7 @@ void Editor::OnUpdate(float _delta_time){
                     j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(project_settings.multi_player));
                     j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(project_settings.game_window_title);
                     j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(project_settings.compile_command);
+                    j_settings->map["start_level"] = gc.New<ufo::gc::JsonString>(project_settings.start_level);
                 }catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
                 }

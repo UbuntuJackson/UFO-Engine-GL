@@ -99,6 +99,22 @@ void LevelEditorTab::ResourcesEdited(){
     this_level->ResourcesEdited();
 }
 
+void LevelEditorTab::TabSpecificMainMenuBarItems(){
+    if(ImGui::MenuItem("(<) Undo")){
+
+        this_level->Undo();
+
+    }
+    if(ImGui::MenuItem("(>) Redo")){
+
+        this_level->Redo();
+
+    }
+    if(ImGui::MenuItem("I> Run Current Level")){
+        std::system(("cd "+editor->opened_directory_path+"/build"+" && gnome-terminal -- bash -c './OUT "+path+"'").c_str());
+    }
+}
+
 void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time){
 
     //Shortcuts for testing purposes
@@ -258,7 +274,7 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::EndTabItem();
         }
 
-        if(ImGui::BeginTabItem("UFO Visual###UFOVisual")){
+        /*if(ImGui::BeginTabItem("UFO Visual###UFOVisual")){
             ImGui::BeginChild("Change log###LevelEditorTabLevelEditorTabUndoAndRedoChildWindow");
 
             vm.main_func.Draw();
@@ -272,7 +288,7 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::EndChild();
 
             ImGui::EndTabItem();
-        }
+        }*/
 
         ImGui::EndTabBar();
 

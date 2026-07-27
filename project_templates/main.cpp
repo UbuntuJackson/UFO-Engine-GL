@@ -12,18 +12,23 @@
 
 int main(int _arg_count, char** _arg_variables){
 
+    Console::PrintLine(__UFO_PRETTY_FUNCTION__,"_arg_count:",_arg_count);
+
     std::string start_scene = "";
 
-    if(ufo::FileSystem::FileExists("../settings.json")){
+    if(_arg_count == 2){
+        start_scene = _arg_variables[1];
+
+    }
+
+    if(start_scene == "" && ufo::FileSystem::FileExists("../settings.json")){
         auto shared_json_settings = ufo::SharedMemory::JsonRead("../settings.json");
-        if(shared_json_settings->map.count("start_scene")){
-            shared_json_settings->TryToGetValueAsString("start_scene", &start_scene, __UFO_PRETTY_FUNCTION__+" Error, could not find start_scene");
+        if(shared_json_settings->map.count("start_level")){
+            shared_json_settings->TryToGetValueAsString("start_level", start_scene, std::string(__UFO_PRETTY_FUNCTION__)+" Error, could not find start_scene");
+            if(start_scene != "") start_scene= "../"+start_scene;
         }
     }
 
-    if(start_scene == "" && _arg_count == 1){
-        start_scene = *_arg_variables;
-    }
 
     if(start_scene == ""){
         Console::PrintLine("Error, could not set a start scene");

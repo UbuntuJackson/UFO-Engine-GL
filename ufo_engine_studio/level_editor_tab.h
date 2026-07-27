@@ -95,6 +95,8 @@ public:
     void Refresh();
     void ResourcesEdited();
 
+    void TabSpecificMainMenuBarItems() override;
+
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 

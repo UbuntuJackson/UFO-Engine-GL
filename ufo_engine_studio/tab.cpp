@@ -24,6 +24,8 @@ void Tab::ResourcesEdited(){
 
 }
 
+void Tab::TabSpecificMainMenuBarItems(){}
+
 void Tab::Update(Editor* _editor, float _delta_time){
     gc.Collect();
 
