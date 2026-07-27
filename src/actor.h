@@ -39,6 +39,9 @@ public:
 
     Vector2f local_position;
     Vector2f former_local_position;
+
+    ufo::Rectangle rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(32.0f, 32.0f));
+
     ufo::Rectangle former_rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(0.0f, 0.0f));
 
     bool is_dead = false;

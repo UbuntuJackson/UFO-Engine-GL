@@ -23,6 +23,8 @@ public:
 
     float number_of_frames = 1.0f;
 
+    float corner_rounding = 0.0f;
+
     //Custom shader can either use std::string, raw int or the shader class instance.
     std::string shader_key = "partial_sprite_shader";
 
@@ -31,12 +33,6 @@ public:
     Sprite(olc::vf2d _position);
 
     void OnSpawn() override;
-
-    ufo::Rectangle
-    GetRectangleFromPositionAndFrameSize(int _x, int _y, Vector2f _frame_size);
-
-    ufo::Rectangle
-    GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
     void OnDraw(ufo::Graphics* _graphics, Camera* _camera) override;
 

@@ -35,7 +35,16 @@ public:
     ufo::Rectangle
     GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
-    void Draw(ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint);
+    void Draw(
+        ufo::Graphics* _graphics,
+        const std::string& _text,
+        Vector2f _position,
+        Vector2f _scale,
+        const std::string& _shader_key,
+        const ufo::Colour& _tint,
+        bool _is_wrapping = false,
+        int _wrap_width = 1000
+    );
 
 };
 

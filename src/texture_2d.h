@@ -15,10 +15,10 @@ public:
     unsigned int height;
     unsigned int internal_format; //Format of texture object apparently?
     unsigned int image_format; //Format of loaded image?
-    unsigned int wrapping_mode_s_axis;
-    unsigned int wrapping_mode_t_axis;
-    unsigned int filter_mode_min; //Filtering mode if texture pixles < screen pixels?
-    unsigned int filter_mode_max; //Filtering mode if texture pixles > screen pixels?
+    unsigned int wrapping_mode_s_axis = GL_REPEAT;
+    unsigned int wrapping_mode_t_axis = GL_REPEAT;
+    unsigned int filter_mode_min = GL_NEAREST; //Filtering mode if texture pixles < screen pixels?
+    unsigned int filter_mode_max = GL_NEAREST; //Filtering mode if texture pixles > screen pixels?
     bool permanent = false; //If the asset is supposed to be preloaded and saved
 
     int number_of_colour_channels = 4;

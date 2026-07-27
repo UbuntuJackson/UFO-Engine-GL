@@ -26,28 +26,11 @@ void OpenGLv4_5_Graphics::SetProjection(float _left, float _right, float _bottom
         -1.0f, 0.0f
     );
 
-    circle_shader.Use();
-    circle_shader.SetMatrix4("projection", projection);
-
-
-    rectangle_shader.Use();
-    rectangle_shader.SetInt("image", 0);
-    rectangle_shader.SetMatrix4("projection", projection);
-
-    sprite_shader.Use();
-    sprite_shader.SetInt("image", 0);
-    sprite_shader.SetMatrix4("projection", projection);
-
-    partial_sprite_shader.Use();
-    partial_sprite_shader.SetInt("image", 0);
-    partial_sprite_shader.SetMatrix4("projection", projection);
-
     for(auto& [name, shader] : engine->asset_manager.shaders){
-        if(!shader.permanent){
-            shader.Use();
-            shader.SetInt("image", 0);
-            shader.SetMatrix4("projection", projection);
-        }
+        shader.Use();
+        shader.SetInt("image", 0);
+        shader.SetMatrix4("projection", projection);
+
     }
 
 
@@ -74,6 +57,14 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
 
     partial_sprite_shader = _engine->asset_manager.GetShader("partial_sprite_shader");
     _engine->asset_manager.GetShader("partial_sprite_shader").permanent = true;
+
+    _engine->asset_manager.LoadShader(
+        std::string(_engine->engine_path+"/shaders/rounded_corners_shader/partial_sprite_vertex.cs").c_str(),
+        std::string(_engine->engine_path+"/shaders/rounded_corners_shader/partial_sprite_fragment.cs").c_str(),
+        nullptr, "rounded_corners_shader");
+
+    rounded_corners_shader = _engine->asset_manager.GetShader("rounded_corners_shader");
+    _engine->asset_manager.GetShader("rounded_corners_shader").permanent = true;
 
     _engine->asset_manager.LoadShader(
         std::string(_engine->engine_path+"/shaders/rectangle_vertex_shader.cs").c_str(),
@@ -116,6 +107,10 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
     partial_sprite_shader.Use();
     partial_sprite_shader.SetInt("image", 0);
     partial_sprite_shader.SetMatrix4("projection", projection);
+
+    rounded_corners_shader.Use();
+    rounded_corners_shader.SetInt("image", 0);
+    rounded_corners_shader.SetMatrix4("projection", projection);
 
     unsigned int VBO;
     /*float verticies[] = {
@@ -226,7 +221,7 @@ void OpenGLv4_5_Graphics::DrawCircle(Vector2f _position, float _radius, ufo::Col
     glm_DrawCircle(glm::vec2(_position.x, _position.y), _radius, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
 }
 
-void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 _size, glm::vec2 _centre, glm::vec2 _v_scale, float _rotation, glm::vec4 _colour){
+void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 _size, glm::vec2 _centre, glm::vec2 _v_scale, float _rotation, glm::vec4 _colour, float _rounding){
 
     unsigned int VBO;
 
@@ -282,6 +277,8 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
 
     rectangle_shader.SetMatrix4("model", model);
     rectangle_shader.SetVector4f("spriteColor", _colour);
+    rectangle_shader.SetFloat("corner_rounding", _rounding);
+    rectangle_shader.SetVector2f("size_not_normalised", _size);
 
     glActiveTexture(GL_TEXTURE0);
     //
@@ -299,13 +296,13 @@ void OpenGLv4_5_Graphics::glm_DrawRectangleExtra(glm::vec2 _position, glm::vec2 
 
 }
 
-void OpenGLv4_5_Graphics::DrawRectangleExtra(Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, float _rotation, ufo::Colour _colour){
+void OpenGLv4_5_Graphics::DrawRectangleExtra(Vector2f _position, Vector2f _size, Vector2f _centre, Vector2f _v_scale, float _rotation, ufo::Colour _colour, float _rounding){
 
-    glm_DrawRectangleExtra(glm::vec2(_position.x, _position.y), glm::vec2(_size.x, _size.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f));
+    glm_DrawRectangleExtra(glm::vec2(_position.x, _position.y), glm::vec2(_size.x, _size.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f), _rounding);
 
 }
 
-void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::vec2 _position, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour, const std::string& _shader ){
+void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::vec2 _position, glm::vec2 _centre, glm::vec2 _v_scale, glm::vec2 _sample_position, glm::vec2 _sample_size, float _rotation, glm::vec4 _colour, const std::string& _shader ,float _corner_rounding){
 
     ufo::Shader& local_partial_sprite_shader = engine->asset_manager.GetShader(_shader);
 
@@ -323,14 +320,14 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
     glm::vec2 sample_position_normalised = _sample_position/size;
 
     float verticies[] = {
-        //position  //texture
-        0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
-        sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f,
-        0.0f, 0.0f, 0.0f, 0.0f,
+        //position                                          //texture
+        0.0f, sample_size_normalised.y,                     0.0f, sample_size_normalised.y,
+        sample_size_normalised.x, 0.0f,                     sample_size_normalised.x, 0.0f,
+        0.0f, 0.0f,                                         0.0f, 0.0f,
 
-        0.0f, sample_size_normalised.y, 0.0f, sample_size_normalised.y,
+        0.0f, sample_size_normalised.y,                     0.0f, sample_size_normalised.y,
         sample_size_normalised.x, sample_size_normalised.y, sample_size_normalised.x, sample_size_normalised.y,
-        sample_size_normalised.x, 0.0f, sample_size_normalised.x, 0.0f
+        sample_size_normalised.x, 0.0f,                     sample_size_normalised.x, 0.0f
     };
 
     glGenBuffers(1, &VBO);
@@ -364,10 +361,12 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
 
     model = glm::scale(model, glm::vec3(size, 1.0f));
 
-    local_partial_sprite_shader.SetMatrix4("model", model);
-    local_partial_sprite_shader.SetVector4f("spriteColor", _colour);
-    local_partial_sprite_shader.SetVector2f("sample_position", sample_position_normalised);
-    local_partial_sprite_shader.SetVector2f("sample_size", sample_size_normalised);
+    local_partial_sprite_shader.SetMatrix4("model",                       model);
+    local_partial_sprite_shader.SetVector4f("spriteColor",                _colour);
+    local_partial_sprite_shader.SetVector2f("sample_position",            sample_position_normalised);
+    local_partial_sprite_shader.SetVector2f("sample_size_not_normalised", _sample_size);
+    local_partial_sprite_shader.SetFloat(   "corner_rounding",            _corner_rounding);
+    local_partial_sprite_shader.SetVector2f("texture_size", glm::vec2(_texture.width, _texture.height));
 
     glActiveTexture(GL_TEXTURE0);
     //
@@ -385,15 +384,15 @@ void OpenGLv4_5_Graphics::glm_DrawPartialSprite(ufo::Texture2D& _texture, glm::v
 
 }
 
-void OpenGLv4_5_Graphics::DrawPartialSprite(ufo::Texture2D& _texture, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour, const std::string& _shader){
+void OpenGLv4_5_Graphics::DrawPartialSprite(ufo::Texture2D& _texture, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour, const std::string& _shader,float _corner_rounding){
 
-    glm_DrawPartialSprite(_texture, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f),_shader);
+    glm_DrawPartialSprite(_texture, glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f),_shader, _corner_rounding);
 
 }
 
-void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour, const std::string& _shader){
+void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vector2f _position, Vector2f _centre, Vector2f _v_scale, Vector2f _sample_position, Vector2f _sample_size, float _rotation, ufo::Colour _colour, const std::string& _shader, float _corner_rounding){
 
-    glm_DrawPartialSprite(engine->asset_manager.textures.at(_texture_key), glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f), _shader);
+    glm_DrawPartialSprite(engine->asset_manager.textures.at(_texture_key), glm::vec2(_position.x, _position.y), glm::vec2(_centre.x, _centre.y), glm::vec2(_v_scale.x, _v_scale.y), glm::vec2(_sample_position.x, _sample_position.y) ,glm::vec2(_sample_size.x, _sample_size.y), _rotation, glm::vec4(_colour.r/255.0f, _colour.g/255.0f, _colour.b/255.0f, _colour.a/255.0f), _shader, _corner_rounding);
 
 }
 

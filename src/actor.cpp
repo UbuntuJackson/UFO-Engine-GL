@@ -861,28 +861,10 @@ bool Actor::InputTextWithUndoAndRedo(UFOEngineStudio::LevelEditorTab* _level_edi
 
 void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
-    bool search_field_active = false;
-
-    ImGui::Text("%s",std::string(editor_name+" "+"("+class_name+")").c_str());
-    ImGui::Text("%s", std::string("Base-class: "+base_class_name).c_str());
-    if(import_mode == ImportModes::CUSTOM_CLASS) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
-    ImGui::Separator();
-
-    if(search_field_active){
-        ImGui::InputText("FindActor...", &find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
-        Actor* actor = actor = GetActor(find_actor_search_field);
-
-        if(actor) ImGui::Text("Found actor");
-    }
-
     InputFloatWithUndoAndRedo(_level_editor_tab,
         std::string("local_position.x###local_position.x"+editor_name+std::to_string(_index)).c_str(), "local_position.x");
     InputFloatWithUndoAndRedo(_level_editor_tab,
         std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), "local_position.y");
-
-    for(int i = 0; i < editor_properties.size(); i++){
-        editor_properties[i]->Update(_level_editor_tab ,this, editor_name, i);
-    }
 
 }
 

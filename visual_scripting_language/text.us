@@ -1,0 +1,14 @@
+
+function main _args{
+
+    for path in _args{
+        Console.PrintLine(i)
+        var s = FileSystem.Read(path)
+
+        var words = s.separate(' ')
+
+
+
+    }
+
+}

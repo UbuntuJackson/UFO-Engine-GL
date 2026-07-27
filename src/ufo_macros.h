@@ -12,6 +12,10 @@
 #endif
 
 //These macros exposes your actor as spawnable in UFO-Engine Studio.
+
+#define ufo_compile(_source_file)
+
+//This just makes it visible in the editor with no additions
 #define ufo_class()
 
 //Add actor to a category.

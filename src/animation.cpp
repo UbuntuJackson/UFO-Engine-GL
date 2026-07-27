@@ -12,6 +12,7 @@
 #include "texture_2d.h"
 #include "engine.h"
 #include "ufo_macros.h"
+#include "sprite_utils.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/file_dialogue.h"
@@ -125,6 +126,7 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
         j_costumes->array.push_back(j_costume);
     }
 
+    parent_class_as_json->map.emplace("corner_rounding", _gc->New<ufo::gc::JsonNumber>(corner_rounding));
     parent_class_as_json->map.emplace("shader_key",_gc->New<ufo::gc::JsonString>(shader_key));
 
     ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
@@ -189,6 +191,8 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         im_colour = ImVec4(red/255.0f,green/255.0f,blue/255.0f,alpha/255.0f);
 #endif
     }
+
+    _json->TryToGetValueAsFloat("corner_rounding", corner_rounding, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
     //}
 }
@@ -430,6 +434,7 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
         if(ImGui::InputFloat("rotation (degrees)",&costumes.at(key).rotation)) rotation = costumes.at(key).rotation;
         if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
         if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
+        ImGui::InputFloat("corner_rounding",&corner_rounding);
 
         ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 

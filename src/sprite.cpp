@@ -8,6 +8,7 @@
 #include "sprite.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "graphics.h"
+#include "sprite_utils.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -55,32 +56,10 @@ void Sprite::OnSpawn(){
 
 }
 
-ufo::Rectangle
-Sprite::GetRectangleFromPositionAndFrameSize(int _x, int _y, Vector2f _frame_size){
-    ufo::Rectangle rect = ufo::Rectangle({(float)(_x * _frame_size.x), (float)(_y * _frame_size.y)}, _frame_size);
-    return rect;
-}
-
-ufo::Rectangle
-Sprite::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size){
-    int fx = 1;
-    int fy = 1;
-    //To be fixed, clamp the values for height and width
-    if(_frame_size.x > 0.0f && _frame_size.y > 0.0f &&
-        _frame_size.x <= engine->asset_manager.textures.at(_sprite_key).width && frame_size.y <= engine->asset_manager.textures.at(_sprite_key).height){
-        fx = (int)_frame % (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x); //1 can only give me x = 0
-        fy = (int)_frame / (engine->asset_manager.textures.at(_sprite_key).width/(int)_frame_size.x);
-    }
-    return GetRectangleFromPositionAndFrameSize(
-        fx,
-        fy,
-        _frame_size); //1 can only give y = 1
-}
-
 void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     if(!visible) return;
 
-    ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
+    ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,key,current_frame_index,frame_size);
     _graphics->DrawPartialSprite(
         key,
         _camera->Transform(GetGlobalPosition()),
@@ -91,7 +70,7 @@ void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
         sample_rectangle.size,
         rotation,
         tint,
-        shader_key
+        shader_key, corner_rounding
     );
 }
 
@@ -115,6 +94,7 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("rotation", _gc->New<ufo::gc::JsonNumber>(rotation));
     parent_class_as_json->map.emplace("frame_index", _gc->New<ufo::gc::JsonNumber>(current_frame_index));
     parent_class_as_json->map.emplace("shader_key", _gc->New<ufo::gc::JsonString>(shader_key));
+    parent_class_as_json->map.emplace("corner_rounding", _gc->New<ufo::gc::JsonNumber>(corner_rounding));
 
     ufo::gc::JsonArray* j_colour = _gc->New<ufo::gc::JsonArray>();
     j_colour->array.push_back(_gc->New<ufo::gc::JsonNumber>(tint.r));
@@ -161,6 +141,8 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
             im_colour = ImVec4(red/255.0f,green/255.0f,blue/255.0f,alpha/255.0f);
 #endif
         }
+
+        _json->TryToGetValueAsFloat("corner_rounding", corner_rounding, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing Sprite instance");
@@ -371,6 +353,7 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         ImGui::InputFloat("scale.y",&scale.y);
         ImGui::InputFloat("rotation (degrees)",&rotation);
         ImGui::InputFloat("current_frame_index",&current_frame_index);
+        ImGui::InputFloat("corner_rounding",&corner_rounding);
 
         ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 

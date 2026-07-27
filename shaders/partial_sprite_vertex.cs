@@ -10,7 +10,7 @@ uniform mat4 model;
 //Projection matrix?
 uniform mat4 projection;
 uniform vec2 sample_position;
-uniform vec2 sample_size;
+uniform vec2 sample_size_not_normalised;
 
 void main(){
     TexCoords = vertex.zw+sample_position;

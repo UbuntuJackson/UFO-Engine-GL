@@ -51,6 +51,7 @@ set(
     src/shader.cpp
     src/openglv4_5_graphics.cpp
     src/sprite.cpp
+    src/sprite_utils.cpp
     src/background_sprite.cpp
     src/animation.cpp
     src/openglv4_5_asset_manager.cpp
@@ -88,8 +89,8 @@ set(
     ufo_garbage_collector/object.cpp
     ufo_garbage_collector/gc_json.cpp
 
-    #visual_scripting_language/virtual_machine.cpp
-    #visual_scripting_language/block.cpp
+    visual_scripting_language/virtual_machine.cpp
+    visual_scripting_language/block.cpp
 
 )
 

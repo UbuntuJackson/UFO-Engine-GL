@@ -69,14 +69,20 @@ BitMapFont::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2
         _frame_size); //1 can only give y = 1
 }
 
-void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint){
+void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint, bool _is_wrapping, int _wrap_width){
 
-    int current_character_x = (int)_position.x;
-    int current_character_y = (int)_position.y;
+    int current_character_x = 0;
+    int current_character_y = 0;
 
     std::string::const_iterator it = _text.begin();
 
     while(it != _text.end()){
+        if(_is_wrapping){
+            if(current_character_x >= _wrap_width){
+                current_character_y += character_height;
+                current_character_x = 0;
+            }
+        }
 
         int prefix = 0;
         int number_of_bytes = 1;
@@ -84,22 +90,18 @@ void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector
         unsigned char character = *it;
 
         if(character >> 7 == 0){
-            Console::PrintLine("ASCII");
             prefix = 0;
             number_of_bytes = 1;
         }
         if(character >> 5 == 6){
-            Console::PrintLine("2 bytes");
             prefix = 6;
             number_of_bytes = 2;
         }
         if(character >> 4 == 14){
-            Console::PrintLine("3 bytes");
             prefix = 14;
             number_of_bytes = 3;
         }
         if(character >> 3 == 30){
-            Console::PrintLine("4 bytes");
             prefix = 30;
             number_of_bytes = 4;
         }
@@ -109,8 +111,6 @@ void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector
 
             std::string this_byte_as_string = std::bitset<8>((unsigned char)(*(it+i))).to_string();
 
-            Console::PrintLine("Byte",(unsigned char)(*(it+i)), this_byte_as_string);
-
             s+=this_byte_as_string;
         }
 
@@ -119,7 +119,7 @@ void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector
         if(number_of_bytes == 1){
             if(character == '\n'){
                 current_character_x = 0;
-                current_character_y += _scale.y*character_height;
+                current_character_y += character_height;
                 it+=1;
                 continue;
             }
@@ -150,21 +150,19 @@ void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector
 
         ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(texture_key,code_point,Vector2f(character_width, character_height));
 
-        Console::PrintLine("Code point",code_point, s);
-
         _graphics->DrawPartialSprite(
             texture_key,
-            Vector2f(current_character_x, current_character_y),
+            Vector2f(_position.x + current_character_x*_scale.x, _position.y + current_character_y*_scale.y),
             Vector2f(0.0f, 0.0f),
             _scale,
             sample_rectangle.position,
             sample_rectangle.size,
             0.0f,
             _tint,
-            _shader_key
+            _shader_key, 0.0f
         );
 
-        current_character_x += character_width*_scale.x;
+        current_character_x += character_width;
         it+=number_of_bytes;
     }
 }

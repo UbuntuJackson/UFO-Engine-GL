@@ -3,6 +3,8 @@
 #include "../shapes/rectangle.h"
 #include "rectangular_area.h"
 #include "camera.h"
+#include "engine.h"
+#include "level.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "im_vec.h"

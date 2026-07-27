@@ -1,44 +1,62 @@
 #pragma once
+#include <string>
 #include <vector>
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
+#include "graphics.h"
 
+#ifdef UFO_ENGINE_STUDIO
+#include "viewport_editing_utils.h"
 namespace UFOEngineStudio{
     class Editor;
     class LevelEditorTab;
 }
-
-class Camera;
+#endif
 
 namespace ufo{
 
+class Camera;
 class Graphics;
 
 class Widget : public Actor{
 public:
+    bool visible = true;
+    std::string texture_key = "placeholder_icon";
+    Vector2f offset;
+    float current_frame_index = 0;
+    float number_of_frames = 1;
+    Vector2f frame_size = {32.0f, 32.0f};
+    Vector2f scale = {1.0f, 1.0f};
+    ufo::Colour tint = ufo::Colour(255,255,255,255);
+    std::string shader_key = "partial_sprite_shader";
+    float corner_rounding = 0.0f;
+
     Widget(Vector2f _);
-
-    enum PartsOfRectangle{
-        TOP,BOTTOM,RIGHT,LEFT,TOP_LEFT,TOP_RIGHT,BOTTOM_LEFT,BOTTOM_RIGHT,MIDDLE,NONE
-    };
-
-    PartsOfRectangle part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
-
-    ufo::Rectangle rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(600.0f, 200.0f));
 
     ufo::Rectangle GetRectangle();
 
+    void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void ResizeOrMove(Vector2f _position_screen_space,Vector2f _size_screen_space, Vector2f& _rectangle_position, Vector2f& _rectangle_size, Vector2f _screen_space_mouse_position);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+
+    #ifdef UFO_ENGINE_STUDIO
+
+    PartsOfRectangle part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
+    void OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
+
+    void OnResourcesEdited() override;
+
+    #endif
 };
 
 }

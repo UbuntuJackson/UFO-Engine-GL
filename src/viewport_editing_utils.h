@@ -2,8 +2,6 @@
 #include "../shapes/rectangle.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
-#include "engine.h"
-#include "input.h"
 
 namespace ufo{
 

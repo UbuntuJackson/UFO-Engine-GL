@@ -20,7 +20,8 @@ private:
 
 public:
     bool use_bit_map_font = true;
-    std::string bit_map_font_key = "";
+    std::string bit_map_font_key = "res/gfx/unifont.png";
+    std::string shader_key = "partial_sprite_shader";
     bool add_bit_map_font = false;
     int character_width = 1;
     int character_height = 1;
@@ -39,23 +40,24 @@ public:
 
     Text(Vector2f _);
 
-    void OnSpawn();
+    void OnSpawn() override;
 
     ~Text();
 
-    void OnIrregularUpdate();
+    void OnIrregularUpdate() override;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
-    void OnWidgetDraw(ufo::Graphics* _graphics);
+    void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
 
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+#ifdef UFO_ENGINE_STUDIO
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+#endif
 
 };
 

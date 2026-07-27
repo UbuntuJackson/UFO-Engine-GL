@@ -95,6 +95,8 @@ void ResizeOrMove(Actor* _actor,
 
     Vector2f dp = _scaled_delta_mouse_position;
 
+    if(_part_of_rectangle_resized_in_editor != PartsOfRectangle::NONE) _actor->IrregularUpdate();
+
     switch(_part_of_rectangle_resized_in_editor){
         case PartsOfRectangle::TOP:{
             _rectangle_position.y+=dp.y;

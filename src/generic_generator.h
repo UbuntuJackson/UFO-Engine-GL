@@ -3,8 +3,6 @@
 #include <memory>
 #include "actor.h"
 #include "../ufo_garbage_collector/gc_json.h"
-#include "../shared_json/shared_json.h"
-#include "level.h"
 #include "object.h"
 #include "ufo_maths.h"
 

@@ -5,6 +5,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
 #include "actor_undo_and_redo.h"
+#include "../visual_scripting_language/virtual_machine.h"
 
 namespace ufo{
     class Level;
@@ -17,6 +18,8 @@ namespace UFOEngineStudio{
 
 class LevelEditorTab : public Tab{
 public:
+
+    ufo::visual::VirtualMachine vm;
 
     // This is the actor currently used as the layer. It can be of type ufo::Level, ufo::CollisionGrid, and ufo::TileMap
     int currently_edited_actor_in_viewport = ufo::Maths::NULL_ID;

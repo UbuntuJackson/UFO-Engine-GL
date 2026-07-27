@@ -506,7 +506,7 @@ public:
                 hit_box.size*_camera->scale,
                 Vector2f(0.0f, 0.0f),
                 Vector2f(1.0f, 1.0f),0.0f,
-                ufo::Colour(255,255,0));
+                ufo::Colour(255,255,0), 0.0f);
 
     }
 

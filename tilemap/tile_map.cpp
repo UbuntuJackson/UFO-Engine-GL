@@ -109,7 +109,7 @@ void TileMap::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
                             sample_rectangle.position,
                             sample_rectangle.size,
                             0.0f,
-                            tint, shader_key
+                            tint, shader_key, 0.0f
                         );
                     }
                     catch(const std::exception& _error){
@@ -477,7 +477,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                             sample_rectangle.size,
                             0.0f,
                             tint,
-                            shader_key
+                            shader_key, 0.0f
                         );
 
                     }
@@ -529,7 +529,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
                             sample_rectangle.size,
                             0.0f,
                             tint,
-                            shader_key
+                            shader_key, 0.0f
                         );
 
                     }

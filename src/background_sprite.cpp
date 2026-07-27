@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "engine.h"
 #include "background_sprite.h"
+#include "sprite_utils.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -35,7 +36,7 @@ void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
         screen_position.x = ufo::Maths::Wrap(screen_position.x, -scaled_frame_size_x*1.0f, 1.0f*scaled_frame_size_x*number_of_background_sprites);
 
-        ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(key,current_frame_index,frame_size);
+        ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,key,current_frame_index,frame_size);
         _graphics->DrawPartialSprite(
             key,
             screen_position,
@@ -45,7 +46,7 @@ void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
             sample_rectangle.position,
             sample_rectangle.size,
             rotation,
-            tint, shader_key
+            tint, shader_key, 0.0f
         );
     }
 }

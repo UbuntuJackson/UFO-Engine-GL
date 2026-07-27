@@ -235,6 +235,8 @@ void Engine::Start(){
 
 void Engine::StartWithImGui(){
 
+    SDL_SetWindowTitle(window, "UFO-Engine Studio (version 0.x.x)");
+
     level_handle = loaded_levels[0]->DynamicCast<Level>();
 
     //text_renderer.Init(this);

@@ -258,6 +258,22 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::EndTabItem();
         }
 
+        if(ImGui::BeginTabItem("UFO Visual###UFOVisual")){
+            ImGui::BeginChild("Change log###LevelEditorTabLevelEditorTabUndoAndRedoChildWindow");
+
+            vm.main_func.Draw();
+
+            if(ImGui::Button("Run")){
+                std::map<std::string, std::unique_ptr<ufo::visual::Block>> no_args;
+
+                vm.main_func.Operation(&vm,no_args);
+            }
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
         ImGui::EndTabBar();
 
     }
@@ -288,7 +304,31 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
         inspected_actor = actor_dedicated_to_viewport;
     }
 
-    if(inspected_actor != ufo::Maths::NULL_ID) this_level->actors_with_stable_id.at(inspected_actor)->ViewProperties(this, -1);
+    if(inspected_actor != ufo::Maths::NULL_ID){
+        ufo::Actor* act_inspected_actor = this_level->actors_with_stable_id.at(inspected_actor);
+
+        bool search_field_active = false;
+
+        ImGui::Text("%s",std::string(act_inspected_actor->editor_name+" "+"("+act_inspected_actor->class_name+")").c_str());
+        ImGui::Text("%s", std::string("Base-class: "+act_inspected_actor->base_class_name).c_str());
+        if(act_inspected_actor->import_mode == ufo::Actor::ImportModes::CUSTOM_CLASS) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
+        ImGui::Separator();
+
+        if(search_field_active){
+            ImGui::InputText("FindActor...", &act_inspected_actor->find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
+            ufo::Actor* actor = actor = act_inspected_actor->GetActor(act_inspected_actor->find_actor_search_field);
+
+            if(actor) ImGui::Text("Found actor");
+        }
+
+        act_inspected_actor->ViewProperties(this, -1);
+
+        //View the editor properties
+        for(int i = 0; i < act_inspected_actor->editor_properties.size(); i++){
+            act_inspected_actor->editor_properties[i]->Update(this ,act_inspected_actor, act_inspected_actor->editor_name, i);
+        }
+
+    }
 
     ImGui::End();
 
@@ -583,7 +623,6 @@ void LevelEditorTab::SelectionUpdate(){
 
         selection_rectangle_world_space = ufo::Rectangle(world_selection_rectangle_start, world_selection_rectangle_end - world_selection_rectangle_start);
 
-        Console::PrintLine("clearing");
         selected_actors.clear();
         this_level->GetSelectedActors(selected_actors, selection_rectangle_world_space);
 
@@ -592,14 +631,6 @@ void LevelEditorTab::SelectionUpdate(){
             FromVector2fToImVec2((selected_rectangle.position+selected_rectangle.size+FromImVec2ToVector2f(ImGui::GetMainViewport()->Pos))), 0x55555555);
     }
 
-    /*if(current_tool == Tools::SELECT){
-        ufo::Actor* focused_actor = this_level->GetFocusedActor(mouse_position_over_screenspace);
-
-        if(focused_actor && engine->mouse.is_left_button_pressed){
-            selected_actors.clear();
-            selected_actors.push_back(focused_actor);
-        }
-    }*/
 }
 
 void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id,[[maybe_unused]] Editor* _program_state){

@@ -1,0 +1,25 @@
+//class takes like, two arguments. class-name, inherits-from
+
+ufo_category('MyGame') ufo_actor_config('player.ason') class Player ufo::Actor
+{
+
+    Sprite sprite; //Infer pointer, since not of type int, float or string
+
+    function OnSpawn{
+        sprite = GetActor('InstSprite') //Automatic cast?
+    }
+
+    function OnUpdate _delta_time{
+
+        var direction = engine.input.GetKey(K_RIGHT).is_held
+
+        local_position.x += direction * _delta_time
+
+        if direction != 0 {
+            sprite.scale = direction
+
+            var local_variable;
+        }
+    }
+
+}

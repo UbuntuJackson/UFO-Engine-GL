@@ -1,16 +1,23 @@
 #include <vector>
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
+#include "gc_json.h"
 #include "graphics.h"
 #include "actor.h"
 #include "camera.h"
 #include "widget.h"
 #include "engine.h"
+#include "sprite_utils.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../imgui/imgui_internal.h"
 #include "../imgui/imgui.h"
+#include "viewport_editing_utils.h"
+#include "../ufo_engine_studio/im_vec.h"
+#include "../ufo_engine_studio/file_dialogue.h"
+#include "../ufo_engine_studio/editor.h"
 #endif
 
 namespace ufo{
@@ -18,10 +25,30 @@ namespace ufo{
 Widget::Widget(Vector2f _) : Actor(_){
     class_name = "ufo::Widget";
     base_class_name = class_name;
+    editor_hitbox = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(32.0f, 32.0f));
 }
 
 ufo::Rectangle Widget::GetRectangle(){
     return ufo::Rectangle(GetGlobalPosition()+rectangle.position,rectangle.size);
+}
+
+void Widget::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
+    if(!visible) return;
+
+    ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,texture_key,current_frame_index,frame_size);
+
+    _graphics->DrawPartialSprite(
+        texture_key,
+        _camera->Transform(GetGlobalPosition()-Vector2f(corner_rounding, corner_rounding)),
+        offset,
+        scale * _camera->scale,
+        rectangle.position,
+        rectangle.size+Vector2f(corner_rounding, corner_rounding)*2.0f,
+        0,
+        tint,
+        shader_key,
+        corner_rounding
+    );
 }
 
 void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
@@ -41,9 +68,16 @@ void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         rectangle.position.y = widget_y;
         rectangle.size.x = widget_w;
         rectangle.size.y = widget_h;
+
+        if(import_mode != ImportModes::CUSTOM_CLASS){
+            editor_hitbox = rectangle;
+        }
+
     } catch(const std::exception& _error){
         Console::PrintLine("[UFO-Engine] GenericGenerator: Could not find properties for json representing ufo::Widget instance");
     }
+
+    _json->TryToGetValueAsFloat("corner_rounding", corner_rounding, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
 }
 
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
@@ -57,6 +91,8 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
     j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
 
     parent_class_as_json->map.emplace("rectangle", j_rectangle);
+    parent_class_as_json->map.emplace("corner_rounding", _gc->New<ufo::gc::JsonNumber>(corner_rounding));
+
     return parent_class_as_json;
 }
 
@@ -66,182 +102,238 @@ void Widget::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unu
 
 }
 
+void Widget::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(ImGui::BeginTabItem("Textures")){
+
+        if(ImGui::Button("[+] Add Texture")){
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+        }
+
+        if(ImGui::InputText("Search###SearchAssetBrowser", &_level_editor_tab->asset_browser_search)){
+
+        }
+
+        ImGui::Separator();
+
+        if(ImGui::BeginChild("MyAssetsChildWindow")){
+
+            bool texture_was_erased = false;
+            std::string name_of_erased_texture = "";
+
+            std::vector<std::string> texture_names;
+            for(const auto& [name, texture] : engine->asset_manager.textures){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) texture_names.push_back(name);
+            }
+            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : texture_names){
+
+                auto& texture = engine->asset_manager.textures.at(name);
+
+                float w = (float)texture.width;
+                float h = (float)texture.height;
+
+                bool view_asset_details = ImGui::CollapsingHeader(std::string("###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+
+                ImGui::SameLine();
+
+                ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(1.0f, 1.0f));
+                ImGui::ImageButton(name.c_str(),
+                    (void*)(intptr_t)texture.id,
+                    ImVec2(32.0f*w/h, 32.0f),
+                    ImVec2(0,0),
+                    ImVec2(1,1),
+                    ImVec4(0,0,0,1)
+                );
+                ImGui::PopStyleVar();
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Texture###UnloadTexture"+name).c_str())){
+                        name_of_erased_texture = name;
+                        texture_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Texture to Current Sprite###AddCostume"+name).c_str())){
+                        texture_key = name;
+                        frame_size = Vector2f(w,h);
+                        number_of_frames = 1;
+
+                    }
+                    ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
+                    ImGui::Text(("name: "+name).c_str(),"%s");
+                    ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
+                }
+
+            }
+
+            if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
+                engine->asset_manager.textures.at(name_of_erased_texture).Delete();
+                engine->asset_manager.textures.erase(name_of_erased_texture);
+                _level_editor_tab->editor->ResourcesEdited();
+
+                if(texture_key == name_of_erased_texture) texture_key = "placeholder_icon";
+
+            }
+
+            ImGui::EndChild();
+
+        }
+
+        ImGui::EndTabItem();
+    }
+
+    if(ImGui::BeginTabItem("Shaders")){
+
+        if(ImGui::Button("[+] Add Shader")){
+            SDL_ShowOpenFolderDialog(&UFOEngineStudio::OnOpenShader, _level_editor_tab, engine->window, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+        }
+
+        if(ImGui::InputText("Search###SearchShaders", &_level_editor_tab->asset_browser_search)){
+
+        }
+
+        if(ImGui::BeginChild("MyShaders")){
+
+            bool shader_was_erased = false;
+            std::string name_of_erased_shader = "";
+
+            std::vector<std::string> shader_names;
+            for(const auto& [name, shader] : engine->asset_manager.shaders){
+                bool search_is_in_word = false;
+
+                for(int c = 0; c < (int)name.size(); c++){
+                    bool found_match_from_this_character = true;
+
+                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
+                        if(c+d > (int)name.size()-1) continue;
+
+                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
+                            found_match_from_this_character = false;
+                        }
+                    }
+
+                    if(found_match_from_this_character) search_is_in_word = true;
+                }
+
+                if(search_is_in_word) shader_names.push_back(name);
+            }
+            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
+                return _a<_b;
+            });
+
+            for(const std::string& name : shader_names){
+
+                bool view_asset_details = ImGui::CollapsingHeader(std::string(("name: "+name)+"###view_asset_details"+name).c_str(), nullptr, ImGuiTreeNodeFlags_SpanTextWidth);
+
+                if(ImGui::IsItemHovered()) ImGui::SetTooltip(name.c_str(), "%s");
+
+                if(view_asset_details){
+                    if(ImGui::Button(std::string("Unload Shader###UnloadShader"+name).c_str())){
+                        name_of_erased_shader = name;
+                        shader_was_erased = true;
+                    }
+                    ImGui::SameLine();
+                    if(ImGui::Button(std::string("Assign Shader to Current Sprite###AddCostume"+name).c_str())){
+                        shader_key = name;
+
+                    }
+
+                }
+
+            }
+
+            if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
+                engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
+                engine->asset_manager.shaders.erase(name_of_erased_shader);
+                _level_editor_tab->editor->ResourcesEdited();
+
+                if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
+
+            }
+
+            ImGui::EndChild();
+        }
+
+
+        ImGui::EndTabItem();
+
+    }
+}
+
 void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab, [[maybe_unused]] int _index){
-
+    ImGui::InputFloat("corner_rounding", &corner_rounding);
 }
 
-void Widget::ResizeOrMove(Vector2f _position_screen_space,Vector2f _size_screen_space, Vector2f& _rectangle_position, Vector2f& _rectangle_size, Vector2f _screen_space_mouse_position){
-    const float margin = 20.0f; //Pixels.
-    const Vector2f margin_vector = Vector2f(margin, margin);
+void Widget::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    const ufo::Rectangle move_rectangle = ufo::Rectangle(_position_screen_space+margin_vector, _size_screen_space-margin_vector*2.0f);
+    if(import_mode == ImportModes::CUSTOM_CLASS) return;
 
-    const ufo::Rectangle resize_rectangle_left = ufo::Rectangle(_position_screen_space+Vector2f(0.0f, margin), Vector2f(margin, move_rectangle.size.y));
-
-    const ufo::Rectangle resize_rectangle_right = ufo::Rectangle(Vector2f(move_rectangle.position.x+move_rectangle.size.x, move_rectangle.position.y), Vector2f(margin, move_rectangle.size.y));
-
-    const ufo::Rectangle resize_rectangle_top = ufo::Rectangle(move_rectangle.position-Vector2f(0.0f, margin), Vector2f(move_rectangle.size.x, margin));
-
-    const ufo::Rectangle resize_rectangle_bottom = ufo::Rectangle(move_rectangle.position+Vector2f(0.0f, move_rectangle.size.y), Vector2f(move_rectangle.size.x, margin));
-
-    const ufo::Rectangle resize_rectangle_top_left = ufo::Rectangle(move_rectangle.position-margin_vector, margin_vector);
-    const ufo::Rectangle resize_rectangle_top_right = ufo::Rectangle(resize_rectangle_top_left.position+Vector2f(resize_rectangle_top.size.x+margin, 0.0f), margin_vector);
-    const ufo::Rectangle resize_rectangle_bottom_left = ufo::Rectangle(resize_rectangle_top_left.position+Vector2f(0.0f, resize_rectangle_left.size.y+margin), margin_vector);
-    const ufo::Rectangle resize_rectangle_bottom_right = ufo::Rectangle(move_rectangle.position+move_rectangle.size, margin_vector);
-
-    if(engine->mouse.is_left_button_released) part_of_rectangle_resized_in_editor = PartsOfRectangle::NONE;
-
-    if(ufo::Maths::RectangleVsPoint(move_rectangle,_screen_space_mouse_position)){
-
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::MIDDLE;
-
-    }
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_left,_screen_space_mouse_position)){
-
-
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::LEFT;
-
-
-        Console::PrintLine("Resize left");
-    }
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_right,_screen_space_mouse_position)){
-
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::RIGHT;
-
-        Console::PrintLine("Resize right");
-    }
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_top,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP;
-        Console::PrintLine("Resize top");
-    }
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM;
-        Console::PrintLine("Resize bottom");
-
-    }
-
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_top_left,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP_LEFT;
-        Console::PrintLine("Resize top left");
-    }
-
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_top_right,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::TOP_RIGHT;
-        Console::PrintLine("Resize top right");
-    }
-
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom_left,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM_LEFT;
-        Console::PrintLine("Resize bottom left");
-    }
-
-    if(ufo::Maths::RectangleVsPoint(resize_rectangle_bottom_right,_screen_space_mouse_position)){
-        if(engine->mouse.is_left_button_pressed) part_of_rectangle_resized_in_editor = PartsOfRectangle::BOTTOM_RIGHT;
-        Console::PrintLine("Resize bottom right");
-    }
-
-    Vector2f dp = engine->mouse.position - engine->mouse.former_position;
-
-    switch(part_of_rectangle_resized_in_editor){
-        case PartsOfRectangle::TOP:{
-            _rectangle_position.y+=dp.y;
-            _rectangle_size.y-=dp.y;
-            break;
-        }
-        case PartsOfRectangle::BOTTOM:{
-            _rectangle_size.y+=dp.y;
-            break;
-        }
-        case PartsOfRectangle::RIGHT:{
-            _rectangle_size.x += dp.x;
-            break;
-        }
-        case PartsOfRectangle::LEFT:{
-            _rectangle_size.x -= dp.x;
-            _rectangle_position.x += dp.x;
-            break;
-        }
-        case PartsOfRectangle::TOP_LEFT:{
-
-            _rectangle_position += dp;
-            _rectangle_size += dp;
-            break;
-        }
-        case PartsOfRectangle::TOP_RIGHT:{
-
-            break;
-        }
-        case PartsOfRectangle::BOTTOM_LEFT:{
-            break;
-        }
-        case PartsOfRectangle::BOTTOM_RIGHT:{
-            _rectangle_size += dp;
-            break;
-        }
-        case PartsOfRectangle::MIDDLE:{
-
-            local_position += dp;
-            break;
-        }
-        default:{
-
-        }
-    }
-
-}
-
-void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-    Actor::OnUpdateEditorViewport(_editor, _level_editor_tab);
+    auto cam = _level_editor_tab->this_level->active_camera_handles.back();
 
     {
-        Vector2f pos_min = GetGlobalPosition()+rectangle.position;
-        Vector2f pos_max = GetGlobalPosition()+rectangle.position+rectangle.size;
-        Vector2f global_position = GetGlobalPosition();
-
-        //Console::PrintLine(engine->mouse.GetPosition());
-
-        ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
-
-        //float width_through_height = 1920.0f/1080.0f
-
-        Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
+        Vector2f pos_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position);
+        Vector2f pos_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size);
 
         ImU32 colour = 0xFFFFFFFF;
         if(parent->base_class_name != "ufo::Level") colour = 0xFF664422;
 
-        ImGui::GetWindowDrawList()->AddRect(ImVec2(viewport_pos.x+pos_min.x, viewport_pos.y+pos_min.y),ImVec2(viewport_pos.x+pos_max.x, viewport_pos.y+pos_max.y), colour);
+        ImGui::GetWindowDrawList()->AddRect(UFOEngineStudio::FromVector2fToImVec2(pos_min),UFOEngineStudio::FromVector2fToImVec2(pos_max), colour);
 
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y-5.0f), ImVec2(global_position.x+viewport_pos.x, global_position.y+viewport_pos.y+5.0f), 0xFF0000FF, 1.0f);
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(global_position.x+viewport_pos.x-5.0f, global_position.y+viewport_pos.y), ImVec2(global_position.x+viewport_pos.x+5.0f, global_position.y+viewport_pos.y), 0xFF0000FF, 1.0f);
     }
 
     ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
 
     Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
 
-    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
+    Vector2f scaled_delta_mouse_position = 1.0f/cam->scale * (engine->mouse.position - engine->mouse.former_position) * _level_editor_tab->window_to_engine_ratio;
 
-    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
+    ufo::ResizeOrMove(this,
+        part_of_rectangle_resized_in_editor,
+        cam->Transform(GetGlobalPosition()+editor_hitbox.position), cam->scale* editor_hitbox.size,
+        local_position, editor_hitbox.size,
+        _level_editor_tab->mouse_position_over_screenspace,
+        scaled_delta_mouse_position
+    );
 
-    Vector2f mouse_position_over_screenspace = engine->mouse.position-editor_viewport_pos;
-
-    Vector2f world_mouse = mouse_position_over_screenspace;
-    Vector2f former_world_mouse = engine->mouse.former_position-editor_viewport_pos;
-
-    ResizeOrMove(GetGlobalPosition()+rectangle.position, rectangle.size, rectangle.position, rectangle.size, world_mouse);
-
-    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+rectangle.position, rectangle.size),world_mouse)){
-        //Console::PrintLine("Overlapping");
-
-        if(engine->mouse.is_left_button_held){
-
-            IrregularUpdate();
-        }
-
-    }
+    rectangle = editor_hitbox;
 
 }
+
+void Widget::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+
+
+}
+
+void Widget::OnResourcesEdited(){
+    if(!engine->asset_manager.textures.count(texture_key)){
+        texture_key = "placeholder_icon";
+    }
+    if(!engine->asset_manager.shaders.count(shader_key)){
+        shader_key = "partial_sprite_shader";
+    }
+}
+
 #endif //UFO_ENGINE_STUDIO
 
 }

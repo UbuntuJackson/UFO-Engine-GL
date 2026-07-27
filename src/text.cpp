@@ -17,6 +17,7 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_engine_studio/file_dialogue.h"
+
 #endif
 
 namespace ufo{
@@ -56,77 +57,99 @@ Text::~Text(){
 void Text::OnIrregularUpdate(){
     if(language_to_text[engine->language] == "") return;
 
-    if(texture.id != 0) texture.Delete();
+    //Bitmap font text wrapping?
+    {
+        if(!is_wrapping){
 
-    SDL_Surface* surface_original = nullptr;
-
-    if(!is_wrapping) surface_original = TTF_RenderText_Blended(font.GetFont(), GetTextFromLanguageMap().c_str(), 0,  (SDL_Color){255,255,255,255});
-    else{
-        Widget* parent_widget = parent->DynamicCast<Widget>();
-        if(parent_widget){
-            surface_original = TTF_RenderText_Blended_Wrapped(font.GetFont(), GetTextFromLanguageMap().c_str(), 0, (SDL_Color){255,255,255,255}, parent_widget->rectangle.size.x);
         }
         else{
-            surface_original = TTF_RenderText_Blended_Wrapped(font.GetFont(), GetTextFromLanguageMap().c_str(), 0, (SDL_Color){255,255,255,255}, engine->width-GetGlobalPosition().x);
+
         }
     }
 
-    SDL_Surface* surface = SDL_CreateSurface(
-        surface_original->w, surface_original->h,
-        SDL_PIXELFORMAT_RGBA32);
-    SDL_BlitSurface(surface_original, NULL, surface, NULL);
+    {
+        if(texture.id != 0) texture.Delete();
 
-    if(!surface){
-        Console::PrintLine("Failed to TTF_RenderTextBlended", SDL_GetError());
+        SDL_Surface* surface_original = nullptr;
+
+        if(!is_wrapping) surface_original = TTF_RenderText_Blended(font.GetFont(), GetTextFromLanguageMap().c_str(), 0,  (SDL_Color){255,255,255,255});
+        else{
+            Widget* parent_widget = parent->DynamicCast<Widget>();
+            if(parent_widget){
+                surface_original = TTF_RenderText_Blended_Wrapped(font.GetFont(), GetTextFromLanguageMap().c_str(), 0, (SDL_Color){255,255,255,255}, parent_widget->editor_hitbox.size.x);
+            }
+            else{
+                surface_original = TTF_RenderText_Blended_Wrapped(font.GetFont(), GetTextFromLanguageMap().c_str(), 0, (SDL_Color){255,255,255,255}, engine->width-GetGlobalPosition().x);
+            }
+        }
+
+        SDL_Surface* surface = SDL_CreateSurface(
+            surface_original->w, surface_original->h,
+            SDL_PIXELFORMAT_RGBA32);
+        SDL_BlitSurface(surface_original, NULL, surface, NULL);
+
+        if(!surface){
+            Console::PrintLine("Failed to TTF_RenderTextBlended", SDL_GetError());
+        }
+
+        const SDL_PixelFormatDetails* pixel_format_details = SDL_GetPixelFormatDetails(surface->format);
+
+        if(!pixel_format_details){
+            Console::PrintLine("Failed to get SDL_PixelFormatDetails*",SDL_GetError());
+        }
+
+
+        unsigned int texture_format = GL_BGRA;
+        unsigned int number_of_colours = pixel_format_details->bytes_per_pixel;
+
+        if(number_of_colours == 4){
+            if(pixel_format_details->Rmask == 0x000000ff) texture_format = GL_RGBA;
+            else texture_format = GL_BGRA;
+
+        }
+        else{
+            if(pixel_format_details->Rmask == 0x000000ff) texture_format = GL_RGB;
+            else texture_format = GL_BGR;
+        }
+
+        Console::PrintLine("Number of colours", texture_format == GL_RGBA);
+
+        texture.image_format = texture_format;
+        texture.internal_format = texture_format;
+
+        texture.Generate((unsigned int)surface->w, (unsigned int)surface->h, (unsigned char*)surface->pixels);
+
+        SDL_DestroySurface(surface);
     }
-
-    const SDL_PixelFormatDetails* pixel_format_details = SDL_GetPixelFormatDetails(surface->format);
-
-    if(!pixel_format_details){
-        Console::PrintLine("Failed to get SDL_PixelFormatDetails*",SDL_GetError());
-    }
-
-
-    unsigned int texture_format = GL_BGRA;
-    unsigned int number_of_colours = pixel_format_details->bytes_per_pixel;
-
-    if(number_of_colours == 4){
-        if(pixel_format_details->Rmask == 0x000000ff) texture_format = GL_RGBA;
-        else texture_format = GL_BGRA;
-
-    }
-    else{
-        if(pixel_format_details->Rmask == 0x000000ff) texture_format = GL_RGB;
-        else texture_format = GL_BGR;
-    }
-
-    Console::PrintLine("Number of colours", texture_format == GL_RGBA);
-
-    texture.image_format = texture_format;
-    texture.internal_format = texture_format;
-
-    texture.Generate((unsigned int)surface->w, (unsigned int)surface->h, (unsigned char*)surface->pixels);
-
-    SDL_DestroySurface(surface);
 
 }
 
-void Text::OnWidgetDraw(ufo::Graphics* _graphics){
+void Text::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
     if(language_to_text[engine->language] == "") return;
+
     if(!use_bit_map_font) _graphics->DrawPartialSprite(
         texture,
-        GetGlobalPosition(),
+        _camera->Transform(GetGlobalPosition()),
         Vector2f(0.0f, 0.0f),
-        Vector2f(1.0f, 1.0f),
+        Vector2f(1.0f, 1.0f)*_camera->scale,
         Vector2f(0.0f, 0.0f),
         Vector2f(texture.width, texture.height),
         0.0f,
         ufo::Colour(255,255,255,255),
-        "partial_sprite_shader"
+        shader_key, 0.0f
     );
     else{
-        engine->asset_manager.bit_map_fonts.at(bit_map_font_key).Draw(_graphics, language_to_text[engine->language], GetGlobalPosition(), Vector2f(1.0f, 1.0f),
-        "partial_sprite_shader",ufo::Colour(255,255,255,255));
+        if(!engine->asset_manager.bit_map_fonts.count(bit_map_font_key)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, missing bitmap_font_key",bit_map_font_key);
+        else engine->asset_manager.bit_map_fonts.at(bit_map_font_key).Draw(
+            _graphics,
+            language_to_text[engine->language],
+            _camera->Transform(GetGlobalPosition()),
+            Vector2f(1.0f, 1.0f)*_camera->scale,
+            shader_key,
+            ufo::Colour(255,255,255,255),
+            is_wrapping,
+            parent ? parent->rectangle.size.x : 1000
+        );
     }
 }
 
@@ -171,46 +194,6 @@ void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, 
 
         ImGui::EndCombo();
     }
-}
-
-void Text::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-
-    Vector2f pos_min = GetGlobalPosition()+editor_hitbox.position;
-    Vector2f pos_max = GetGlobalPosition()+editor_hitbox.position+editor_hitbox.size;
-
-    ImVec2 im_viewport_pos = ImGui::GetItemRectMin();
-
-    Vector2f viewport_pos = Vector2f(im_viewport_pos.x, im_viewport_pos.y);
-
-    //Vector2f cursor_pos = Vector2f(ImGui::GetCursorScreenPos().x, ImGui::GetCursorScreenPos().y);
-
-    ImVec2 content_pos = ImGui::GetWindowPos();
-    ImVec2 window_pos = ImGui::GetMainViewport()->Pos;
-
-    Vector2f editor_viewport_pos = Vector2f(viewport_pos.x-window_pos.x,viewport_pos.y-window_pos.y);
-
-    Vector2f mouse_position_over_screenspace = engine->mouse.position-editor_viewport_pos;
-
-    Vector2f world_mouse = mouse_position_over_screenspace;
-    Vector2f former_world_mouse = engine->mouse.former_position-editor_viewport_pos;
-
-    bool parent_is_widget = false;
-
-    if(parent){
-        if(parent->DynamicCast<Widget>()) parent_is_widget = true;
-    }
-
-    if(ufo::Maths::RectangleVsPoint(ufo::Rectangle(GetGlobalPosition()+editor_hitbox.position, editor_hitbox.size),world_mouse) && !parent_is_widget){
-        //Console::PrintLine("Overlapping");
-        if(engine->mouse.is_left_button_held){
-            Vector2f dp = world_mouse - former_world_mouse;
-
-            local_position += dp;
-
-        }
-
-    }
-
 }
 
 void Text::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] Camera* _camera, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){

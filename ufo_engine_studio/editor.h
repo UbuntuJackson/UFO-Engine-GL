@@ -41,6 +41,7 @@ struct ProjectSettings{
     int game_height = 900;
     std::string game_window_title = "Untitled";
     bool multi_player = false;
+    std::string compile_command = "cd build && cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS='-O0 -ggdb' && make -j16";
 };
 
 class Editor : public ufo::Level, public ufo::gc::Root{
@@ -107,7 +108,7 @@ public:
 
 };
 
-void BuildAndRunProgram(const std::string& _build_directory, const std::string& _opened_directory_path);
+void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path);
 void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 
