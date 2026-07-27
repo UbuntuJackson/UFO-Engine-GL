@@ -14,7 +14,7 @@
 #include "../tilemap/tile_map.h"
 #include "text.h"
 #include "ufo_macros.h"
-#include "ufo_maths.h"
+#include "../ufo_maths/ufo_maths.h"
 #include "widget.h"
 #include "button.h"
 #include "platformer_rectangle_collision.h"

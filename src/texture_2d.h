@@ -2,7 +2,7 @@
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
 #include "ufo_macros.h"
-#include "ufo_maths.h"
+#include "../ufo_maths/ufo_maths.h"
 #include "../external/olcPixelGameEngine.h"
 
 namespace ufo{

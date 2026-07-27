@@ -16,7 +16,7 @@
 #include "console.h"
 #include "im_vec.h"
 #include "tileset_manager.h"
-#include "ufo_macros.h"
+#include "../src/ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"

@@ -7,7 +7,7 @@
 #include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
 #include "console.h"
-#include "gc_json.h"
+#include "../ufo_garbage_collector/gc_json.h"
 #include "graphics.h"
 
 #ifdef UFO_ENGINE_STUDIO

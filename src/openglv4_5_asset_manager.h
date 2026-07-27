@@ -6,7 +6,6 @@
 #include "bit_map_font.h"
 #include "texture_2d.h"
 #include "shader.h"
-#include "../utils/file_utils.h"
 
 #ifdef UFO_ENGINE_STUDIO
 namespace UFOEngineStudio{

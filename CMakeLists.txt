@@ -130,7 +130,9 @@ set(
     ufo_engine_studio/file_dialogue.cpp
     ufo_engine_studio/text_editor_tab.cpp
     ufo_engine_studio/error_dialogue.cpp
-    ufo_engine_studio/imgui_utils.cpp)
+    ufo_engine_studio/imgui_utils.cpp
+
+    )
 
 endif()
 
@@ -236,3 +238,10 @@ target_link_libraries(UFO PUBLIC SDL3_ttf::SDL3_ttf)
 target_link_libraries(UFO PUBLIC SDL3_mixer::SDL3_mixer)
 target_link_libraries(UFO PUBLIC glm)
 target_include_directories(UFO PUBLIC glad/include)
+
+if(UFO_ENGINE_STUDIO)
+    add_executable(out engine_main.cpp)
+
+    target_link_libraries(out PUBLIC UFO)
+
+endif()

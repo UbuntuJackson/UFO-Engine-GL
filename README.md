@@ -4,11 +4,11 @@ Compiling
 
 Linux:
 
-<project>/build.py:
-```py
-build_fail = os.system(
-    'cd build && cmake .. -DUFO_ENGINE_STUDIO=ON -DSDL_VIDEO=ON -DSDL_X11_XTEST=OFF -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS="-Os -O3 -Wextra -Wall -Wextra" && make -j16'
-)
+Build with bash:
+```bash
+
+    cd build && cmake .. -DUFO_ENGINE_STUDIO=ON -DSDL_VIDEO=ON -DSDL_X11_XTEST=OFF -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS="-Os -O3 -Wextra -Wall -Wextra" && make -j16
+
 ```
 
 Cross compilation on linux, for windows:

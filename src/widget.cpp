@@ -1,7 +1,7 @@
 #include <vector>
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
-#include "gc_json.h"
+#include "../ufo_garbage_collector/gc_json.h"
 #include "graphics.h"
 #include "actor.h"
 #include "camera.h"

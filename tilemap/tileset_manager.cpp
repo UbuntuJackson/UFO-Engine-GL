@@ -16,7 +16,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../ufo_garbage_collector/garbage_collector.h"
 #include "../utils/file_utils.h"
-#include "ufo_macros.h"
+#include "../src/ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/file_dialogue.h"

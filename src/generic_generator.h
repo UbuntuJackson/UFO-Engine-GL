@@ -3,8 +3,8 @@
 #include <memory>
 #include "actor.h"
 #include "../ufo_garbage_collector/gc_json.h"
-#include "object.h"
-#include "ufo_maths.h"
+#include "../ufo_garbage_collector/object.h"
+#include "../ufo_maths/ufo_maths.h"
 
 namespace ufo{
 

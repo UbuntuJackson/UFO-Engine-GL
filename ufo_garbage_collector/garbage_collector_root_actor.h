@@ -3,7 +3,7 @@
 #include "dynamic_array.h"
 #include "garbage_collector.h"
 #include "object.h"
-#include "ufo_maths.h"
+#include "../ufo_maths/ufo_maths.h"
 
 namespace ufo::gc{
 

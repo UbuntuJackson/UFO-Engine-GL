@@ -21,6 +21,14 @@ class ErrorDialogueNoError : public ErrorDialogue{
     void Update(Editor* _editor);
 };
 
+class ErrorDialogueText : public ErrorDialogue{
+public:
+    bool initialised = false;
+    std::string text;
+
+    void Update(Editor* _editor) override;
+};
+
 class ErrorDialogueFailedToOpenFile : public ErrorDialogue{
 public:
     bool initialised = false;

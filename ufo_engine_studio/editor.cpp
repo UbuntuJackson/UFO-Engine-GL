@@ -1,4 +1,4 @@
-#include "ufo_macros.h"
+#include "../src/ufo_macros.h"
 #include <stdexcept>
 #define SDL_MAIN_HANDLED
 #include <exception>
@@ -23,7 +23,7 @@
 #include "../utils/file_utils.h"
 #include "../imgui/imgui_internal.h"
 #include "../ufo_maths/math_parser.h"
-#include "gc_json.h"
+#include "../ufo_garbage_collector/gc_json.h"
 
 namespace UFOEngineStudio{
 
@@ -786,6 +786,7 @@ void Editor::OnMark() {
 }
 
 void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path){
+
     try{
         const std::string cmake_file_path = _opened_directory_path+"/CMakeLists.txt";
         if(!ufo::FileSystem::FileExists(cmake_file_path)){
@@ -817,15 +818,17 @@ void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, co
         return;
     }
 
-    if(!std::filesystem::exists(_build_directory.c_str())){
-        std::filesystem::create_directory(_build_directory.c_str());
+    try{
+        if(!ufo::FileSystem::FileExists(_build_directory)) std::filesystem::create_directory(_build_directory.c_str());
+
+    } catch(const std::exception& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
     }
 
     //Could build with max available CPU here.
 #ifdef __MINGW32__
     int success = std::system(std::string("cd "+_build_directory+" && cmd \""+_editor->project_settings.compile_command+" && \"Press any key to continue...\" && read p\"").c_str());
 #else
-    //int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS='-O0 -ggdb' && make -j16 && echo 'Press any key to continue...' && read p\"").c_str());
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \""+_editor->project_settings.compile_command+" && echo 'Press any key to continue...' && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
 #endif

@@ -8,13 +8,33 @@
 #include "../imgui/imgui_internal.h"
 #include "error_dialogue.h"
 #include "editor.h"
-#include "ufo_maths.h"
+#include "../ufo_maths/ufo_maths.h"
 
 namespace UFOEngineStudio{
 
 
 void ErrorDialogueNoError::Update([[maybe_unused]] Editor* _editor){
 
+}
+
+void ErrorDialogueText::Update(Editor* _editor) {
+    if(!initialised){
+        initialised = true;
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetWindowSize().x/2.0f,ImGui::GetWindowSize().y/2.0f));
+        ImGui::SetNextWindowSize(ImVec2(250,150));
+    }
+
+    ImGui::Begin("Error", nullptr, ImGuiWindowFlags_NoDocking);
+
+    ImGui::TextWrapped("%s",text.c_str());
+
+    ImGui::Separator();
+
+    if(ImGui::Button("Ok")){
+        _editor->error_dialogue = std::make_unique<ErrorDialogueNoError>();
+    }
+
+    ImGui::End();
 }
 
 ErrorDialogueFailedToOpenFile::ErrorDialogueFailedToOpenFile(const std::string& _file):file_path{_file}{}

@@ -2,7 +2,7 @@
 
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
-#include "gc_json.h"
+#include "../ufo_garbage_collector/gc_json.h"
 #include "sprite.h"
 
 namespace UFOEngineStudio{class LevelEditorTab;}

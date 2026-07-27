@@ -28,9 +28,17 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     );
 
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
+
+    LoadBitMapFont("bitmap_unifont", 18, 18);
 
     if(!textures.count("placeholder_icon")){
         Console::PrintLine("Could not load placeholder_icon");
+        throw;
+    }
+
+    if(!bit_map_fonts.count("bitmap_unifont")){
+        Console::PrintLine("Could not load bitmap_unifont");
         throw;
     }
 
@@ -96,8 +104,20 @@ void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::s
 #ifdef UFO_ENGINE_STUDIO
 void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
-    LoadTexture("../UFO-Engine/res/actor_icon.png","actor_icon", true);
+    LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
+    LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
 
+    LoadBitMapFont("bitmap_unifont", 18, 18);
+
+    if(!textures.count("placeholder_icon")){
+        Console::PrintLine("Could not load placeholder_icon");
+        throw;
+    }
+
+    if(!bit_map_fonts.count("bitmap_unifont")){
+        Console::PrintLine("Could not load bitmap_unifont");
+        throw;
+    }
 
     save_path = _editor->opened_directory_path+"/loaded_assets.json";
     if(!ufo::FileSystem::FileExists(save_path)) ufo::FileSystem::Write(save_path, "{\"assets\":[],\"shaders\":[]}");
