@@ -14,8 +14,9 @@
 namespace ufo{
 
 class Camera;
+class GarbageCollector;
+
 namespace gc{
-    class GarbageCollector;
     class JsonMap;
 }
 
