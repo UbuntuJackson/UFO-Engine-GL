@@ -5,7 +5,6 @@
 
 namespace ufo::gc
 {
-    class GarbageCollector;
     class JsonMap;
 }
 
@@ -15,6 +14,7 @@ namespace UFOEngineStudio{
 
 namespace ufo{
 
+class GarbageCollector;
 class Graphics;
 
 class Animation : public Sprite{
