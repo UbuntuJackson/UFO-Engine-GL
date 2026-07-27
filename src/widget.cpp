@@ -78,6 +78,7 @@ void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     }
 
     _json->TryToGetValueAsFloat("corner_rounding", corner_rounding, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsString("texture_key", texture_key, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
 }
 
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
@@ -90,6 +91,7 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
     j_rectangle->map.emplace("w", _gc->New<ufo::gc::JsonNumber>(rectangle.size.x));
     j_rectangle->map.emplace("h", _gc->New<ufo::gc::JsonNumber>(rectangle.size.y));
 
+    parent_class_as_json->map.emplace("texture_key", _gc->New<ufo::gc::JsonString>(texture_key));
     parent_class_as_json->map.emplace("rectangle", j_rectangle);
     parent_class_as_json->map.emplace("corner_rounding", _gc->New<ufo::gc::JsonNumber>(corner_rounding));
 

@@ -34,20 +34,20 @@ public:
 
     Widget(Vector2f _);
 
-    ufo::Rectangle GetRectangle();
+    ufo::Rectangle GetRectangle() override;
 
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
 
-    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
 
-    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab);
+    void OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
-    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json);
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     #ifdef UFO_ENGINE_STUDIO
 

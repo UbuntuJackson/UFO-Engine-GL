@@ -40,11 +40,10 @@ void ControllableCamera::OnUpdate(float _delta_time){
     //if(scale < 1.0f) scale = 1.0f;
 
     if(engine->keyboard.GetKey(SDLK_PLUS).is_pressed){
-        scale += (0.25f);
+        scale *= (1.10f);
     }
     if(engine->keyboard.GetKey(SDLK_MINUS).is_pressed){
-        scale -= (0.25f);
-        if(scale < 1.0f) scale = 1.0f;
+        scale /= (1.10f);
     }
 
     /*if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;
