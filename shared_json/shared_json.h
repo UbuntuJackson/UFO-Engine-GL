@@ -88,6 +88,35 @@ namespace ufo::SharedMemory{
         std::map<std::string,std::shared_ptr<Json>> AsMap(){return map;}
         bool IsNull(){return false;}
 
+        void TryToGetValueAsString(std::string _key, std::string& _string, const std::string& _location){
+            try{
+                _string = map.at(_key)->AsString();
+            } catch(const std::exception& _error){
+                Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+            }
+        }
+        void TryToGetValueAsFloat(std::string _key, float& _i, const std::string& _location){
+            try{
+                _i = map.at(_key)->AsFloat();
+            } catch(const std::exception& _error){
+                Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+            }
+        }
+        void TryToGetValueAsArray(std::string _key, std::vector<std::shared_ptr<SharedMemory::Json>>& _array, const std::string& _location){
+            try{
+                _array = map.at(_key)->AsArray();
+            } catch(const std::exception& _error){
+                Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+            }
+        }
+        void TryToGetValueAsMap(std::string _key, std::map<std::string,std::shared_ptr<SharedMemory::Json>>& _map, const std::string& _location){
+            try{
+                _map = map.at(_key)->AsMap();
+            } catch(const std::exception& _error){
+                Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+            }
+        }
+
         cJSON* GetObject(){
             cJSON* self = cJSON_CreateObject();
 

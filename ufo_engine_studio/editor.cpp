@@ -103,7 +103,7 @@ void Editor::OpenFolder(std::string _path){
             j_settings->map["game_height"] = gc.New<ufo::gc::JsonNumber>(int(default_settings.game_height));
             j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(int(default_settings.multi_player));
             j_settings->map["game_window_title"] = gc.New<ufo::gc::JsonString>(default_settings.game_window_title);
-            j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(default_settings.game_window_title);
+            j_settings->map["compile_command"] = gc.New<ufo::gc::JsonString>(default_settings.compile_command);
         }catch(const std::exception& _error){
             Console::PrintLine("[UFO-Engine Studio] Editor: Somehow failed to write property vsync");
         }
@@ -465,7 +465,7 @@ void Editor::OnUpdate(float _delta_time){
 
     if(will_compile_game){
 
-        const std::string build_directory = opened_directory_path;
+        const std::string build_directory = opened_directory_path + "/build";
         std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
         t.detach();
         will_compile_game = false;
