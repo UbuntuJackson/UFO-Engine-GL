@@ -111,7 +111,7 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unuse
             [&](const ufo::TilesetData& _tileset_data){return _tileset_data.name == *_filelist;}
          );
 
-        if(it != level_editor_tab->this_level->tileset_manager.tileset_data.end()){
+        if(it == level_editor_tab->this_level->tileset_manager.tileset_data.end()){
             level_editor_tab->editor->queued_tilesets.push_back(ufo::FileSystem::GetGenericString(*_filelist));
         }
 
