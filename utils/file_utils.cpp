@@ -20,17 +20,11 @@ bool FileExists(const std::string& _path){
 
 bool HasExtension(const std::string& _path, const std::string& _extension){
 
-    try{
+    size_t index = _path.find_last_of(".");
+    if(index == _path.npos) return false;
 
-        bool has_extension = _path.substr(_path.find_last_of(".")) == "."+_extension;
-        return has_extension;
-
-    }
-    catch(const std::exception& _error){
-        Console::PrintLine("ufo::FileSystem::HasExtension: Something went wrong trying to find excension.", _error.what());
-    }
-
-    return false;
+    bool has_extension = _path.substr(index) == "."+_extension;
+    return has_extension;
 
 }
 

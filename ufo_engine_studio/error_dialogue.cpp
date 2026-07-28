@@ -17,6 +17,8 @@ void ErrorDialogueNoError::Update([[maybe_unused]] Editor* _editor){
 
 }
 
+ErrorDialogueText::ErrorDialogueText(const std::string _text) : text{_text}{}
+
 void ErrorDialogueText::Update(Editor* _editor) {
     if(!initialised){
         initialised = true;

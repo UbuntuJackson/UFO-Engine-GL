@@ -13,6 +13,7 @@
 #include "level_editor_tab.h"
 #include "text_editor_tab.h"
 #include "error_dialogue.h"
+#include "ufo_macros.h"
 
 namespace UFOEngineStudio{
 
@@ -78,8 +79,10 @@ namespace UFOEngineStudio{
 
         if(ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered()){
 
+            bool is_valid_file_extension = false;
+
             //If the file is a level file
-            if(IsExtension(path+"/"+file_name, "ason")){
+            if(ufo::FileSystem::HasExtension(path+"/"+file_name, "ason")){
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
                 //add some sort of LevelOK flag here or something
@@ -102,10 +105,16 @@ namespace UFOEngineStudio{
                     _editor->refresh_entire_project = true;
                 }
 
+                is_valid_file_extension = true;
 
             }
 
-            if(IsExtension(path+"/"+file_name, "cpp") || IsExtension(path+"/"+file_name, "h") || IsExtension(path+"/"+file_name, "txt")){
+            if(ufo::FileSystem::HasExtension(path+"/"+file_name, "cpp") ||
+                ufo::FileSystem::HasExtension(path+"/"+file_name, "h") ||
+                ufo::FileSystem::HasExtension(path+"/"+file_name, "txt") ||
+                ufo::FileSystem::HasExtension(path+"/"+file_name, "json") ||
+                ufo::FileSystem::HasExtension(path+"/"+file_name, "cfg")
+            ){
                 try{
                     auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor);
 
@@ -117,31 +126,13 @@ namespace UFOEngineStudio{
                 } catch(const std::exception& _error){
                     Console::PrintLine("[UFO-Engine Studio]", _error.what());
                 }
+
+                is_valid_file_extension = true;
+            }
+            if(!is_valid_file_extension){
+                _editor->error_dialogue = std::make_unique<ErrorDialogueText>(std::string(__UFO_PRETTY_FUNCTION__)+" Error, unknown file type: "+_editor->opened_directory_path+path+"/"+file_name);
             }
 
-        }
-
-        if(open_pop_up){
-            ImGui::OpenPopup(("Open File###OpenFilePopup"+path+"/"+file_name).c_str());
-        }
-
-        if(ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered() && IsExtension(path+"/"+file_name, "json")){
-            open_pop_up = true;
-
-        }
-
-        if(ImGui::BeginPopup(("Open File###OpenFilePopup"+path+"/"+file_name).c_str())){
-
-            open_pop_up = false;
-
-            if(ImGui::Button("Convert to .ason")){
-                std::system(
-                    (std::string("cd ../UFO-Engine/tiled_map_conversion_tool && python3 tiled_map_conversion_tool.py ")
-                        + "\"" +_editor->opened_directory_path+"\" \"" +path+"/"+file_name+"\"").c_str()
-                );
-            }
-
-            ImGui::EndPopup();
         }
 
         if(!ImGui::IsItemClicked() && (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsKeyPressed(ImGuiKey_Enter))){
@@ -179,6 +170,16 @@ namespace UFOEngineStudio{
                 _parent->file_nodes_to_be_added_at_end_of_frame.back()->file_name = "NewFolder";
                 _parent->file_nodes_to_be_added_at_end_of_frame.back()->TurnOnEditMode();
             }
+
+            if(ufo::FileSystem::HasExtension(file_name, "json")){
+                if(ImGui::MenuItem("Convert to .ason")){
+                    std::system(
+                        (std::string("cd ../UFO-Engine/tiled_map_conversion_tool && python3 tiled_map_conversion_tool.py ")
+                            + "\"" +_editor->opened_directory_path+"\" \"" +path+"/"+file_name+"\"").c_str()
+                    );
+                }
+            }
+
             ImGui::EndPopup();
         }
 

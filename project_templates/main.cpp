@@ -1,3 +1,7 @@
+// main.cpp
+//      Entry point of the game. UFO-Engine Studio will regenerate this file if removed.
+//      This file may be modified but hopefully won't be needed.
+
 #include <memory>
 #include <engine.h>
 #include <exception>

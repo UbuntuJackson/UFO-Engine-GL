@@ -26,6 +26,8 @@ public:
     bool initialised = false;
     std::string text;
 
+    ErrorDialogueText(const std::string _text);
+
     void Update(Editor* _editor) override;
 };
 

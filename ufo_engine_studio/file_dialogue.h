@@ -15,6 +15,5 @@ void OnOpenTexture(void *_userdata, const char * const *_filelist, int _filter);
 void OnOpenShader(void *_userdata, const char * const *_filelist, int _filter);
 void OnNewTextFile(void *_tab, const char * const *_filelist, int _filter);
 void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist, int _filter);
-bool IsExtension(const std::string& _path, const std::string& _ext);
 
 }

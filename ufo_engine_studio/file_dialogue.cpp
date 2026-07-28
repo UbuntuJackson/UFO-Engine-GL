@@ -204,7 +204,4 @@ void OnSelectDirectoryForDebugBuild(void *_editor, const char * const *_filelist
 
 }
 
-bool IsExtension(const std::string& _path, const std::string& _ext){
-    return _path.substr(_path.find_last_of(".")) == "."+_ext;
-}
 }
