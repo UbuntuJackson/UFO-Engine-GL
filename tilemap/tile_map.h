@@ -57,6 +57,7 @@ public:
         int tile_identifier;
     };
 
+    //This function needs a rework
     TileData GetTileID_AtLevelPosition_Advanced(int _x, int _y){
         bool within_bounds = false;
         bool tile_identifier = false;
@@ -180,12 +181,19 @@ public:
                 return;
             }
 
+            if(left_bound_tile < 0) left_bound_tile = 0;
+            if(right_bound_tile > tile_map->number_of_columns) right_bound_tile = tile_map->number_of_columns;
+            if(lower_bound_tile < 0) lower_bound_tile = 0;
+            if(upper_bound_tile > tile_map->number_of_rows) upper_bound_tile = tile_map->number_of_rows;
+
             for(int yy = lower_bound_tile; yy < upper_bound_tile; yy++){
                 for(int xx = left_bound_tile; xx < right_bound_tile; xx++){
+                    if(tile_map->IsTileWithinBounds(xx, yy)){
+                        //Crash here, something seems out of range
+                        tiles_before.push_back(tile_map->tilemap_data_before_change[yy*tile_map->number_of_columns+xx]);
+                        tiles_after.push_back(tile_map->tilemap_data[yy*tile_map->number_of_columns+xx]);
 
-                    //Crash here, something seems out of range
-                    tiles_before.push_back(tile_map->tilemap_data_before_change[yy*tile_map->number_of_columns+xx]);
-                    tiles_after.push_back(tile_map->tilemap_data[yy*tile_map->number_of_columns+xx]);
+                    }
                 }
             }
         }
@@ -208,7 +216,7 @@ public:
                 int tm_x = xx + i%c;
                 int tm_y = yy + i/c;
 
-                tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_before[i];
+                if(tile_map->IsTileWithinBounds(tm_x, tm_y)) tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_before[i];
             }
         }
 
@@ -230,7 +238,7 @@ public:
                 int tm_x = xx + i%c;
                 int tm_y = yy + i/c;
 
-                tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_after[i];
+                if(tile_map->IsTileWithinBounds(tm_x, tm_y)) tile_map->tilemap_data[tm_x+tm_y*tile_map->number_of_columns] = tiles_after[i];
             }
 
             for(const auto& i : tiles_after){
@@ -240,7 +248,8 @@ public:
         }
 
         std::string GetInfo(){
-            return "TileMapChange_Paint";
+            return "TileMapChange_Paint "+std::to_string(left_bound_tile)+", "+std::to_string(right_bound_tile)+", "+
+                std::to_string(lower_bound_tile)+", "+std::to_string(upper_bound_tile);
         }
     };
 
@@ -265,8 +274,8 @@ public:
 
     int currently_hovered_tile_x = 0;
     int currently_hovered_tile_y = 0;
-    int current_world_mouse_x = 0;
-    int current_world_mouse_y = 0;
+
+    Vector2f world_mouse;
 
     void ResizeRight(int _number_of_tiles_to_insert);
     void ResizeLeft(int _number_of_tiles_to_insert);

@@ -73,12 +73,15 @@ void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_direct
                 if(args.size() == 1){
                     std::string actor_config_path = args[0]->AsString();
 
-                    const auto& actor_config_json = gc::JsonRead(&gc, _game_directory+"/"+actor_config_path)->AsMap().at("actors")->AsArray();
+                    if(ufo::FileSystem::FileExists(_game_directory+"/"+actor_config_path)){
 
-                    for(const auto actor_json : actor_config_json){
-                        if(actor_json->AsMap().at("name")->AsString() == "Main"){
-                            actor_jsons_with_unaltered_default_properties.emplace(class_name, actor_json->AsJsonMap());
-                            Console::PrintLine("Found class",class_name,actor_config_path);
+                        const auto& actor_config_json = gc::JsonRead(&gc, _game_directory+"/"+actor_config_path)->AsMap().at("actors")->AsArray();
+
+                        for(const auto actor_json : actor_config_json){
+                            if(actor_json->AsMap().at("name")->AsString() == "Main"){
+                                actor_jsons_with_unaltered_default_properties.emplace(class_name, actor_json->AsJsonMap());
+                                Console::PrintLine("Found class",class_name,actor_config_path);
+                            }
                         }
                     }
 

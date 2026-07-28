@@ -524,57 +524,59 @@ def main(_working_directory, _structured_classes_dict):
             if macro["name"] == "ufo_actor_config" and len(macro["args"]) > 0:
                 actor_config_path = macro["args"][0]
 
-                file_actor_config_file = open(
-                    _working_directory + "/" + actor_config_path
-                )
+                if os.path.exists(_working_directory + "/" + actor_config_path):
 
-                file_actor_config_json = json.loads(file_actor_config_file.read())
-
-                # This is the actor named Main, in the .ason file.
-                main = None
-
-                # Looking for main-actor.
-                for i in file_actor_config_json["actors"]:
-                    if i["name"] == "Main":
-                        main = i
-
-                if not main:
-                    ufo_header_tool_log.ufo_header_tool_print(
-                        "[UFO-Engine Header Tool] generate_actor_spawner_functions.py",
-                        "Error, could not find Main actor",
+                    file_actor_config_file = open(
+                        _working_directory + "/" + actor_config_path
                     )
-                    sys.exit()
 
-                default_properties_string += get_actor_loading_code(
-                    get_base_class_of(inheritence_map, main["class_name"]),
-                    "instance" + str(this_actor_id),
-                    main,
-                )
+                    file_actor_config_json = json.loads(file_actor_config_file.read())
 
-                # Evertything from here is just components, so there will be some loading of further .ason files
-                # to get those default attributes too
+                    # This is the actor named Main, in the .ason file.
+                    main = None
 
-                for actor in main["actors"]:
-                    if not is_custom_class(inheritence_map, actor["class_name"]):
-                        actors_string += add_actor(
-                            inheritence_map,
-                            _working_directory,
-                            actor_counter,
-                            "instance" + str(this_actor_id),
-                            actor,
+                    # Looking for main-actor.
+                    for i in file_actor_config_json["actors"]:
+                        if i["name"] == "Main":
+                            main = i
+
+                    if not main:
+                        ufo_header_tool_log.ufo_header_tool_print(
+                            "[UFO-Engine Header Tool] generate_actor_spawner_functions.py",
+                            "Error, could not find Main actor",
                         )
-                    else:
-                        actors_string += add_imported_actor(
-                            inheritence_map,
-                            _working_directory,
-                            actor_counter,
-                            "instance" + str(this_actor_id),
-                            actor,
-                        )
+                        sys.exit()
 
-                file_actor_config_file.close()
+                    default_properties_string += get_actor_loading_code(
+                        get_base_class_of(inheritence_map, main["class_name"]),
+                        "instance" + str(this_actor_id),
+                        main,
+                    )
 
-        klass_name = klass["name"]
+                    # Evertything from here is just components, so there will be some loading of further .ason files
+                    # to get those default attributes too
+
+                    for actor in main["actors"]:
+                        if not is_custom_class(inheritence_map, actor["class_name"]):
+                            actors_string += add_actor(
+                                inheritence_map,
+                                _working_directory,
+                                actor_counter,
+                                "instance" + str(this_actor_id),
+                                actor,
+                            )
+                        else:
+                            actors_string += add_imported_actor(
+                                inheritence_map,
+                                _working_directory,
+                                actor_counter,
+                                "instance" + str(this_actor_id),
+                                actor,
+                            )
+
+                    file_actor_config_file.close()
+
+        klass_name = "::"+klass["name"]
 
         # Can't have colons in function names
         func_name = klass_name.replace("::", "_")

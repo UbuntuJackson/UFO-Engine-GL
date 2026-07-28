@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
+#include <SDL3/SDL_dialog.h>
 
 namespace UFOEngineStudio{
+
+inline static const SDL_DialogFileFilter global_texture_filters[] = {{"PNG images", "png"}, {"JPEG images", "jpeg;jpg"}};
 
 void OnSelectStartLevel(void *_userdata, const char * const *_filelist, int _filter);
 void OnWriteProjectFile(void *_userdata, const char * const *_filelist, int _filter);

@@ -103,7 +103,21 @@ void OnOpenTileset(void *_userdata, const char * const *_filelist, [[maybe_unuse
 
     UFOEngineStudio::LevelEditorTab* level_editor_tab = (UFOEngineStudio::LevelEditorTab*)_userdata;
 
-    level_editor_tab->editor->queued_tilesets.push_back(ufo::FileSystem::GetGenericString(*_filelist));
+    while(*_filelist != nullptr){
+
+         const auto it = std::find_if(
+            level_editor_tab->this_level->tileset_manager.tileset_data.begin(),
+            level_editor_tab->this_level->tileset_manager.tileset_data.end(),
+            [&](const ufo::TilesetData& _tileset_data){return _tileset_data.name == *_filelist;}
+         );
+
+        if(it != level_editor_tab->this_level->tileset_manager.tileset_data.end()){
+            level_editor_tab->editor->queued_tilesets.push_back(ufo::FileSystem::GetGenericString(*_filelist));
+        }
+
+        _filelist++;
+    }
+
     level_editor_tab->editor->finished_importing_assets = false;
 
 }

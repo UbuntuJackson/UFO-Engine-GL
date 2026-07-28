@@ -161,7 +161,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
     if(ImGui::BeginTabItem("Textures")){
 
         if(ImGui::Button("[+] Add Texture")){
-            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, engine->window, nullptr, 0, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, engine->window, UFOEngineStudio::global_texture_filters, 2, _level_editor_tab->editor->opened_directory_path.c_str(), true);
         }
 
         if(ImGui::InputText("Search###SearchAssetBrowser", &_level_editor_tab->asset_browser_search)){

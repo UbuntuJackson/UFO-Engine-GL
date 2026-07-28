@@ -27,44 +27,70 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
 
     for cl in _classes:
         base_class = ""
+        class_name = ""
 
         if len(cl["class"]["extends"]):
             base_class = cl["class"]["extends"][0]
 
+        class_name = cl['class']['name']
+
         for ufo_macro in cl["macros"]:
             if ufo_macro["name"] == "ufo_actor_config":
                 if len(ufo_macro["args"]) != 0:
-                    actor_ason = json.load(open(_path + "/" + ufo_macro["args"][0]))
+                    if os.path.exists(_path + "/" + ufo_macro["args"][0]):
+                        actor_ason = json.load(open(_path + "/" + ufo_macro["args"][0]))
 
-                    found_Main_actor : bool = False
+                        found_Main_actor : bool = False
 
-                    for actor in actor_ason["actors"]:
-                        if actor["name"] == "Main":
-                            base_class = actor["class_name"]
-                            found_Main_actor = True
-                            if len(cl["class"]["extends"]):
-                                # Replace class name only if using alias from generated file
+                        for actor in actor_ason["actors"]:
+                            if actor["name"] == "Main":
+                                base_class = actor["class_name"]
+                                found_Main_actor = True
+                                if len(cl["class"]["extends"]):
+                                    # Replace class name only if using alias from generated file
 
-                                if (
-                                    "ufo::Generated::"
-                                    + cl["class"]["name"]
-                                    + "_BaseClass"
-                                    == cl["class"]["extends"][0]
-                                ):
-                                    cl["class"]["extends"][0] = base_class
+                                    if (
+                                        "ufo::Generated::"
+                                        + cl["class"]["name"]
+                                        + "_BaseClass"
+                                        == cl["class"]["extends"][0]
+                                    ):
+                                        cl["class"]["extends"][0] = base_class
 
-                    if not found_Main_actor:
-                        cl['errors'].append({'class':cl['class']['name'],'file':ufo_macro["args"][0],'type':"No Actor Named Main"})
+                        if not found_Main_actor:
+                            cl['errors'].append({'class':cl['class']['name'],'file':ufo_macro["args"][0],'type':"No Actor Named Main"})
 
-                    typedef = (
-                        "typedef "
-                        + " "
-                        + base_class
-                        + " "
-                        + cl["class"]["name"]
-                        + "_BaseClass;\n"
-                    )
-                    base_classes_file += typedef
+                        namespace_separated_from_name = class_name.rsplit("::",1)
+
+                        typedef = ""
+
+                        if len(namespace_separated_from_name) == 1:
+
+                            typedef = (
+                                "typedef "
+                                + " "
+                                + base_class
+                                + " "
+                                + cl["class"]["name"]
+                                + "_BaseClass;\n"
+                            )
+                        else:
+
+                            namespace_name = namespace_separated_from_name[0]
+                            class_name_without_namespace = namespace_separated_from_name[1]
+
+                            typedef = (
+                                "namespace "+namespace_name+"{\n"
+                                "typedef "
+                                + " "
+                                + base_class
+                                + " "
+                                + class_name_without_namespace
+                                + "_BaseClass;\n"
+                                + "}\n"
+                            )
+
+                        base_classes_file += typedef
 
         inheritence_map[cl["class"]["name"]] = base_class
 
@@ -130,7 +156,7 @@ def make_generated_file(_path, _classes, _engine_includes, _structured_classes_d
 
         function_ += (
             "                auto instance = std::make_unique<"
-            + cl["class"]["name"]
+            + "::" + cl["class"]["name"]
             + ">(Vector2f(_x, _y));\n"
         )
 

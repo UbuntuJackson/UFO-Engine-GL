@@ -489,7 +489,7 @@ void TileMap::OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineS
 
             }
 
-            //int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+            //int tile_to_be_set = (currently_hovered_tile_y+yy)*number_of_columns + (currently_hovered_tile_x+xx);
 
             //if(tile_to_be_set > -1 && tile_to_be_set < tilemap_data.size()) tilemap_data[tile_to_be_set] = i;
 
@@ -568,6 +568,9 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
 
     ImGui::Checkbox(std::string("Visible###"+std::to_string(editor_id)).c_str(), &visible);
 
+    ImGui::InputInt("Tile Width", &tile_width);
+    ImGui::InputInt("Tile Height", &tile_height);
+
     ImGui::Text("Tilemap Width: %i tiles", number_of_columns);
     ImGui::Text("Tilemap Height: %i tiles", number_of_rows);
 
@@ -576,8 +579,8 @@ void TileMap::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_ta
     ImGui::Text("Tile x: %i tiles", currently_hovered_tile_x);
     ImGui::Text("Tile y: %i tiles", currently_hovered_tile_y);
 
-    ImGui::Text("Current world mouse x: %i", current_world_mouse_x);
-    ImGui::Text("Current world mouse y: %i", current_world_mouse_y);
+    ImGui::Text("Current world mouse x: %f", world_mouse.x);
+    ImGui::Text("Current world mouse y: %f", world_mouse.y);
 
     try{
 
@@ -704,7 +707,7 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             int yy = t/(int)(x1-x0);
             Console::PrintLine(t);
 
-            tilemap_data[(x0+xx)+(y0+yy)*number_of_columns] = 0;
+            if(IsTileWithinBounds(x0+xx, y0+yy)) tilemap_data[(x0+xx)+(y0+yy)*number_of_columns] = 0;
 
         }
 
@@ -734,9 +737,7 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             int xx = t%(int)(x1-x0);
             int yy = t/(int)(x1-x0);
 
-            if(!IsTileWithinBounds(currently_hovered_tile_x+xx, currently_hovered_tile_y+yy)) continue;
-
-            tilemap_data[currently_hovered_tile_x+xx+(currently_hovered_tile_y+yy)*number_of_columns] = level->tileset_manager.tilemap_selected_tiles[t];
+            if(IsTileWithinBounds(currently_hovered_tile_x+xx, currently_hovered_tile_y+yy)) tilemap_data[currently_hovered_tile_x+xx+(currently_hovered_tile_y+yy)*number_of_columns] = level->tileset_manager.tilemap_selected_tiles[t];
 
         }
 
@@ -785,6 +786,7 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
                     int xx = t%(int)(auto_tiling_tilemap->number_of_columns);
                     int yy = t/(int)(auto_tiling_tilemap->number_of_columns);
 
+                    if(!IsTileWithinBounds(xx, yy)) continue;
 
                     if(xx > auto_tiling_tilemap->number_of_columns){
                         t+=auto_tiling_tilemap->number_of_columns*4;
@@ -835,6 +837,8 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
             std::vector<Vector2i> all_filled_tiles; //For undo&redo
 
             std::vector<Vector2i> tiles_to_fill;
+
+            if(!IsTileWithinBounds(currently_hovered_tile_x, currently_hovered_tile_y)) return false;
 
             int tile_to_replace = tilemap_data[currently_hovered_tile_y*number_of_columns+currently_hovered_tile_x];
 
@@ -917,21 +921,18 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
     if(!is_selected && level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->GetTileMap() != this) return;
 
-    Vector2f world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
+    world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
-    current_world_mouse_x = world_mouse.x;
-    current_world_mouse_y = world_mouse.y;
+    currently_hovered_tile_x = int(world_mouse.x)/tile_width;
+    currently_hovered_tile_y = int(world_mouse.y)/tile_height;
 
-    int hovered_tile_x = int(world_mouse.x)/tile_width;
-    int hovered_tile_y = int(world_mouse.y)/tile_height;
+    int currently_hovered_tile_left_boundary = 0-level->tileset_manager.currently_selected_tiles.number_of_columns+1;
+    int currently_hovered_tile_lower_boundary = 0-level->tileset_manager.currently_selected_tiles.number_of_rows+1;
 
-    if(hovered_tile_x < 0) hovered_tile_x = 0;
-    if(hovered_tile_x > number_of_columns-1) hovered_tile_x = number_of_columns-1;
-    if(hovered_tile_y < 0) hovered_tile_y = 0;
-    if(hovered_tile_y > number_of_rows-1) hovered_tile_y = number_of_rows-1;
-
-    currently_hovered_tile_x = hovered_tile_x;
-    currently_hovered_tile_y = hovered_tile_y;
+    if(currently_hovered_tile_x < currently_hovered_tile_left_boundary) currently_hovered_tile_x = currently_hovered_tile_left_boundary;
+    if(currently_hovered_tile_x > number_of_columns-1) currently_hovered_tile_x = number_of_columns-1;
+    if(currently_hovered_tile_y < currently_hovered_tile_lower_boundary) currently_hovered_tile_y = currently_hovered_tile_lower_boundary;
+    if(currently_hovered_tile_y > number_of_rows-1) currently_hovered_tile_y = number_of_rows-1;
 
     if(is_selected &&
         (_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH ||
@@ -941,8 +942,8 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
         if(ImGui::IsItemHovered(0) && ImGui::IsMouseClicked(0)){
             tilemap_data_before_change = tilemap_data;
-            left_bound_tile = hovered_tile_x;
-            lower_bound_tile = hovered_tile_y;
+            left_bound_tile = currently_hovered_tile_x;
+            lower_bound_tile = currently_hovered_tile_y;
             upper_bound_tile = lower_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_rows;
             right_bound_tile = left_bound_tile+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
@@ -955,29 +956,31 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
         //Here the change which ends the placing action was before
 
-        if(ImGui::IsItemHovered(0) && ImGui::IsMouseDown(0)){
-            if(hovered_tile_x < left_bound_tile) left_bound_tile = hovered_tile_x;
-            if(hovered_tile_y < lower_bound_tile) lower_bound_tile = hovered_tile_y;
-            if((int)hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows > upper_bound_tile) upper_bound_tile = hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
-            if((int)hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
+        if(_level_editor_tab->current_undo_redo_action.actor_id == editor_id
+            && _level_editor_tab->current_undo_redo_action.tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH  && ImGui::IsMouseDown(0)
+        ){
+            if(currently_hovered_tile_x < left_bound_tile) left_bound_tile = currently_hovered_tile_x;
+            if(currently_hovered_tile_y < lower_bound_tile) lower_bound_tile = currently_hovered_tile_y;
+            if((int)currently_hovered_tile_y +level->tileset_manager.currently_selected_tiles.number_of_rows    > upper_bound_tile) upper_bound_tile = currently_hovered_tile_y+level->tileset_manager.currently_selected_tiles.number_of_rows;
+            if((int)currently_hovered_tile_x +level->tileset_manager.currently_selected_tiles.number_of_columns > right_bound_tile) right_bound_tile = currently_hovered_tile_x+level->tileset_manager.currently_selected_tiles.number_of_columns;
 
-            if(_level_editor_tab->current_tool == UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_BRUSH){
-                int xx = 0;
-                int yy = 0;
-                for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
 
-                    int tile_to_be_set = (hovered_tile_y+yy)*number_of_columns + (hovered_tile_x+xx);
+            int xx = 0;
+            int yy = 0;
+            for(const int i : level->tileset_manager.currently_selected_tiles.tiles){
 
-                    if(IsTileWithinBounds(hovered_tile_x+xx, hovered_tile_y+yy)) tilemap_data[tile_to_be_set] = i;
+                int tile_to_be_set = (currently_hovered_tile_y+yy)*number_of_columns + (currently_hovered_tile_x+xx);
 
-                    xx++;
-                    if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
-                        xx = 0;
-                        yy++;
-                    }
+                if(IsTileWithinBounds(currently_hovered_tile_x+xx, currently_hovered_tile_y+yy)) tilemap_data[tile_to_be_set] = i;
 
+                xx++;
+                if(xx >= level->tileset_manager.currently_selected_tiles.number_of_columns){
+                    xx = 0;
+                    yy++;
                 }
+
             }
+
 
         }
 
