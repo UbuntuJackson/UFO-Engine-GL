@@ -21,6 +21,9 @@ original_position{_position},
 scale{1.0f}
 {
 
+    class_name = "ufo::Camera";
+    base_class_name = class_name;
+
 }
 
 void Camera::OnSpawn(){
@@ -28,8 +31,6 @@ void Camera::OnSpawn(){
     world = Bounds{0.0f,level->size.x, 0.0f ,level->size.y};
 
     if(!engine->in_editor) level->active_camera_handles.push_back(this);
-    class_name = "ufo::Camera";
-    base_class_name = class_name;
 
 }
 
