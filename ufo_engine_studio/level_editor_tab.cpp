@@ -25,6 +25,7 @@
 #include "utility_objects/spawn_cursor.h"
 #include "utility_objects/new_actor_placeholder.h"
 #include "im_vec.h"
+#include "animation_cluster.h"
 
 namespace UFOEngineStudio{
 
@@ -467,35 +468,45 @@ void LevelEditorTab::PlaceActors(){
 
             if(ImGui::IsItemClicked(0)){
                 if(editor->currently_selected_actor_type != ""){
-                    if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
-                        auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);
+                    if(place_inside_actor->base_class_name != "ufo::AnimationCluster"){
+                        if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
+                            auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);
 
-                        ufo::Actor* inst_ptr = inst.get();
+                            ufo::Actor* inst_ptr = inst.get();
 
-                        if(inst_ptr->base_class_name == "ufo::TileMap" || inst_ptr->base_class_name == "ufo::CollisionGrid" || inst_ptr->base_class_name == "ufo::Level"){
-                            inst_ptr->local_position = Vector2f(0.0f, 0.0f);
+                            if(inst_ptr->base_class_name == "ufo::TileMap" || inst_ptr->base_class_name == "ufo::CollisionGrid" || inst_ptr->base_class_name == "ufo::Level"){
+                                inst_ptr->local_position = Vector2f(0.0f, 0.0f);
+                            }
+                            else{
+                                inst_ptr->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
+                            }
+
+                            //Undo&redo
+
+                            while((int)this_level->level_changes.size()-1 > this_level->current_level_change){
+                                Console::PrintLine("loop change stack",this_level->current_level_change, this_level->level_changes.size());
+                                this_level->level_changes.pop_back();
+                            }
+
+                            this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(this,inst.get()->editor_id, place_inside_actor->editor_id));
+
+                            this_level->current_level_change++;
+                            Console::PrintLine("Actor current change",this_level->current_level_change);
+
+                            place_inside_actor->AddActorUniquePtr(std::move(inst));
+
+
+
+                            actor_dedicated_to_viewport = inst_ptr->editor_id;
+
                         }
-                        else{
-                            inst_ptr->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
+                    }
+                    else{
+
+                        auto animation_cluster = place_inside_actor->DynamicCast<ufo::AnimationCluster>();
+                        if(animation_cluster){
+                            animation_cluster->positions.push_back(spawn_cursor->GetGlobalPosition());
                         }
-
-                        //Undo&redo
-
-                        while((int)this_level->level_changes.size()-1 > this_level->current_level_change){
-                            Console::PrintLine("loop change stack",this_level->current_level_change, this_level->level_changes.size());
-                            this_level->level_changes.pop_back();
-                        }
-
-                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(this,inst.get()->editor_id, place_inside_actor->editor_id));
-
-                        this_level->current_level_change++;
-                        Console::PrintLine("Actor current change",this_level->current_level_change);
-
-                        place_inside_actor->AddActorUniquePtr(std::move(inst));
-
-
-
-                        actor_dedicated_to_viewport = inst_ptr->editor_id;
 
                     }
                 }

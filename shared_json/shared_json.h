@@ -109,6 +109,13 @@ namespace ufo::SharedMemory{
                 Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
             }
         }
+        void TryToGetValueAsBool(std::string _key, bool& _i, const std::string& _location){
+            try{
+                _i = (bool)map.at(_key)->AsFloat();
+            } catch(const std::exception& _error){
+                Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+            }
+        }
         void TryToGetValueAsArray(std::string _key, std::vector<std::shared_ptr<SharedMemory::Json>>& _array, const std::string& _location){
             try{
                 _array = map.at(_key)->AsArray();

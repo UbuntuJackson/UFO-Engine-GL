@@ -594,7 +594,7 @@ def main(_working_directory, _structured_classes_dict):
         # Function body...
         spawner_function_string += (
             "    std::unique_ptr<"
-            + klass_name
+            + "::" + klass_name
             + "> instance"
             + str(this_actor_id)
             + " = std::make_unique<"

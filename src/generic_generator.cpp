@@ -21,6 +21,7 @@
 #include "collision_grid.h"
 #include "background_sprite.h"
 #include "rectangular_area.h"
+#include "animation_cluster.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../src/editor_property.h"
@@ -103,6 +104,16 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Actor>(Vector2f(_x, _y));
+            return instance;
+        }
+    );
+
+	factory_map.emplace(
+        "ufo::AnimationCluster",
+        [](ufo::gc::JsonMap* _json){
+            float _x = _json->map.at("x")->AsFloat();
+            float _y = _json->map.at("y")->AsFloat();
+            auto instance = std::make_unique<ufo::AnimationCluster>(Vector2f(_x, _y));
             return instance;
         }
     );
@@ -202,14 +213,6 @@ void GenericGenerator::Initialise(){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<Camera>(Vector2f(_x, _y));
-
-            try{
-                instance->clamp = (bool)_json->map.at("clamp")->AsFloat();
-                instance->scale = _json->map.at("scale")->AsFloat();
-
-            } catch(const std::exception& _error){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Camera instance", _error.what());
-            }
 
             return instance;
         }

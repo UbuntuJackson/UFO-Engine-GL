@@ -124,7 +124,7 @@ public:
 
     virtual void OnWidgetDraw(ufo::Graphics* _graphics);
 
-    void Draw(ufo::Graphics* _graphics, Camera* _camera);
+    virtual void Draw(ufo::Graphics* _graphics, Camera* _camera);
 
     virtual void OnDraw(ufo::Graphics* _graphics, Camera* _camera);
 

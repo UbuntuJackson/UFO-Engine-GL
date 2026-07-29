@@ -27,6 +27,12 @@ struct Bounds{
 
 class Camera : public Actor{
 public:
+
+    bool camera_moves_independently = true;
+
+    //Unused for now
+    Vector2f original_position;
+
     bool clamp = true;
     Bounds view;
     Bounds world;
@@ -43,6 +49,7 @@ public:
     void OnSpawn() override;
     void EarlyUpdate();
     void ClampLocalPosition();
+    void OnUpdate(float _delta_time) override;
     void HandleUpdate();
     void OnKilled() override;
 
@@ -52,8 +59,15 @@ public:
     bool IsOnScreen(olc::vf2d _position, olc::vf2d _offset = {0.0f, 0.0f});
     ufo::Rectangle GetOnScreenRectangleInWorld(olc::vf2d _offset = {0.0f, 0.0f});
 
-    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
-    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc);
+    ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+#ifdef UFO_ENGINE_STUDIO
+
+    void OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index) override;
+
+#endif
+
 };
 
 }

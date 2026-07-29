@@ -1,4 +1,5 @@
 #include "../src/ufo_macros.h"
+#include "animation_cluster.h"
 #include <stdexcept>
 #define SDL_MAIN_HANDLED
 #include <exception>
@@ -24,6 +25,7 @@
 #include "../imgui/imgui_internal.h"
 #include "../ufo_maths/math_parser.h"
 #include "../ufo_garbage_collector/gc_json.h"
+#include "../src/animation_cluster.h"
 
 namespace UFOEngineStudio{
 
@@ -482,6 +484,12 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
         }, "ufo::Actor", "ufo::Actor", "UFO-Engine"))
+    );
+
+    spawnable_actor_map.emplace("ufo::AnimationCluster",std::move(std::make_unique<AdvancedActorSpawner>(
+        [](Editor* _editor, AdvancedActorSpawner* _this){
+            return std::make_unique<ufo::AnimationCluster>(Vector2f(0.0f, 0.0f));
+        }, "ufo::AnimationCluster", "ufo::AnimationCluster", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
