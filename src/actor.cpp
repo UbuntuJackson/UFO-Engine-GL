@@ -67,6 +67,7 @@ Actor* Actor::GetActor(std::string _path){
     std::string remaining_path = _path.substr(first_of_index+1, _path.size());
 
     if(search_in_actor == "..") return parent->GetActor(remaining_path);
+    if(remaining_path == "..") return parent;
 
     for(const auto& actor : actors){
         if(first_of_index == _path.npos){
