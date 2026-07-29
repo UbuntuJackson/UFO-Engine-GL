@@ -135,6 +135,8 @@ ufo::gc::JsonMap* TileMap::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("tiles",tiles);
     parent_class_as_json->map.emplace("number_of_columns", _gc->New<ufo::gc::JsonNumber>(number_of_columns));
     parent_class_as_json->map.emplace("number_of_rows", _gc->New<ufo::gc::JsonNumber>(number_of_rows));
+    parent_class_as_json->map.emplace("tile_width", _gc->New<ufo::gc::JsonNumber>(tile_width));
+    parent_class_as_json->map.emplace("tile_height", _gc->New<ufo::gc::JsonNumber>(tile_height));
     parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>(visible));
 
     parent_class_as_json->map.emplace("shader_key", _gc->New<ufo::gc::JsonString>(shader_key));
@@ -166,6 +168,9 @@ void TileMap::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
     number_of_columns = (int)_json->map.at("number_of_columns")->AsFloat();
     number_of_rows = (int)_json->map.at("number_of_rows")->AsFloat();
+
+    _json->TryToGetValueAsInt("tile_width", tile_width, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsInt("tile_height", tile_height, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
     visible = (int)_json->map.at("visible")->AsFloat();
 

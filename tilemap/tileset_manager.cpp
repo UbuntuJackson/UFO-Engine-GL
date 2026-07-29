@@ -110,9 +110,9 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
         int width = engine->asset_manager.textures.at(relative_path).width;
         int height = engine->asset_manager.textures.at(relative_path).height;
 
-        int columns = (int)width/16;
+        int columns = (int)width/input_tileset_width;
 
-        int rows = (int)height/16;
+        int rows = (int)height/input_tileset_height;
 
         int tileset_start_id = 1;
 
@@ -124,7 +124,7 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
                 columns,
                 tileset_start_id,
                 (float)width, (float)height,
-                16.0f, 16.0f,
+                (float)input_tileset_width, (float)input_tileset_height,
                 columns*rows
             }
         );
@@ -164,8 +164,21 @@ void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngi
 
 void TilesetManager::EditorTilesetWidget(UFOEngineStudio::LevelEditorTab* _level_editor_tab){
     if(ImGui::Button("Add Tileset")){
-        SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, UFOEngineStudio::global_texture_filters, 2, _level_editor_tab->editor->opened_directory_path.c_str(), true);
-        _level_editor_tab->spawn_cursor->actors.clear();
+        adding_new_tileset = true;
+    }
+
+    if(adding_new_tileset){
+        ImGui::InputInt("Tileset Width",&input_tileset_width);
+        ImGui::InputInt("Tileset Height",&input_tileset_height);
+        if(ImGui::Button("Ok")){
+            SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTileset, _level_editor_tab, _level_editor_tab->engine->window, UFOEngineStudio::global_texture_filters, 2, _level_editor_tab->editor->opened_directory_path.c_str(), true);
+            _level_editor_tab->spawn_cursor->actors.clear();
+            adding_new_tileset = false;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Cancel")){
+            adding_new_tileset = false;
+        }
     }
 
     ImGui::SameLine();

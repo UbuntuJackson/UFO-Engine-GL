@@ -34,11 +34,11 @@ std::unique_ptr<ufo::Actor> AdvancedActorSpawner::Spawn(Editor* _editor){
         ufo::gc::JsonMap* j_actor = _editor->engine->actor_generator->actor_jsons_with_unaltered_default_properties.at(class_name);
 
         auto actor_from_file = _editor->engine->actor_generator->JsonToActorTree(&(_editor->gc),dynamic_cast<ufo::gc::JsonMap*>(j_actor));
-
-        actor_from_file->import_mode = ufo::Actor::ImportModes::CUSTOM_CLASS;
         act = std::move(actor_from_file);
 
     }
+
+    if(class_name != base) act->import_mode = ufo::Actor::ImportModes::CUSTOM_CLASS;
 
     for(const auto& property : custom_properties){
         act->editor_properties.push_back(property->Copy());

@@ -11,6 +11,9 @@ Build with bash:
 
 ```
 
+Requirements:
+python (version 3)
+
 Cross compilation on linux, for windows:
   cmake .. -DCMAKE_CXX_FLAGS="-O0 -Os" -DUFO_ENGINE_STUDIO=ON -DCMAKE_TOOLCHAIN_FILE=../toolchain.cmake -GNinja && ninja -j16
 

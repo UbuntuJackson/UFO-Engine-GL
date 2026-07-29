@@ -66,6 +66,8 @@ Actor* Actor::GetActor(std::string _path){
     std::string search_in_actor = _path.substr(0,first_of_index);
     std::string remaining_path = _path.substr(first_of_index+1, _path.size());
 
+    if(search_in_actor == "..") return parent->GetActor(remaining_path);
+
     for(const auto& actor : actors){
         if(first_of_index == _path.npos){
 
@@ -76,8 +78,6 @@ Actor* Actor::GetActor(std::string _path){
         }
         else if(search_in_actor == actor->editor_name) return actor->GetActor(remaining_path);
     }
-
-    throw std::runtime_error("[UFO-Engine] Actor::GetActor: Did not find component at "+ _path);
 
     return nullptr;
 }

@@ -121,6 +121,13 @@ public:
             Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
         }
     }
+    void TryToGetValueAsInt(std::string _key, int& _i, const std::string& _location){
+        try{
+            _i = (int)map.at(_key)->AsFloat();
+        } catch(const std::exception& _error){
+            Console::PrintLine(_location,"[UFO-Engine] JsonMap: Could not get value for key",_key);
+        }
+    }
     void TryToGetValueAsArray(std::string _key, std::vector<gc::Json*>& _array, const std::string& _location){
         try{
             _array = map.at(_key)->AsArray();

@@ -293,7 +293,7 @@ def search_folders_for_ufo_classes(
                 local_classes, header_tool_log_for_file = search_file(
                     file_to_parse,
                     _local_path,
-                    directory,  # Not a directory here but a file.
+                    directory # Not a directory here but a file.
                 )
                 _grand_header_tool_log.obj += (
                     "Hierarchal scope structure of " + file_to_parse
@@ -304,6 +304,8 @@ def search_folders_for_ufo_classes(
 
 def search_file(_path, _local_path, _file_name):
     f = open(_path)
+
+    print("File in directory",_local_path)
 
     file_contents = f.read()
 
@@ -358,7 +360,7 @@ def search_file(_path, _local_path, _file_name):
 
     global_scope = GlobalScope()
 
-    analyse_scopes(scopes, global_scope, 1)
+    analyse_scopes(scopes, global_scope, 1, _local_path)
 
     # global_scope.print_tree()
 
@@ -666,7 +668,7 @@ class Macro:
         self.args = _args
 
 
-def extract_macro_arguments(_list):
+def extract_macro_arguments(_list, _currently_searched_directory):
     name = _list[0]
 
     args = []
@@ -684,6 +686,28 @@ def extract_macro_arguments(_list):
             continue
 
         args[-1] += item
+
+    if name == 'ufo_actor_config':
+        if len(args) == 1:
+            actor_config_path = sys.argv[1]+"/"+args[0]
+
+            print('actor_config_path',actor_config_path)
+
+            if not os.path.exists(actor_config_path):
+
+                relative_path = ""
+
+                if _currently_searched_directory[0] == "/":
+                    relative_path = _currently_searched_directory[1:]+"/"+args[0]
+                else:
+                    relative_path = _currently_searched_directory+"/"+args[0]
+
+                if not os.path.exists(sys.argv[1]+"/"+relative_path):
+                    ufo_header_tool_log.ufo_header_tool_print("[UFO Header Tool Warning] Error, path in ufo_actor_config does not exist:",relative_path)
+                else:
+                    args = [relative_path]
+
+
 
     return Macro(name, args)
 
@@ -914,7 +938,7 @@ def analyse_class_or_variable(_object):
     return None
 
 
-def analyse_compound_object(_compound_object, _line_number):
+def analyse_compound_object(_compound_object, _line_number, _currently_searched_directory):
     AWAITING_NONE = -1
     AWAITING_UFO_MACRO = 1
     AWAITING_CLASS_NAMESPACE_OR_VARIABLE = 0
@@ -971,7 +995,7 @@ def analyse_compound_object(_compound_object, _line_number):
     class_or_variable = analyse_class_or_variable(variable_or_class_as_list)
 
     for i in macro_part:
-        class_or_variable.macros.append(extract_macro_arguments(i))
+        class_or_variable.macros.append(extract_macro_arguments(i, _currently_searched_directory))
 
     ufo_header_tool_log.ufo_header_tool_print(
         "[UFO Header Tool]",
@@ -984,7 +1008,7 @@ def analyse_compound_object(_compound_object, _line_number):
     return class_or_variable
 
 
-def analyse_scopes(_file_contents_as_list, _scope, _line_number):
+def analyse_scopes(_file_contents_as_list, _scope, _line_number, _currently_searched_directory):
     separators = [";"]
     gibberish = ["\n", ";"]
 
@@ -994,18 +1018,18 @@ def analyse_scopes(_file_contents_as_list, _scope, _line_number):
         item = _file_contents_as_list[index]
 
         if item in separators:
-            declared_scope = analyse_compound_object(compound_object, _line_number)
+            declared_scope = analyse_compound_object(compound_object, _line_number, _currently_searched_directory)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
 
             compound_object.clear()
 
         if isinstance(item, list):
-            declared_scope = analyse_compound_object(compound_object, _line_number)
+            declared_scope = analyse_compound_object(compound_object, _line_number, _currently_searched_directory)
             if declared_scope is not None:
                 _scope.scopes.append(declared_scope)
 
-                analyse_scopes(item, declared_scope, _line_number)
+                analyse_scopes(item, declared_scope, _line_number, _currently_searched_directory)
 
             compound_object.clear()
         else:

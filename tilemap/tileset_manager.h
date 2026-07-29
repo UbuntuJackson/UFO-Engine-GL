@@ -91,6 +91,10 @@ public:
 
     }
 
+    bool adding_new_tileset = false;
+    int input_tileset_width = 16;
+    int input_tileset_height = 16;
+
     std::string current_tileset;
     void UpdateSelectedTilesetTile(const TilesetData& _tileset);
 
