@@ -1,6 +1,7 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "camera.h"
+#include "console.h"
 #include "level.h"
 #include "engine.h"
 #include "ufo_macros.h"
@@ -35,10 +36,12 @@ void Camera::OnSpawn(){
 void Camera::OnUpdate(float _delta_time){
 #ifndef UFO_ENGINE_STUDIO
     if(camera_moves_independently){
-        Vector2f towards_player = (GetGlobalPosition()-GetGlobalPosition()+original_position)*1.5f;
+        if(parent){
+            Vector2f towards_player = (parent->GetGlobalPosition()-GetGlobalPosition()+original_position)*1.5f;
 
-        local_position += towards_player*1.0f*_delta_time*Vector2f(1.0f, 10.0f);
-        local_position += (local_position-former_local_position)*_delta_time*16.0f;
+            local_position += towards_player*1.0f*_delta_time*Vector2f(1.0f, 10.0f);
+            local_position += (parent->local_position-parent->former_local_position)*_delta_time*16.0f;
+        }
     }
 #endif
 }
@@ -127,15 +130,9 @@ ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
 
 void Camera::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
-    try{
-        _json->TryToGetValueAsBool("clamp", clamp, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-        _json->TryToGetValueAsFloat("scale", scale, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-        _json->TryToGetValueAsBool("camera_moves_independently", camera_moves_independently, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-
-
-    } catch(const std::exception& _error){
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Camera instance", _error.what());
-    }
+    _json->TryToGetValueAsBool("clamp", clamp, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsFloat("scale", scale, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsBool("camera_moves_independently", camera_moves_independently, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
 
 }
 
