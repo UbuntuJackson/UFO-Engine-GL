@@ -576,7 +576,7 @@ def main(_working_directory, _structured_classes_dict):
 
                     file_actor_config_file.close()
 
-        klass_name = "::"+klass["name"]
+        klass_name = klass["name"]
 
         # Can't have colons in function names
         func_name = klass_name.replace("::", "_")
@@ -584,7 +584,7 @@ def main(_working_directory, _structured_classes_dict):
         # Function head
         spawner_function_string += (
             "inline std::unique_ptr<"
-            + klass_name
+            + "::" + klass_name
             + ">"
             + " Spawn"
             + func_name
@@ -598,7 +598,7 @@ def main(_working_directory, _structured_classes_dict):
             + "> instance"
             + str(this_actor_id)
             + " = std::make_unique<"
-            + klass_name
+            + "::" + klass_name
             + ">(_local_position);\n"
         )
 

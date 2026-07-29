@@ -62,22 +62,28 @@ ufo::Rectangle Actor::GetRectangle(){
 
 Actor* Actor::GetActor(std::string _path){
 
+    if(_path == "..") return parent;
+
     size_t first_of_index = _path.find_first_of("/");
-    std::string search_in_actor = _path.substr(0,first_of_index);
-    std::string remaining_path = _path.substr(first_of_index+1, _path.size());
 
-    if(search_in_actor == "..") return parent->GetActor(remaining_path);
-    if(remaining_path == "..") return parent;
+    //Found slash
+    if(first_of_index != _path.npos){
 
-    for(const auto& actor : actors){
-        if(first_of_index == _path.npos){
+        std::string search_in_actor = _path.substr(0,first_of_index);
+        std::string remaining_path = _path.substr(first_of_index+1, _path.size());
 
+        if(search_in_actor == "..") return parent->GetActor(remaining_path);
+
+        for(const auto& actor : actors){
+            if(search_in_actor == actor->editor_name) return actor->GetActor(remaining_path);
+        }
+    }
+    else{
+        for(const auto& actor : actors){
             if(_path == actor->editor_name){
                 return actor.get();
-
             }
         }
-        else if(search_in_actor == actor->editor_name) return actor->GetActor(remaining_path);
     }
 
     return nullptr;
