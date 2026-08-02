@@ -44,6 +44,9 @@ Engine::~Engine(){
 
     //Null some resources to make sure for example SDL font resources aren't freed later than the SDL ttf libraries themseleves.
     loaded_levels.clear();
+#ifdef UFO_ENGINE_STUDIO
+    loaded_levels_for_editor.clear();
+#endif
     level_handle = nullptr;
 
     TTF_CloseFont(font);
@@ -251,6 +254,9 @@ void Engine::StartWithImGui(){
     in_editor = true;
     graphics = std::make_unique<ufo::OpenGLv4_5_Graphics>(this);
 
+    editor.engine = this;
+    editor.Load();
+
     graphics->CreateFrameBuffer();
 
     //Should this be uncommented?
@@ -276,6 +282,9 @@ void Engine::StartWithImGui(){
     //io.ConfigViewportsNoAutoMerge = true;
     //io.ConfigViewportsNoTaskBarIcon = true;
 
+
+    io.IniFilename = nullptr;
+
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
     //ImGui::StyleColorsLight();
@@ -290,8 +299,37 @@ void Engine::StartWithImGui(){
     // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
     {
-        style.WindowRounding = 0.0f;
-        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        style.WindowRounding = 5.0f;
+        style.FrameRounding = 4.0f;
+
+        style.Colors[ImGuiCol_TabSelected] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+        style.Colors[ImGuiCol_TabHovered] = ImVec4(0.2f, 0.2f, 0.3f, 0.8f);
+        style.Colors[ImGuiCol_Tab] = ImVec4(0.1f, 0.1f, 0.11f, 0.8f);
+        style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+        style.TabBorderSize = 1.0f;
+
+        style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);
+
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+
+        style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.2f, 0.2f, 0.3f, 0.8f);
+        style.Colors[ImGuiCol_TitleBg] = ImVec4(0.25f, 0.25f, 0.3f, 0.8f);
+        style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.1f, 0.1f, 0.11f, 0.8f);
+
+        style.Colors[ImGuiCol_Button] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+        style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+        style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+        //style.FrameBorderSize = 1.0f;
+
+        style.Colors[ImGuiCol_Header] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+        style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+        style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.6f, 0.6f, 0.6f, 1.0f);
+
+        style.Colors[ImGuiCol_FrameBg] = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+
+        style.WindowBorderSize = 1.0f;
+        style.Colors[ImGuiCol_Border] = ImVec4(0.4f, 0.4f, 0.4f, 1.0f);
+
     }
 
     // Setup Platform/Renderer backends
@@ -486,9 +524,9 @@ void Engine::Update(){
     fLastElapsed = fElapsedTime;
 
     if(fLastElapsed > 0.05f) fLastElapsed = 0.05f;
-
-    level_handle->UpdatePhase(fLastElapsed);
-
+#ifdef UFO_ENGINE_STUDIO
+    editor.OnUpdate(fLastElapsed);
+#endif
     if(pending_levels.size() > 0){
 
         for(int l = (int)loaded_levels.size()-1; l != -1; l--){

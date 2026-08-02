@@ -30,22 +30,6 @@ void ControllableCamera::OnUpdate(float _delta_time){
 
     //Console::PrintLine("Controllable camera", local_position);
 
-    if(engine->mouse.is_middle_button_held){
-        Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
-
-        local_position += delta_mouse / scale;
-    }
-
-    //scale += (float)engine->mouse.mouse_wheel*0.25f;
-    //if(scale < 1.0f) scale = 1.0f;
-
-    if(engine->keyboard.GetKey(SDLK_PLUS).is_pressed){
-        scale *= (1.10f);
-    }
-    if(engine->keyboard.GetKey(SDLK_MINUS).is_pressed){
-        scale /= (1.10f);
-    }
-
     /*if(engine->keyboard.GetKey(controls->GetControl("right")).is_held) local_position.x += _delta_time * 100.0f;
     if(engine->keyboard.GetKey(controls->GetControl("left")).is_held) local_position.x -= _delta_time * 100.0f;
     if(engine->keyboard.GetKey(controls->GetControl("up")).is_held) local_position.y -= _delta_time * 100.0f;
@@ -66,7 +50,23 @@ bool ControllableCamera::UpdateEditorViewportFocus(UFOEngineStudio::Editor* _edi
 }
 
 void ControllableCamera::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(ImGui::IsItemHovered()){
+        if(engine->mouse.is_middle_button_held){
+            Vector2f delta_mouse = engine->mouse.former_position - engine->mouse.position;
 
+            local_position += delta_mouse / scale;
+        }
+
+        //scale += (float)engine->mouse.mouse_wheel*0.25f;
+        //if(scale < 1.0f) scale = 1.0f;
+
+        if(engine->keyboard.GetKey(SDLK_PLUS).is_pressed){
+            scale *= (1.10f);
+        }
+        if(engine->keyboard.GetKey(SDLK_MINUS).is_pressed){
+            scale /= (1.10f);
+        }
+    }
 }
 
 }

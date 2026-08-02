@@ -86,6 +86,7 @@ void OnNewActorFile(void *_tab, const char * const *_filelist,[[maybe_unused]] i
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
 
     tab->path = *_filelist;
+    tab->is_new_file = false;
 
     auto level_json = tab->this_level->GetAsJson(&(tab->gc));
     level_json->Write(tab->path);
@@ -197,6 +198,7 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, [[maybe_unused]] i
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
 
     tab->path = *_filelist;
+    tab->is_new_file = false;
 
     ufo::FileSystem::Write(tab->path, tab->text);
 

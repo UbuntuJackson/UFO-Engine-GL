@@ -243,8 +243,8 @@ void Level::OnDrawGizmos([[maybe_unused]] ufo::Graphics* _graphics,[[maybe_unuse
 
 void Level::DrawGizmosPhase([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
-    if(_level_editor_tab->inspected_actor != ufo::Maths::NULL_ID){
-        actors_with_stable_id.at(_level_editor_tab->inspected_actor)->OnDrawGizmos(engine->graphics.get(), active_camera_handles.back(), _level_editor_tab);
+    if(_level_editor_tab->inspected_actor_id != ufo::Maths::NULL_ID){
+        actors_with_stable_id.at(_level_editor_tab->inspected_actor_id)->OnDrawGizmos(engine->graphics.get(), active_camera_handles.back(), _level_editor_tab);
     }
     //DrawGizmos(_graphics,active_camera_handles.back(), _level_editor_tab);
 

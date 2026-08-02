@@ -201,7 +201,7 @@ def add_imported_actor(
                     "generate_actor_spawner_functions.py",
                     "Error, could not find Main actor",
                 )
-                sys.exit()
+                continue
 
             # Iterate through all components of this actor
             for actor in main["actors"]:
@@ -545,7 +545,7 @@ def main(_working_directory, _structured_classes_dict):
                             "[UFO-Engine Header Tool] generate_actor_spawner_functions.py",
                             "Error, could not find Main actor",
                         )
-                        sys.exit()
+                        continue
 
                     default_properties_string += get_actor_loading_code(
                         get_base_class_of(inheritence_map, main["class_name"]),

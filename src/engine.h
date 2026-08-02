@@ -13,6 +13,10 @@
 #include <SDL3/SDL_opengl.h>
 #include <unordered_map>
 
+#ifdef UFO_ENGINE_STUDIO
+#include "editor.h"
+#endif
+
 struct TTF_Font;
 struct SDL_Texture;
 
@@ -62,7 +66,12 @@ public:
     Level* level_handle = nullptr;
     std::vector<std::unique_ptr<Actor>> loaded_levels;
     std::vector<Actor*> pending_levels;
+#ifdef UFO_ENGINE_STUDIO
+    std::vector<std::unique_ptr<Actor>> loaded_levels_for_editor;
 
+    UFOEngineStudio::Editor editor;
+
+#endif
     //ufo::TextRenderer text_renderer;
 
     //For opengl 4.5

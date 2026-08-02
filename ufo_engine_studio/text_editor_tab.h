@@ -66,7 +66,7 @@ public:
 
     std::vector<std::unique_ptr<Action>> actions;
 
-    TextEditorTab(std::string _file, std::string _text, Editor* _editor) : Tab(_editor){
+    TextEditorTab(std::string _file, std::string _text, Editor* _editor, bool _is_new_file) : Tab(_editor,_is_new_file){
         text = _text;
         last_saved_text = text;
         name = _file.substr(_file.find_last_of("/")+1);

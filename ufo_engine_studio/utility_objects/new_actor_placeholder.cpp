@@ -26,7 +26,7 @@ ufo::Actor* NewActorPlaceHolder::OnGetFocusedActor(Vector2f _mouse_position_over
 }
 
 void NewActorPlaceHolder::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
-    if(_level_editor_tab->actor_dedicated_to_viewport != this->editor_id){
+    if(_level_editor_tab->actor_dedicated_to_viewport_id != this->editor_id){
         is_dead = true;
         level->actors_with_stable_id.erase(editor_id);
     }

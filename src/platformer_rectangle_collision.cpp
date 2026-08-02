@@ -5,6 +5,7 @@
 #include "graphics.h"
 #include "../tilemap/tileset_data.h"
 #include "platformer_rectangle_collision.h"
+#include "engine.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "im_vec.h"

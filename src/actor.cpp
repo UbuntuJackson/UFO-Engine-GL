@@ -570,7 +570,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None, ImVec2(ImGui::CalcTextSize(visible_text.c_str()).x,ImGui::GetFontSize()));
 
         if(selectable_text){
-            _level_editor_tab->actor_dedicated_to_viewport = this->editor_id;
+            _level_editor_tab->actor_dedicated_to_viewport_id = this->editor_id;
             _level_editor_tab->selected_actors.clear();
 
             if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
@@ -590,10 +590,13 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     if(ImGui::BeginPopupContextItem(("Options###Options"+std::to_string(editor_id)).c_str())){
 
         if(ImGui::MenuItem("Edit")){
-            ufo::Actor* new_actor_place_holder = AddActor<UFOEngineStudio::NewActorPlaceHolder>(Vector2f(0.0f, 0.0f));
+            /*ufo::Actor* new_actor_place_holder = AddActor<UFOEngineStudio::NewActorPlaceHolder>(Vector2f(0.0f, 0.0f));
 
             _level_editor_tab->actor_dedicated_to_viewport = new_actor_place_holder->editor_id;
-            level->actors_with_stable_id.emplace(new_actor_place_holder->editor_id, new_actor_place_holder);
+            level->actors_with_stable_id.emplace(new_actor_place_holder->editor_id, new_actor_place_holder);*/
+
+            _level_editor_tab->edited_actor_id = editor_id;
+            _level_editor_tab->actor_dedicated_to_viewport_id = ufo::Maths::NULL_ID;
 
         }
         if(ImGui::MenuItem("Rename")){
@@ -678,7 +681,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         ImGui::EndDragDropSource();
     }
 
-    if(ImGui::BeginDragDropTarget()){
+    if(import_mode != ImportModes::CUSTOM_CLASS) if(ImGui::BeginDragDropTarget()){
 
         const ImGuiPayload* payload_data = ImGui::AcceptDragDropPayload("ActorDragDrop");
         if(payload_data && !is_selected){

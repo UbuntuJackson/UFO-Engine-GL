@@ -5,10 +5,14 @@
 #include "editor.h"
 #include "file_dialogue.h"
 #include "../imgui/imgui_internal.h"
+#include "imgui_utils.h"
 
 namespace UFOEngineStudio{
 
-Tab::Tab(Editor* _editor) : editor{_editor}{
+Tab::Tab(Editor* _editor, bool _is_new_file) :
+editor{_editor},
+is_new_file{_is_new_file}
+{
     id = id_counter++;
 
     _editor->refresh_entire_project = true;
@@ -31,7 +35,13 @@ void Tab::Update(Editor* _editor, float _delta_time){
 
     bool tab_was_not_opened = _editor->active_tab != this;
 
-    if(ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+name_and_imgui_id).c_str(), &opened, ImGuiTabItemFlags_None)){
+    PushStyleCloseButton();
+
+    bool tab_bar_begin = ImGui::BeginTabItem(((DetermineIfEdited() ? name : name+"*")+name_and_imgui_id).c_str(), &opened, ImGuiTabItemFlags_None);
+
+    ImGui::PopStyleColor(3);
+
+    if(tab_bar_begin){
 
         ImGuiID local_dockspace_id = ImGui::GetID(("###TabDockSpace"+std::to_string(id)).c_str());
 

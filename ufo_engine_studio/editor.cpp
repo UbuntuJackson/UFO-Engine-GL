@@ -1,5 +1,8 @@
 #include "../src/ufo_macros.h"
 #include "animation_cluster.h"
+#include "ufo_maths.h"
+#include <cctype>
+#include <memory>
 #include <stdexcept>
 #define SDL_MAIN_HANDLED
 #include <exception>
@@ -26,6 +29,7 @@
 #include "../ufo_maths/math_parser.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../src/animation_cluster.h"
+#include "imgui_utils.h"
 
 namespace UFOEngineStudio{
 
@@ -153,6 +157,40 @@ void Editor::ImportHeaderFileToProject(std::string _path){
 
 void Editor::OnUpdate(float _delta_time){
 
+    ImGuiWindowFlags im_gui_window_flags = ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoBringToFrontOnFocus |
+            ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar;
+
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+    ImGui::Begin("DemoDockspaceForGodsSake", nullptr, im_gui_window_flags);
+
+    ImGuiID dock_space_id = ImGui::GetID("DemoDockspaceForGodsSake");
+
+    UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
+
+    ImGui::DockSpace(dock_space_id, ImVec2(0.0f,0.0f), ImGuiDockNodeFlags_NoTabBar);
+
+    ImGui::End();
+
+
+
+    ImGui::Begin("File Tree");
+    if(opened_directory != nullptr){
+        opened_directory->Update(0, nullptr, "", this);
+        opened_directory->Sort();
+
+        opened_directory->AddFileNodesRecursive();
+    }
+    ImGui::End();
+
     if(!finished_loading_folder){
         ResetUFOEngineStudio();
         finished_loading_folder = true;
@@ -205,38 +243,58 @@ void Editor::OnUpdate(float _delta_time){
         queued_tilesets.clear();
     }
 
-    ImGuiWindowFlags im_gui_window_flags = ImGuiWindowFlags_NoDocking |
-            ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoBringToFrontOnFocus |
-            ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar;
+    if(opened_directory_path != "" && refresh_entire_project){
+        //Here I'm forcing an update on the new actor queue to make sure there are actors in level are loaded before
+        // making potential modifications to them, like adding or removing ufo-variables.
+        for(const auto& level : engine->loaded_levels_for_editor) level->AddNewActors();
 
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
+        spawnable_actor_map.clear();
+#ifdef __MINGW32__
+        Console::PrintLine("__MINGW32__");
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd "++ std::filesystem::current_path().generic_string()+"/UFO-Engine/header_tool && " + std::filesystem::current_path().generic_string() + "/build/python.exe "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+#else
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+#endif
+        engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
+        PopulateSpawnableActorMapWithBaseObjects();
+        ReloadSpawnableActorMap();
 
-    ImGui::Begin("DemoDockspaceForGodsSake", nullptr, im_gui_window_flags);
+        engine->asset_manager.SaveAssets();
+        Console::PrintLine("Refreshed entire project");
 
-    ImGuiID dock_space_id = ImGui::GetID("DemoDockspaceForGodsSake");
+        //Refresh entire file tree.
+        RefreshFolder();
 
-    UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
-
-    ImGui::DockSpace(dock_space_id, ImVec2(0.0f,0.0f), ImGuiDockNodeFlags_NoTabBar);
-
-    ImGui::End();
-
-
-
-    ImGui::Begin("File Tree");
-    if(opened_directory != nullptr){
-        opened_directory->Update(0, nullptr, "", this);
-
-        opened_directory->AddFileNodesRecursive();
     }
+
+    ImGui::Begin("TabBarWindow");
+
+    ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_Reorderable);
+
+    for(const auto& tab : tabs){
+        tab->Update(this, _delta_time);
+    }
+
+    if(refresh_entire_project && opened_directory_path != ""){
+        for(const auto& tab : tabs){
+            tab->Refresh();
+        }
+
+        refresh_entire_project = false;
+    }
+
+    ImGui::EndTabBar();
+
     ImGui::End();
+
+    if(will_compile_game){
+
+        const std::string build_directory = opened_directory_path + "/build";
+        std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
+        t.detach();
+        will_compile_game = false;
+    }
+
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -269,21 +327,22 @@ void Editor::OnUpdate(float _delta_time){
                 if (ImGui::BeginMenu("New File"))
                 {
                     if(ImGui::MenuItem("Level (.ason)")){
-                        auto tab = std::make_unique<LevelEditorTab>(engine,this);
-                        tab->Initialise();
+                        auto tab = std::make_unique<LevelEditorTab>(engine,this,true);
+
+                        engine->loaded_levels_for_editor.push_back(std::make_unique<ufo::Level>());
+                        ufo::Level* level = engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>();
+                        if(!level) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, this_level is nullptr");
+
+                        tab->Initialise(level, "");
                         tab->this_level->editor_name = "Root";
                         tabs.push_back(std::move(tab));
                     }
                     if(ImGui::MenuItem("Textfile (.txt)")){
-                        tabs.push_back(std::make_unique<TextEditorTab>("","",this));
+                        tabs.push_back(std::make_unique<TextEditorTab>("","",this,true));
                     }
                     if(ImGui::MenuItem("C++ class (.cpp)")){
 
-                        std::string template_file_header = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.h");
-                        std::string template_file_source = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.cpp");
-
-                        tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this));
-                        tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this));
+                        is_creating_new_c_plus_plus_class = true;
                     }
 
                     ImGui::EndMenu();
@@ -344,17 +403,123 @@ void Editor::OnUpdate(float _delta_time){
         ImGui::EndMainMenuBar();
     }
 
-    ImGui::Begin("TabBarWindow");
+    if(is_creating_new_c_plus_plus_class){
+        UFOEngineStudio::BeginWindow("Create New C++ Class", &is_creating_new_c_plus_plus_class, ImGuiWindowFlags_NoDocking);
 
-    ImGui::BeginTabBar("TabBar");
+        ImGui::InputText("Class Name:",&input_class_name);
 
-    for(const auto& tab : tabs){
-        tab->Update(this, _delta_time);
+        if(ImGui::BeginCombo("Inherits from:",input_base_class_name.c_str())){
+
+            for(const auto& [k_class_name,spawner] : spawnable_actor_map){
+                bool clicked = ImGui::Selectable(k_class_name.c_str(),input_base_class_name == k_class_name);
+                if(clicked) input_base_class_name = k_class_name;
+            }
+
+            ImGui::EndCombo();
+        }
+
+        ImGui::Checkbox("Has component tree", &new_c_plus_plus_class_has_component_tree);
+
+        std::string file_name;
+        //Producing filenames
+        {
+            for(char character : input_class_name){
+                bool is_upper = std::isupper(character);
+
+                if(is_upper && file_name.size() != 0){
+                    file_name+="_";
+                }
+                file_name+=std::tolower(character);
+
+            }
+        }
+        ImGui::Text("Header file: %s",std::string(file_name+".h").c_str());
+        ImGui::Text("Source file: %s",std::string(file_name+".cpp").c_str());
+        if(new_c_plus_plus_class_has_component_tree) ImGui::Text("Component file: %s",std::string(file_name+".ason").c_str());
+
+        if(ImGui::Button("Ok") && input_base_class_name != ""){
+
+            std::string template_file_header = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.h");
+            std::string template_file_source = ufo::FileSystem::Read("../UFO-Engine/project_templates/my_actor.cpp");
+            {
+                const std::string replace_by = "MyActor";
+                {
+                    size_t pos = template_file_header.find(replace_by);
+
+                    while(pos != template_file_header.npos){
+                        template_file_header.replace(pos, replace_by.size(), input_class_name);
+                        pos = template_file_header.find(replace_by,pos+replace_by.size());
+                    }
+                }
+                {
+
+                    size_t pos = template_file_source.find(replace_by);
+
+                    while(pos != template_file_source.npos){
+                        template_file_source.replace(pos, replace_by.size(), input_class_name);
+                        pos = template_file_source.find(replace_by,pos+replace_by.size());
+                    }
+                }
+
+            }
+            {
+                const std::string replace_by = "// ufo_actor_config(\"my_actor.ason\")";
+                const std::string ason_file_name = file_name+".ason";
+
+                const std::string replacement_string = "ufo_actor_config(\""+ason_file_name+"\")";
+
+                size_t pos = template_file_header.find(replace_by);
+
+                while(pos != template_file_header.npos){
+                    template_file_header.replace(pos, replace_by.size(), replacement_string);
+                    pos = template_file_header.find(replace_by,pos+replace_by.size());
+                }
+
+            }
+            {
+                const std::string replace_by = "ufo::Actor";
+                {
+                    size_t pos = template_file_header.find(replace_by);
+
+                    while(pos != template_file_header.npos){
+                        template_file_header.replace(pos, replace_by.size(), input_base_class_name);
+                        pos = template_file_header.find(replace_by,pos+replace_by.size());
+                    }
+                }
+                {
+
+                    size_t pos = template_file_source.find(replace_by);
+
+                    while(pos != template_file_source.npos){
+                        template_file_source.replace(pos, replace_by.size(), input_base_class_name);
+                        pos = template_file_source.find(replace_by,pos+replace_by.size());
+                    }
+                }
+            }
+
+            tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this,true));
+            tabs.back()->path = file_name+".h";
+            tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this,true));
+            tabs.back()->path = file_name+".cpp";
+            std::unique_ptr<LevelEditorTab> u_level_tab = std::make_unique<LevelEditorTab>(engine, this,true);
+
+            engine->loaded_levels_for_editor.push_back(std::make_unique<ufo::Level>());
+
+            u_level_tab->Initialise(engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>(), file_name+".ason");
+            tabs.push_back(std::move(u_level_tab));
+
+            is_creating_new_c_plus_plus_class = false;
+            input_class_name = "";
+        }
+
+        ImGui::SameLine();
+
+        if(ImGui::Button("Cancel")){
+            is_creating_new_c_plus_plus_class = false;
+        }
+
+        UFOEngineStudio::EndWindow();
     }
-
-    ImGui::EndTabBar();
-
-    ImGui::End();
 
     if(view_calculator){
         ImGui::Begin("Calculator", &view_calculator);
@@ -368,7 +533,7 @@ void Editor::OnUpdate(float _delta_time){
     }
 
     if(project_settings_open){
-        ImGui::Begin("Game Settings", &project_settings_open);
+        UFOEngineStudio::BeginWindow("Game Settings", &project_settings_open, ImGuiWindowFlags_NoDocking);
 
         ImGui::Checkbox("Vsync###EditorVsync On", &project_settings.v_sync);
         ImGui::Checkbox("MultiPlayer###Multiplayer On", &project_settings.multi_player);
@@ -383,7 +548,7 @@ void Editor::OnUpdate(float _delta_time){
         }
         ImGui::SameLine(); ImGui::Text("%s", project_settings.start_level.c_str());
 
-        ImGui::InputTextMultiline("Compile command:", &project_settings.compile_command);
+        ImGui::InputTextMultiline("Compile command:", &project_settings.compile_command, ImVec2(0.0f,0.0f), ImGuiInputTextFlags_WordWrap);
 
         if(ImGui::Button("Apply & Save")){
             if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
@@ -433,48 +598,12 @@ void Editor::OnUpdate(float _delta_time){
             project_settings_open = false;
         }
 
-        ImGui::End();
+        UFOEngineStudio::EndWindow();
     }
 
     error_dialogue->Update(this);
 
     //UFOEngineStudio::ImGuiDockSpaceSplit(dock_space_id, viewport->Size, "File Tree", "TabBarWindow", UFOEngineStudio::SplitDirections::HORIZONTAL);
-
-    if(opened_directory_path != "" && refresh_entire_project){
-        //Here I'm forcing an update on the new actor queue to make sure there are actors in level are loaded before
-        // making potential modifications to them, like adding or removing ufo-variables.
-        AddNewActors();
-
-        spawnable_actor_map.clear();
-#ifdef __MINGW32__
-        Console::PrintLine("__MINGW32__");
-        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd "++ std::filesystem::current_path().generic_string()+"/UFO-Engine/header_tool && " + std::filesystem::current_path().generic_string() + "/build/python.exe "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
-#else
-        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
-#endif
-        engine->actor_generator->InitialiseActorClassJsons(opened_directory_path);
-        PopulateSpawnableActorMapWithBaseObjects();
-        ReloadSpawnableActorMap();
-
-        for(const auto& tab : tabs){
-            tab->Refresh();
-        }
-        engine->asset_manager.SaveAssets();
-        Console::PrintLine("Refreshed entire project");
-
-        //Refresh entire file tree.
-        RefreshFolder();
-
-        refresh_entire_project = false;
-    }
-
-    if(will_compile_game){
-
-        const std::string build_directory = opened_directory_path + "/build";
-        std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
-        t.detach();
-        will_compile_game = false;
-    }
 
     gc.Collect();
 }

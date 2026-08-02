@@ -16,6 +16,10 @@ gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj){
     gc::JsonMap* json_map = _gc->New<gc::JsonMap>();
     cJSON* iterator = nullptr;
 
+    if(!cJSON_IsObject(_obj)){
+        return _gc->New<gc::FaultyJsonMap>();
+    }
+
     cJSON_ArrayForEach(iterator,_obj){
         if(cJSON_IsNumber(iterator)){
 

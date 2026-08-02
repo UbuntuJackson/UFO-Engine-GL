@@ -19,14 +19,16 @@ namespace UFOEngineStudio{
 class LevelEditorTab : public Tab{
 public:
 
-    ufo::visual::VirtualMachine vm;
+    //ufo::visual::VirtualMachine vm;
 
     // This is the actor currently used as the layer. It can be of type ufo::Level, ufo::CollisionGrid, and ufo::TileMap
-    int currently_edited_actor_in_viewport = ufo::Maths::NULL_ID;
+    int currently_edited_actor_in_viewport_id = ufo::Maths::NULL_ID;
     std::vector<int> selected_actors;
 
-    int actor_dedicated_to_viewport = ufo::Maths::NULL_ID;
-    int inspected_actor = ufo::Maths::NULL_ID;
+    int actor_dedicated_to_viewport_id = ufo::Maths::NULL_ID;
+    int inspected_actor_id = ufo::Maths::NULL_ID;
+
+    int edited_actor_id = ufo::Maths::NULL_ID;
 
     //This is for multi-dragdropping and single dragdropping too
     std::vector<ufo::Actor::DraggedActorWhereAbouts> drag_dropped_actors;
@@ -79,7 +81,7 @@ public:
     //This is the selection tool you use to select multiple items but in world-coordinates
     ufo::Rectangle selection_rectangle_world_space = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(0.0f, 0.0f));
 
-    LevelEditorTab(ufo::Engine* _engine, Editor* _editor);
+    LevelEditorTab(ufo::Engine* _engine, Editor* _editor, bool _is_new_file);
 
     //This gets the selection rectangle, but a more friendly version of it, for example it can't have a negative width and height, as
     // it flips coordinates, allowing to select from bottom right to top left.
@@ -89,7 +91,7 @@ public:
     // that the x and y values are relative to 0,0 of the computer screen
     Vector2f TranslateToEditorScreenSpace(Vector2f _position);
 
-    void Initialise();
+    void Initialise(ufo::Level* _level, const std::string _file_name);
 
     //This refreshes the tree, as well as actor trees and runs the UFO-Engine Header Tool, and generates generated.h.
     void Refresh();
@@ -100,6 +102,7 @@ public:
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
+    void PlaceInActor(ufo::Actor* _place_inside_actor);
     void PlaceActors();
     void SelectionUpdate();
 

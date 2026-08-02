@@ -44,9 +44,8 @@ void LevelEditorTab::SubmitUndoRedoAction(){
 
 }
 
-LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor) : Tab(_editor), engine{_engine}{
-    this_level = _editor->AddActor<ufo::Level>();
-    this_level->Load();
+LevelEditorTab::LevelEditorTab(ufo::Engine* _engine, Editor* _editor, bool _is_new_file) : Tab(_editor,_is_new_file), engine{_engine}{
+
 }
 
 ufo::Rectangle LevelEditorTab::GetSelectionRectangle(){
@@ -68,7 +67,11 @@ Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
     return level_viewport_position + position;
 }
 
-void LevelEditorTab::Initialise(){
+void LevelEditorTab::Initialise(ufo::Level* _level, const std::string _file_name){
+    this_level = _level;
+    this_level->engine = engine;
+    path = editor->opened_directory_path+path+"/"+_file_name;
+
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
     this_level->unremovable = true;
@@ -78,9 +81,13 @@ void LevelEditorTab::Initialise(){
     spawn_cursor->editor_name = "SpawnCursor (Editor Tool)";
     spawn_cursor->unremovable = true;
 
-    ufo::Actor* new_actor_place_holder = this_level->AddActor<UFOEngineStudio::NewActorPlaceHolder>(Vector2f(0.0f, 0.0f));
+    edited_actor_id = this_level->editor_id;
 
-    actor_dedicated_to_viewport = new_actor_place_holder->editor_id;
+    this_level->tileset_manager.engine = engine;
+    this_level->tileset_manager.InitialiseTexturesEditor(editor);
+
+    this_level->actors_with_stable_id.emplace(
+        this_level->editor_id, this_level);
 
 }
 
@@ -245,9 +252,9 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::EndTabItem();
         }
 
-        if(inspected_actor != ufo::Maths::NULL_ID){
-            if(this_level->actors_with_stable_id.at(inspected_actor)->import_mode == ufo::Actor::ImportModes::BUILT_IN_CLASS){
-                this_level->actors_with_stable_id.at(inspected_actor)->OnUtiliseAssetManager(this);
+        if(inspected_actor_id != ufo::Maths::NULL_ID){
+            if(this_level->actors_with_stable_id.at(inspected_actor_id)->import_mode == ufo::Actor::ImportModes::BUILT_IN_CLASS){
+                this_level->actors_with_stable_id.at(inspected_actor_id)->OnUtiliseAssetManager(this);
             }
         }
 
@@ -303,51 +310,15 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
 
     ImGui::End();
 
+    //ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, 0.0f);
     ImGui::Begin(std::string("LevelViewport###LevelViewport"+std::to_string(id)).c_str(), nullptr);
+    //ImGui::PopStyleVar();
 
-    this_level->UpdatePhase(_delta_time);
     LevelDrawPhase(engine->graphics.get());
 
     //From here on it should be fine to do all id-related logic.
     // Let's say the upper half of this function is more ideal to just spawn the actors.
     // Don't address them by their editor_id
-
-    ImGui::Begin(std::string(currently_viewed_properties_actor_name+"###Properties"+std::to_string(id)).c_str());
-    if(selected_actors.size() > 0){
-        //-1 is just a temporary index here to test things out, I don't think that value is actually used to anything.
-        inspected_actor = this_level->actors_with_stable_id.at(selected_actors[0])->editor_id;
-    }
-    else{
-        inspected_actor = actor_dedicated_to_viewport;
-    }
-
-    if(inspected_actor != ufo::Maths::NULL_ID){
-        ufo::Actor* act_inspected_actor = this_level->actors_with_stable_id.at(inspected_actor);
-
-        bool search_field_active = false;
-
-        ImGui::Text("%s",std::string(act_inspected_actor->editor_name+" "+"("+act_inspected_actor->class_name+")").c_str());
-        ImGui::Text("%s", std::string("Base-class: "+act_inspected_actor->base_class_name).c_str());
-        if(act_inspected_actor->import_mode == ufo::Actor::ImportModes::CUSTOM_CLASS) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
-        ImGui::Separator();
-
-        if(search_field_active){
-            ImGui::InputText("FindActor...", &act_inspected_actor->find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
-            ufo::Actor* actor = actor = act_inspected_actor->GetActor(act_inspected_actor->find_actor_search_field);
-
-            if(actor) ImGui::Text("Found actor");
-        }
-
-        act_inspected_actor->ViewProperties(this, -1);
-
-        //View the editor properties
-        for(int i = 0; i < act_inspected_actor->editor_properties.size(); i++){
-            act_inspected_actor->editor_properties[i]->Update(this ,act_inspected_actor, act_inspected_actor->editor_name, i);
-        }
-
-    }
-
-    ImGui::End();
 
     ImGui::Image(
         (void*)(intptr_t)(dynamic_cast<ufo::OpenGLv4_5_Graphics*>(engine->graphics.get())->texture_id),
@@ -419,7 +390,7 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
         //if(current_tool == Tools::SCALE){}
 
 
-        if(current_tool == Tools::RESIZE && inspected_actor != ufo::Maths::NULL_ID){this_level->actors_with_stable_id.at(inspected_actor)->OnResize(editor, this);}
+        if(current_tool == Tools::RESIZE && inspected_actor_id != ufo::Maths::NULL_ID){this_level->actors_with_stable_id.at(inspected_actor_id)->OnResize(editor, this);}
 
         if(current_tool == Tools::SELECT || current_tool == Tools::MOVE_ACTOR_CLUSTER){
             SelectionUpdate();
@@ -428,6 +399,8 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             PlaceActors();
         }
     }
+
+    this_level->UpdatePhase(_delta_time);
 
     for(int actor_id : selected_actors){
 
@@ -440,6 +413,111 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
     }
 
     ImGui::End();
+
+    ImGui::Begin(std::string(currently_viewed_properties_actor_name+"###Properties"+std::to_string(id)).c_str());
+    if(selected_actors.size() > 0){
+        //-1 is just a temporary index here to test things out, I don't think that value is actually used to anything.
+        inspected_actor_id = this_level->actors_with_stable_id.at(selected_actors[0])->editor_id;
+    }
+    else{
+        inspected_actor_id = actor_dedicated_to_viewport_id;
+    }
+
+    if(inspected_actor_id != ufo::Maths::NULL_ID){
+        ufo::Actor* act_inspected_actor = this_level->actors_with_stable_id.at(inspected_actor_id);
+
+        bool search_field_active = false;
+
+        ImGui::Text("%s",std::string(act_inspected_actor->editor_name+" "+"("+act_inspected_actor->class_name+")").c_str());
+        ImGui::Text("%s", std::string("Base-class: "+act_inspected_actor->base_class_name).c_str());
+        if(act_inspected_actor->import_mode == ufo::Actor::ImportModes::CUSTOM_CLASS) ImGui::TextWrapped("%s", "Status: Imported actor. You cannot modify the children of this object");
+        ImGui::Separator();
+
+        if(search_field_active){
+            ImGui::InputText("FindActor...", &act_inspected_actor->find_actor_search_field, ImGuiInputTextFlags_EnterReturnsTrue);
+            ufo::Actor* actor = actor = act_inspected_actor->GetActor(act_inspected_actor->find_actor_search_field);
+
+            if(actor) ImGui::Text("Found actor");
+        }
+
+        act_inspected_actor->ViewProperties(this, -1);
+
+        //View the editor properties
+        for(int i = 0; i < act_inspected_actor->editor_properties.size(); i++){
+            act_inspected_actor->editor_properties[i]->Update(this ,act_inspected_actor, act_inspected_actor->editor_name, i);
+        }
+
+    }
+
+    ImGui::End();
+}
+
+
+void LevelEditorTab::PlaceInActor(ufo::Actor* _place_inside_actor){
+
+    if(_place_inside_actor){
+        ufo::TileMap* tile_map = _place_inside_actor->GetTileMap();
+
+        if(tile_map){
+
+            spawn_cursor->local_position = Vector2f(
+                std::floor(spawn_cursor->local_position.x/tile_map->tile_width)*tile_map->tile_width,
+                std::floor(spawn_cursor->local_position.y/tile_map->tile_height)*tile_map->tile_height);
+
+            if(spawn_cursor->actors.size()){
+                spawn_cursor->actors[0]->local_position = -spawn_cursor->actors[0]->editor_hitbox.position;
+            }
+        }
+
+        if(ImGui::IsItemClicked(0)){
+            if(editor->currently_selected_actor_type != ""){
+                if(_place_inside_actor->base_class_name != "ufo::AnimationCluster"){
+                    if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
+                        auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);
+
+                        ufo::Actor* inst_ptr = inst.get();
+
+                        if(inst_ptr->base_class_name == "ufo::TileMap" || inst_ptr->base_class_name == "ufo::CollisionGrid" || inst_ptr->base_class_name == "ufo::Level"){
+                            inst_ptr->local_position = Vector2f(0.0f, 0.0f);
+                        }
+                        else{
+                            inst_ptr->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - _place_inside_actor->GetGlobalPosition();
+                        }
+
+                        //Undo&redo
+
+                        while((int)this_level->level_changes.size()-1 > this_level->current_level_change){
+                            Console::PrintLine("loop change stack",this_level->current_level_change, this_level->level_changes.size());
+                            this_level->level_changes.pop_back();
+                        }
+
+                        this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(this,inst.get()->editor_id, _place_inside_actor->editor_id));
+
+                        this_level->current_level_change++;
+                        Console::PrintLine("Actor current change",this_level->current_level_change);
+
+                        _place_inside_actor->AddActorUniquePtr(std::move(inst));
+
+
+
+                        actor_dedicated_to_viewport_id = inst_ptr->editor_id;
+
+                        edited_actor_id = ufo::Maths::NULL_ID;
+
+                    }
+                }
+                else{
+
+                    auto animation_cluster = _place_inside_actor->DynamicCast<ufo::AnimationCluster>();
+                    if(animation_cluster){
+                        animation_cluster->positions.push_back(spawn_cursor->GetGlobalPosition());
+                    }
+
+                }
+            }
+        }
+
+    }
 }
 
 void LevelEditorTab::PlaceActors(){
@@ -448,71 +526,20 @@ void LevelEditorTab::PlaceActors(){
         return;
     }
 
-    if(actor_dedicated_to_viewport){
+    if(actor_dedicated_to_viewport_id != ufo::Maths::NULL_ID){
         ufo::Actor* place_inside_actor = nullptr;
-        place_inside_actor = this_level->actors_with_stable_id.at(actor_dedicated_to_viewport)->parent;
 
-        if(place_inside_actor){
-            ufo::TileMap* tile_map = place_inside_actor->GetTileMap();
+        ufo::Actor* act_actor_dedicated_to_viewport = this_level->actors_with_stable_id.at(actor_dedicated_to_viewport_id);
 
-            if(tile_map){
+        if(act_actor_dedicated_to_viewport->parent) place_inside_actor = act_actor_dedicated_to_viewport->parent;
+        else place_inside_actor = act_actor_dedicated_to_viewport;
 
-                spawn_cursor->local_position = Vector2f(
-                    std::floor(spawn_cursor->local_position.x/tile_map->tile_width)*tile_map->tile_width,
-                    std::floor(spawn_cursor->local_position.y/tile_map->tile_height)*tile_map->tile_height);
+        PlaceInActor(place_inside_actor);
+    }
 
-                if(spawn_cursor->actors.size()){
-                    spawn_cursor->actors[0]->local_position = -spawn_cursor->actors[0]->editor_hitbox.position;
-                }
-            }
-
-            if(ImGui::IsItemClicked(0)){
-                if(editor->currently_selected_actor_type != ""){
-                    if(place_inside_actor->base_class_name != "ufo::AnimationCluster"){
-                        if(editor->spawnable_actor_map.count(editor->currently_selected_actor_type)){
-                            auto inst = editor->spawnable_actor_map.at(editor->currently_selected_actor_type)->Spawn(editor);
-
-                            ufo::Actor* inst_ptr = inst.get();
-
-                            if(inst_ptr->base_class_name == "ufo::TileMap" || inst_ptr->base_class_name == "ufo::CollisionGrid" || inst_ptr->base_class_name == "ufo::Level"){
-                                inst_ptr->local_position = Vector2f(0.0f, 0.0f);
-                            }
-                            else{
-                                inst_ptr->local_position = spawn_cursor->actors[0]->GetGlobalPosition() - place_inside_actor->GetGlobalPosition();
-                            }
-
-                            //Undo&redo
-
-                            while((int)this_level->level_changes.size()-1 > this_level->current_level_change){
-                                Console::PrintLine("loop change stack",this_level->current_level_change, this_level->level_changes.size());
-                                this_level->level_changes.pop_back();
-                            }
-
-                            this_level->level_changes.push_back(std::make_unique<ufo::ActorChange_AddActor>(this,inst.get()->editor_id, place_inside_actor->editor_id));
-
-                            this_level->current_level_change++;
-                            Console::PrintLine("Actor current change",this_level->current_level_change);
-
-                            place_inside_actor->AddActorUniquePtr(std::move(inst));
-
-
-
-                            actor_dedicated_to_viewport = inst_ptr->editor_id;
-
-                        }
-                    }
-                    else{
-
-                        auto animation_cluster = place_inside_actor->DynamicCast<ufo::AnimationCluster>();
-                        if(animation_cluster){
-                            animation_cluster->positions.push_back(spawn_cursor->GetGlobalPosition());
-                        }
-
-                    }
-                }
-            }
-
-        }
+    if(edited_actor_id != ufo::Maths::NULL_ID){
+        ufo::Actor* place_inside_actor = this_level->actors_with_stable_id.at(edited_actor_id);
+        PlaceInActor(place_inside_actor);
     }
 
 }
@@ -666,7 +693,7 @@ void LevelEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id,[[maybe_unused]
         ImGui::GetWindowSize(),
         std::string(name_and_imgui_id.c_str()+std::to_string(id)),
         std::string("ContentBrowser###ContentBrowser"+std::to_string(id)),
-        SplitDirections::HORIZONTAL);
+        SplitDirections::HORIZONTAL, true);
 }
 
 void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){
@@ -686,14 +713,15 @@ void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){
 
 void LevelEditorTab::OnSave(Editor* _editor){
 
-    if(path != ""){
+    if(!is_new_file){
         auto level_json = this_level->GetAsJson(&gc);
         level_json->Write(path);
     }
     else{
-        const char* global_file_location = _editor->opened_directory_path.c_str();
+        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+name);
+        Console::PrintLine("suggested_path =",global_file_location);
 
-        SDL_ShowSaveFileDialog(&OnNewActorFile , this, _editor->engine->window, nullptr, 0, global_file_location);
+        SDL_ShowSaveFileDialog(&OnNewActorFile , this, _editor->engine->window, nullptr, 0, global_file_location.c_str());
     }
 
     Refresh();

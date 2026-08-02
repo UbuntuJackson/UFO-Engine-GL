@@ -18,12 +18,13 @@ public:
 
     static inline int id_counter = 0;
 
+    bool is_new_file = false;
     std::string name;
     std::string path;
     bool opened = true;
     bool is_edited = false;
     std::string name_and_imgui_id;
-    Tab(Editor* _editor);
+    Tab(Editor* _editor, bool _is_new_file);
 
     virtual ~Tab() = default;
     virtual void Refresh();

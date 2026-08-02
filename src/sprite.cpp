@@ -244,7 +244,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
                 engine->asset_manager.textures.at(name_of_erased_texture).Delete();
                 engine->asset_manager.textures.erase(name_of_erased_texture);
-                _level_editor_tab->editor->ResourcesEdited();
+                for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
                 if(key == name_of_erased_texture) key = "placeholder_icon";
 
@@ -320,7 +320,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
                 engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
                 engine->asset_manager.shaders.erase(name_of_erased_shader);
-                _level_editor_tab->editor->ResourcesEdited();
+                for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
                 if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";
 

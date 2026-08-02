@@ -9,7 +9,6 @@
 #include "file_node.h"
 #include "tab.h"
 #include <graphics.h>
-#include <engine.h>
 #include <map>
 #include <functional>
 #include <set>
@@ -33,6 +32,12 @@
 #include "advanced_actor_spawner.h"
 #include "error_dialogue.h"
 
+namespace ufo{
+
+class Engine;
+
+}
+
 namespace UFOEngineStudio{
 
 struct ProjectSettings{
@@ -46,8 +51,10 @@ struct ProjectSettings{
 
 };
 
-class Editor : public ufo::Level, public ufo::gc::Root{
+class Editor : public ufo::gc::Root{
 public:
+
+    ufo::Engine* engine = nullptr;
 
     std::set<std::string> recently_opened;
 
@@ -96,6 +103,11 @@ public:
     std::string header_tool_parser = "ufo_engine_header_tool.py";
 
     bool refresh_entire_project = false;
+
+    bool is_creating_new_c_plus_plus_class = false;
+    std::string input_base_class_name = "";
+    std::string input_class_name = "";
+    bool new_c_plus_plus_class_has_component_tree = false;
 
     Editor();
     void ResetUFOEngineStudio();

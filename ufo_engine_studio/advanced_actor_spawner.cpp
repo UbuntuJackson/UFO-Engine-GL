@@ -6,6 +6,7 @@
 #include "editor.h"
 #include "advanced_actor_spawner.h"
 #include "error_dialogue.h"
+#include "../src/engine.h"
 
 namespace UFOEngineStudio{
 

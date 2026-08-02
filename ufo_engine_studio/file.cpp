@@ -5,6 +5,7 @@
 #include "file.h"
 #include "directory.h"
 #include "editor.h"
+#include "engine.h"
 #include <exception>
 #include <filesystem>
 #include <memory>
@@ -85,24 +86,32 @@ namespace UFOEngineStudio{
             if(ufo::FileSystem::HasExtension(path+"/"+file_name, "ason")){
                 ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
-                //add some sort of LevelOK flag here or something
-                ufo::Level* level = _editor->AddActorUniquePtr(
-                        std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json))
-                    )->DynamicCast<ufo::Level>();
+                if(!level_json->IsNull()){
 
-                if(!level){
-                    _editor->error_dialogue = std::make_unique<ErrorDialogueFailedToOpenFile>(_editor->opened_directory_path+"/"+path+"/"+file_name);
-                    Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
+                    //add some sort of LevelOK flag here or something
+                    _editor->engine->loaded_levels_for_editor.push_back(
+                        std::move(_editor->engine->actor_generator->JsonToActorTree(&(_editor->gc), level_json)
+                    ));
+
+                    ufo::Level* level = _editor->engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>();
+
+                    if(!level){
+                        _editor->error_dialogue = std::make_unique<ErrorDialogueFailedToOpenFile>(_editor->opened_directory_path+"/"+path+"/"+file_name);
+                        Console::PrintLine("[UFO-Engine Studio] Could not convert actor to class Level");
+                    }
+                    else{
+
+                        auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor,false);
+
+                        level_editor_tab->Initialise(level, file_name);
+
+
+                        _editor->tabs.push_back(std::move(level_editor_tab));
+                        _editor->refresh_entire_project = true;
+                    }
                 }
                 else{
-
-                    auto level_editor_tab = std::make_unique<LevelEditorTab>(_editor->engine,_editor);
-                    level_editor_tab->this_level = level;
-                    level_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;
-                    level_editor_tab->Initialise();
-
-                    _editor->tabs.push_back(std::move(level_editor_tab));
-                    _editor->refresh_entire_project = true;
+                    Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, not a valid json file.");
                 }
 
                 is_valid_file_extension = true;
@@ -116,7 +125,7 @@ namespace UFOEngineStudio{
                 ufo::FileSystem::HasExtension(path+"/"+file_name, "cfg")
             ){
                 try{
-                    auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor);
+                    auto text_editor_tab = std::make_unique<TextEditorTab>("", "" ,_editor,false);
 
                     text_editor_tab->text = ufo::FileSystem::Read(_editor->opened_directory_path+path+"/"+file_name);
                     text_editor_tab->path = _editor->opened_directory_path+path+"/"+file_name;

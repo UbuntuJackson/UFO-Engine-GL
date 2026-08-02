@@ -7,6 +7,7 @@
 #include "tab.h"
 #include "../utils/file_utils.h"
 #include "file_dialogue.h"
+#include "../src/engine.h"
 
 namespace UFOEngineStudio{
 
@@ -34,19 +35,20 @@ void TextEditorTab::OnActive(ImGuiID _local_dockspace_id , [[maybe_unused]] Edit
 }
 
 void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, [[maybe_unused]] Editor* _editor){
-    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string("TextEditorTabWindow"+name_and_imgui_id).c_str());
+    ImGuiDockSpaceFill(_local_dockspace_id, ImGui::GetWindowSize(), std::string("TextEditorTabWindow"+name_and_imgui_id).c_str(), true);
 }
 
 void TextEditorTab::OnSave(Editor* _editor){
     //File will have no name if it isn't read or created with respect to file system
-    if(name != ""){
+    if(!is_new_file){
         ufo::FileSystem::Write(path,text);
 
     }
     else{
-        const char* global_file_location = _editor->opened_directory_path.c_str();
+        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+name);
 
-        SDL_ShowSaveFileDialog(&OnNewTextFile , this, _editor->engine->window, nullptr, 0, global_file_location);
+        SDL_ShowSaveFileDialog(&OnNewTextFile , this, _editor->engine->window, nullptr, 0, global_file_location.c_str());
+
     }
 
     last_saved_text = text;

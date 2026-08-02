@@ -287,7 +287,7 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
         if(font_was_erased && name_of_erased_texture != ""){
 
             engine->asset_manager.bit_map_fonts.erase(name_of_erased_texture);
-            _level_editor_tab->editor->ResourcesEdited();
+            for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
             if(bit_map_font_key == name_of_erased_texture) bit_map_font_key = "";
 
@@ -382,7 +382,7 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
             if(texture_was_erased && name_of_erased_texture != "placeholder_icon"){
                 engine->asset_manager.textures.at(name_of_erased_texture).Delete();
                 engine->asset_manager.textures.erase(name_of_erased_texture);
-                _level_editor_tab->editor->ResourcesEdited();
+                for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
                 if(bit_map_font_key == name_of_erased_texture) bit_map_font_key = "placeholder_icon";
 

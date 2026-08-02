@@ -59,6 +59,7 @@ def make_generated_base_classes_file(_path, _classes, _engine_includes):
 
                         if not found_Main_actor:
                             cl['errors'].append({'class':cl['class']['name'],'file':ufo_macro["args"][0],'type':"No Actor Named Main"})
+                            continue
 
                         namespace_separated_from_name = class_name.rsplit("::",1)
 
@@ -119,7 +120,6 @@ def make_generated_file(_path, _classes, _engine_includes, _structured_classes_d
     for cl in _classes:
         if cl["class"]["header_file"] not in header_files:
             header_files.append(cl["class"]["header_file"])
-        cl['errors'] = []
 
     for i in header_files:
         includes += '#include "' + i + '"\n'
@@ -252,6 +252,9 @@ def main():
     engine_includes += '#include "UFO-Engine/src/platformer_rectangle_collision.h"\n'
 
     classes_as_dictionary = {"contents": grand_class_list}
+
+    for cl in grand_class_list:
+        cl['errors'] = []
 
     make_generated_base_classes_file(arg_path, grand_class_list, engine_includes)
 
