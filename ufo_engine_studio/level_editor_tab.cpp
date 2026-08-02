@@ -2,6 +2,7 @@
 #include "level_editor_tab.h"
 #include "../ufo_engine_studio/tab.h"
 #include "../ufo_engine_studio/editor.h"
+#include <cstdio>
 #include <engine.h>
 #include <memory>
 #include <openglv4_5_graphics.h>
@@ -262,6 +263,26 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             ImGui::BeginChild("Output###LevelEditorTabOutputChildWindow");
 
             ImGui::TextWrapped("%s", Console::string_stream.str().c_str());
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        if(ImGui::BeginTabItem("Game Output###LevelEditorTabGame Output")){
+            ImGui::BeginChild("Game Output###LevelEditorTabGame OutputChildWindow");
+
+            if(editor->handle_to_cout_file_descriptor != -1){
+
+                char buffer[256];
+
+
+                fgets_unlocked(buffer, sizeof(buffer), editor->f);
+                _editor->game_log+=buffer;
+
+            }
+
+            ImGui::TextWrapped("%s", _editor->game_log.c_str());
 
             ImGui::EndChild();
 

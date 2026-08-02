@@ -31,6 +31,14 @@
 #include "../src/animation_cluster.h"
 #include "imgui_utils.h"
 
+#include <spawn.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <poll.h>
+#include <sys/wait.h>
+
 namespace UFOEngineStudio{
 
 Editor::Editor(){
@@ -296,6 +304,20 @@ void Editor::OnUpdate(float _delta_time){
     }
 
 
+    {
+        if(current_process_id != -1){
+            int exit_status = 0;
+
+            if(waitpid(current_process_id, &exit_status, WNOHANG) != 0){
+                fclose(f);
+                handle_to_cout_file_descriptor = -1;
+                f = nullptr;
+                current_process_id = -1;
+                Console::PrintLine("Game Process Ended with exit status:", exit_status);
+            }
+        }
+    }
+
     if (ImGui::BeginMainMenuBar())
     {
         if (ImGui::BeginMenu("File"))
@@ -371,9 +393,12 @@ void Editor::OnUpdate(float _delta_time){
                 }
 
                 if(ImGui::MenuItem("Run Game")){
-                    const std::string build_directory = opened_directory_path+"/build";
-                    std::thread t(&RunGame, build_directory, opened_directory_path);
-                    t.detach();
+                    PosixSpawnGame(this, handle_to_cout_file_descriptor);
+                    game_log = "";
+                    game_log.reserve(100000);
+                    //const std::string build_directory = opened_directory_path+"/build";
+                    //std::thread t(&PosixSpawnGame, this, std::ref(handle_to_cout_file_descriptor));
+                    //t.detach();
                 }
 
                 if(ImGui::MenuItem("Settings")){
@@ -923,6 +948,53 @@ void Editor::OnMark() {
     for(const auto& [k,v] : spawnable_actor_map){
         v->Mark();
     }
+}
+
+void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
+
+    const int WRITE = 0;
+    const int READ = 1;
+    const int COUT = 1;
+    const int CERR = 2;
+
+    int return_value;
+    pid_t child_process_id;
+    posix_spawn_file_actions_t child_file_descriptor_actions;
+
+    int cout_pipe[2];
+
+    if(pipe(cout_pipe) != 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to create pipe");
+    }
+
+    posix_spawn_file_actions_init(&child_file_descriptor_actions);
+
+    //Cclose previous file stream WRITE, duplicate std coud file descritor, close the read file descriptor
+    if(posix_spawn_file_actions_addclose(&child_file_descriptor_actions, cout_pipe[WRITE]) != 0 ||
+        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDOUT_FILENO) != 0)
+    {
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to close or open the cout_pipe");
+        posix_spawn_file_actions_destroy(&child_file_descriptor_actions);
+    }
+
+    std::string full_executable_path = _editor->opened_directory_path+"/build/OUT";
+
+    char* argv[] = {&full_executable_path[0], nullptr};
+
+    if(posix_spawn_file_actions_addchdir_np(&child_file_descriptor_actions, std::string(_editor->opened_directory_path+"/build").c_str()) != 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to set working directory");
+    }
+
+    if(posix_spawnp(&child_process_id, std::string(_editor->opened_directory_path+"/build/OUT").c_str(), &child_file_descriptor_actions, nullptr, argv, environ) != 0){
+        Console::PrintLine("(posix_spawnp failed", strerror(errno));
+    }
+
+    close(cout_pipe[READ]);
+
+    _editor->current_process_id = child_process_id;
+    _handle_to_cout_file_descriptor = cout_pipe[WRITE];
+    _editor->f = fdopen(_handle_to_cout_file_descriptor, "r");
+
 }
 
 void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path){

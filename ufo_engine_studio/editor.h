@@ -1,9 +1,11 @@
 #pragma once
 #include <exception>
 #include <level.h>
+#include <sched.h>
 #include <stdexcept>
 #include <string>
 #include <memory>
+#include <unistd.h>
 #include <vector>
 #include "background_sprite.h"
 #include "file_node.h"
@@ -31,6 +33,8 @@
 #include "../src/rectangular_area.h"
 #include "advanced_actor_spawner.h"
 #include "error_dialogue.h"
+
+extern char** environ;
 
 namespace ufo{
 
@@ -74,6 +78,11 @@ public:
     std::string calculator_expression;
 
     ProjectSettings project_settings;
+
+    std::string game_log;
+    int handle_to_cout_file_descriptor = -1;
+    FILE* f = nullptr;
+    pid_t current_process_id = -1;
 
     //The current working directory for the projekt. Not for this program.
     std::string opened_directory_path = "";
@@ -125,5 +134,7 @@ public:
 void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path);
 void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
+void PosixSpawnGamePipe();
+void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor);
 
 }
