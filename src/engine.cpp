@@ -526,6 +526,8 @@ void Engine::Update(){
     if(fLastElapsed > 0.05f) fLastElapsed = 0.05f;
 #ifdef UFO_ENGINE_STUDIO
     editor.OnUpdate(fLastElapsed);
+#else
+    level_handle->UpdatePhase(fLastElapsed);
 #endif
     if(pending_levels.size() > 0){
 
