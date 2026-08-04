@@ -137,7 +137,7 @@ set(
 endif()
 
 # Create your game executable target as usual
-add_library(UFO SHARED ${SRC} ${UFO_ENGINE_STUDIO_SRC})
+add_library(UFO STATIC ${SRC} ${UFO_ENGINE_STUDIO_SRC})
 
 target_include_directories(UFO PUBLIC src)
 target_include_directories(UFO PUBLIC ufo_maths)

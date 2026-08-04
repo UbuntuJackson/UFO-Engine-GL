@@ -138,8 +138,8 @@ def make_generated_file(_path, _classes, _engine_includes, _structured_classes_d
     # Parent class has the generator_map now.
     # generator_map = "    std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;\n"
 
-    function_ = "    void Initialise(){\n"
-    function_ += "        GenericGenerator::Initialise();\n"
+    function_ = "    void Initialise(ufo::Engine* _engine){\n"
+    function_ += "        GenericGenerator::Initialise(_engine);\n"
 
     for cl in _classes:
         function_ += "        factory_map.emplace(\n"

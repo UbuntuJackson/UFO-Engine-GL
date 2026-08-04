@@ -196,7 +196,7 @@ void Level::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
                 #ifdef UFO_ENGINE_STUDIO
                 engine->asset_manager.LoadTexture(engine->editor.opened_directory_path + "/" + j_texture->AsString(), j_texture->AsString(), true);
                 #else
-                engine->asset_manager.LoadTexture(engine->editor.game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
+                engine->asset_manager.LoadTexture(engine->game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
                 #endif
                 engine->asset_manager.textures.at(j_texture->AsString()).is_global_asset = false;
             }
