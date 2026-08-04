@@ -1,5 +1,6 @@
 #include "../src/ufo_macros.h"
 #include "animation_cluster.h"
+#include "editor_property.h"
 #include "ufo_maths.h"
 #include <cctype>
 #include <cstring>
@@ -371,7 +372,7 @@ void Editor::OnUpdate(float _delta_time){
                         tabs.push_back(std::move(tab));
                     }
                     if(ImGui::MenuItem("Textfile (.txt)")){
-                        tabs.push_back(std::make_unique<TextEditorTab>("","",this,true));
+                        tabs.push_back(std::make_unique<TextEditorTab>("",this,true));
                     }
                     if(ImGui::MenuItem("C++ class (.cpp)")){
 
@@ -571,9 +572,9 @@ void Editor::OnUpdate(float _delta_time){
                 }
             }
 
-            tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this,true));
+            tabs.push_back(std::make_unique<TextEditorTab>(template_file_header,this,true));
             tabs.back()->path = file_name+".ufo.h";
-            tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this,true));
+            tabs.push_back(std::make_unique<TextEditorTab>(template_file_source,this,true));
             tabs.back()->path = file_name+".cpp";
             std::unique_ptr<LevelEditorTab> u_level_tab = std::make_unique<LevelEditorTab>(engine, this,true);
 
@@ -915,6 +916,8 @@ void Editor::ReloadSpawnableActorMap(){
 
             std::string alias = name;
 
+            std::unique_ptr<ufo::EditorProperty> editor_property_to_add = nullptr;
+
             for(const auto& macro : member->AsArray()[0]->AsArray()){
                 std::string macro_name = macro->AsMap().at("name")->AsString();
 
@@ -928,13 +931,13 @@ void Editor::ReloadSpawnableActorMap(){
                 if(macro_name == "ufo_int_slider"){
 
                     if(args.size() == 2){
-                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyIntSlider>(
+                        editor_property_to_add = std::make_unique<ufo::EditorPropertyIntSlider>(
                             name,
                             alias,
                             std::stoi(value),
                             std::stoi(args[0]->AsString()),
                             std::stoi(args[1]->AsString())
-                        ));
+                        );
                     }
                     else{
                         Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, ufo_int_slider requires 2 arguments, here it takes", args.size());
@@ -944,7 +947,7 @@ void Editor::ReloadSpawnableActorMap(){
                 if(macro_name == "ufo_float_slider"){
 
                     if(args.size() == 3){
-                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyFloatSlider>(
+                        editor_property_to_add = (std::make_unique<ufo::EditorPropertyFloatSlider>(
                             name,
                             alias,
                             std::stof(value),
@@ -962,15 +965,20 @@ void Editor::ReloadSpawnableActorMap(){
 
                 if(macro_name == "ufo_variable"){
 
-                    if(data_type == "int") act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyInt>(name,alias,std::stoi(value)));
-                    if(data_type == "float") act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyFloat>(name,alias,std::stoi(value)));
+                    if(data_type == "int") editor_property_to_add = (std::make_unique<ufo::EditorPropertyInt>(name,alias,std::stoi(value)));
+                    if(data_type == "float") editor_property_to_add = (std::make_unique<ufo::EditorPropertyFloat>(name,alias,std::stoi(value)));
                     if(data_type == "bool"){
-                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
+                        editor_property_to_add = (std::make_unique<ufo::EditorPropertyCheckBox>(name,alias,(bool)std::stoi(value)));
                     }
                     if(data_type == "std::string"){
-                        act_spawner->custom_properties.push_back(std::make_unique<ufo::EditorPropertyString>(name,alias,value));
+                        editor_property_to_add = (std::make_unique<ufo::EditorPropertyString>(name,alias,value));
                     }
                 }
+            }
+
+            if(editor_property_to_add){
+                editor_property_to_add->alias = alias;
+                act_spawner->custom_properties.push_back(std::move(editor_property_to_add));
             }
         }
 

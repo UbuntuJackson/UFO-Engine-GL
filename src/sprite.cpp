@@ -15,6 +15,7 @@
 #include "../ufo_engine_studio/editor.h"
 #include "../ufo_engine_studio/file_dialogue.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
+#include "../ufo_engine_studio/imgui_utils.h"
 #endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
@@ -203,6 +204,10 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
                 auto& texture = engine->asset_manager.textures.at(name);
 
+                if(!texture.is_global_asset && !level->level_textures.count(name)) continue;
+
+                if(!texture.is_global_asset && !level->level_textures.count(name)) continue;
+
                 float w = (float)texture.width;
                 float h = (float)texture.height;
 
@@ -237,16 +242,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                     ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
                     ImGui::Text(("name: "+name).c_str(),"%s");
                     ImGui::Text(texture.is_savable ? "Status: Savable" : "Status: Not Savable");
-                    if(is_savable){
-
-                        bool is_level_asset = level->level_textures.count(name);
-
-                        if(ImGui::Checkbox("Is Level Asset",&is_level_asset)){
-                            if(!is_level_asset) level->level_textures.erase(name);
-                            else level->level_textures.insert(name);
-                        }
-                        ImGui::Checkbox("Is Global Asset",&texture.is_global_asset);
-                    }
+                    UFOEngineStudio::TextureOptions(level, name, texture);
                 }
 
             }

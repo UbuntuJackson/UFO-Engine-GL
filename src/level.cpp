@@ -199,10 +199,17 @@ void Level::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
                 engine->asset_manager.LoadTexture(engine->game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
                 #endif
                 engine->asset_manager.textures.at(j_texture->AsString()).is_global_asset = false;
+                engine->asset_manager.textures.at(j_texture->AsString()).is_savable = true;
             }
+
+            Console::PrintLine("j_level_texture",j_texture->AsString());
 
             level_textures.insert(j_texture->AsString());
 
+        }
+
+        for(std::string s : level_textures){
+            Console::PrintLine("level_texture",s);
         }
     }
 
@@ -229,14 +236,14 @@ ufo::gc::JsonMap* Level::GetAsJson(ufo::GarbageCollector* _gc){
 
     parent_class_as_json->map.emplace("tilesets",tilesets);
 
-    ufo::gc::JsonArray* level_textures = _gc->New<ufo::gc::JsonArray>();
+    ufo::gc::JsonArray* j_level_textures = _gc->New<ufo::gc::JsonArray>();
     for(const auto& texture : level->level_textures){
 
-        level_textures->array.push_back(_gc->New<ufo::gc::JsonString>(texture));
+        j_level_textures->array.push_back(_gc->New<ufo::gc::JsonString>(texture));
 
     }
 
-    parent_class_as_json->map.emplace("level_textures",level_textures);
+    parent_class_as_json->map.emplace("level_textures",j_level_textures);
 
     parent_class_as_json->map.emplace("size_x",_gc->New<ufo::gc::JsonNumber>(size.x));
     parent_class_as_json->map.emplace("size_y",_gc->New<ufo::gc::JsonNumber>(size.y));

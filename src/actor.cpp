@@ -899,8 +899,8 @@ void Actor::OnUtiliseAssetManager([[maybe_unused]] UFOEngineStudio::LevelEditorT
 
 Actor* Actor::GetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_screenspace){
     if(import_mode != ImportModes::CUSTOM_CLASS){
-        for(const auto& actor : actors){
-            Actor* act = actor->GetFocusedActor(_mouse_position_over_screenspace);
+        for(int a = actors.size()-1; a != -1; a--){
+            Actor* act = actors[a]->GetFocusedActor(_mouse_position_over_screenspace);
             if(act) return act;
         }
     }

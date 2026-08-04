@@ -41,11 +41,11 @@ void TextEditorTab::OnMakeDockSpace(ImGuiID _local_dockspace_id, [[maybe_unused]
 void TextEditorTab::OnSave(Editor* _editor){
     //File will have no name if it isn't read or created with respect to file system
     if(!is_new_file){
-        ufo::FileSystem::Write(path,text);
+        ufo::FileSystem::Write(_editor->opened_directory_path+"/"+path,text);
 
     }
     else{
-        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+name);
+        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+path);
 
         SDL_ShowSaveFileDialog(&OnNewTextFile , this, _editor->engine->window, nullptr, 0, global_file_location.c_str());
 

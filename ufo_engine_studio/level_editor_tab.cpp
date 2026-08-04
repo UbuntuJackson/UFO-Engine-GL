@@ -15,6 +15,7 @@
 #include <vector>
 #include "actor_undo_and_redo.h"
 #include "console.h"
+#include "conversion.h"
 #include "dock_utils.h"
 #include "file_dialogue.h"
 #include "editor.h"
@@ -70,10 +71,10 @@ Vector2f LevelEditorTab::TranslateToEditorScreenSpace(Vector2f _position){
     return level_viewport_position + position;
 }
 
-void LevelEditorTab::Initialise(ufo::Level* _level, const std::string _file_name){
+void LevelEditorTab::Initialise(ufo::Level* _level, const std::string _local_path){
     this_level = _level;
     this_level->engine = engine;
-    path = editor->opened_directory_path+path+"/"+_file_name;
+    path = _local_path;
 
     this_level->AddActor<ControllableCamera>(Vector2f(0.0f, 0.0f));
     this_level->is_top_actor_in_editor = true;
@@ -122,7 +123,7 @@ void LevelEditorTab::TabSpecificMainMenuBarItems(){
 
     }
     if(ImGui::MenuItem("I> Run Current Level")){
-        std::system(("cd "+editor->opened_directory_path+"/build"+" && gnome-terminal -- bash -c './OUT "+path+"'").c_str());
+        std::system(("cd "+editor->opened_directory_path+"/build"+" && gnome-terminal -- bash -c './OUT "+editor->opened_directory_path+path+"'").c_str());
     }
 }
 
@@ -323,6 +324,19 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             for(const auto& change : this_level->level_changes){
                 ImGui::TextWrapped("%s", change->GetInfo().c_str());
             }
+
+            ImGui::EndChild();
+
+            ImGui::EndTabItem();
+        }
+
+        if(ImGui::BeginTabItem("DragDroppedActors###LevelEditorTabDragDroppedActors")){
+            ImGui::BeginChild("DragDroppedActors###LevelEditorTabDragDragDroppedActorsChildWindow");
+
+            for(const auto& actor : drag_dropped_actors) ImGui::TextWrapped("%s", std::string(
+                ufo::MemoryAddressToString(actor.parent)+" "+std::to_string(actor.index)
+            ).c_str());
+
 
             ImGui::EndChild();
 
@@ -762,10 +776,10 @@ void LevelEditorTab::OnSave(Editor* _editor){
 
     if(!is_new_file){
         auto level_json = this_level->GetAsJson(&gc);
-        level_json->Write(path);
+        level_json->Write(_editor->opened_directory_path+"/"+path);
     }
     else{
-        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+name);
+        std::string global_file_location = std::string(_editor->opened_directory_path+"/"+path);
         Console::PrintLine("suggested_path =",global_file_location);
 
         SDL_ShowSaveFileDialog(&OnNewActorFile , this, _editor->engine->window, nullptr, 0, global_file_location.c_str());

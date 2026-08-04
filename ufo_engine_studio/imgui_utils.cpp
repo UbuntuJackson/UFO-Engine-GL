@@ -1,5 +1,6 @@
 #include "../imgui/imgui.h"
 #include "imgui_utils.h"
+#include "../src/level.h"
 
 namespace UFOEngineStudio{
 
@@ -40,6 +41,22 @@ bool BeginWindow(const char* name, bool* p_open, ImGuiWindowFlags flags){
 void EndWindow(){
 
     ImGui::End();
+}
+
+void TextureOptions(ufo::Level* _level, const std::string _texture_name, ufo::Texture2D& _texture){
+    if(_texture.is_savable){
+
+        bool is_level_asset_dummy = _level->level_textures.count(_texture_name);
+
+        const bool is_level_asset_result = is_level_asset_dummy;
+
+        if(ImGui::Checkbox(std::string("Is Level Asset###IsLevelTextureCheckBox"+_texture_name).c_str(),&is_level_asset_dummy)){
+            if(is_level_asset_result) _level->level_textures.erase(_texture_name);
+            else _level->level_textures.insert(_texture_name);
+        }
+        ImGui::Checkbox(std::string("Is Global Asset###IsGlobalTextureCheckBox"+_texture_name).c_str(),&_texture.is_global_asset);
+
+    }
 }
 
 }

@@ -85,11 +85,16 @@ void OnNewActorFile(void *_tab, const char * const *_filelist,[[maybe_unused]] i
 
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
 
-    tab->path = *_filelist;
+    try{
+        tab->path = ufo::FileSystem::GetRelativePath(*_filelist,tab->editor->opened_directory_path);
+    } catch(const std::runtime_error& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error getting relative path");
+        return;
+    }
     tab->is_new_file = false;
 
     auto level_json = tab->this_level->GetAsJson(&(tab->gc));
-    level_json->Write(tab->path);
+    level_json->Write(*_filelist);
 
     tab->Refresh();
 
@@ -197,10 +202,16 @@ void OnNewTextFile(void *_tab, const char * const *_filelist, [[maybe_unused]] i
 
     std::string name = std::string(*_filelist).substr(std::string(*_filelist).find_last_of("/")+1);
 
-    tab->path = *_filelist;
+    try{
+        tab->path = ufo::FileSystem::GetRelativePath(*_filelist,tab->editor->opened_directory_path);
+    } catch(const std::runtime_error& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error getting relative path");
+        return;
+    }
+
     tab->is_new_file = false;
 
-    ufo::FileSystem::Write(tab->path, tab->text);
+    ufo::FileSystem::Write(*_filelist, tab->text);
 
     tab->Refresh();
 
