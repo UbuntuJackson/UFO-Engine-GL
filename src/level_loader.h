@@ -2,7 +2,7 @@
 #include <string>
 #include <memory>
 #include "../ufo_garbage_collector/gc_json.h"
-#include "../ufo_garbage_collector/garbage_collector.h"
+#include "../ufo_garbage_collector/object.h"
 #include "engine.h"
 
 namespace ufo{

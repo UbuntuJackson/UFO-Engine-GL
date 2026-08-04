@@ -14,11 +14,13 @@ AdvancedActorSpawner::AdvancedActorSpawner(
     std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
     std::string _base,
     std::string _class_name,
+    std::string _header_file,
     std::string _category
 ) :
 spawner_function{_spawner_function},
 base{_base},
 class_name{_class_name},
+header_file{_header_file},
 category{_category}
 {
     MakeMarkable(&actor_as_json);

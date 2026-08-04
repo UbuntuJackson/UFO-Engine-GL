@@ -2,6 +2,7 @@
 #include "animation_cluster.h"
 #include "ufo_maths.h"
 #include <cctype>
+#include <cstring>
 #include <memory>
 #include <stdexcept>
 #define SDL_MAIN_HANDLED
@@ -43,6 +44,14 @@ namespace UFOEngineStudio{
 
 Editor::Editor(){
     name = "GC_Editor";
+
+    game_log_buffer = (char*)malloc(GAME_LOG_BUFFER_SIZE);
+
+
+}
+
+Editor::~Editor(){
+    free(game_log_buffer);
 }
 
 void Editor::ResetUFOEngineStudio(){
@@ -309,9 +318,7 @@ void Editor::OnUpdate(float _delta_time){
             int exit_status = 0;
 
             if(waitpid(current_process_id, &exit_status, WNOHANG) != 0){
-                fclose(f);
                 handle_to_cout_file_descriptor = -1;
-                f = nullptr;
                 current_process_id = -1;
                 Console::PrintLine("Game Process Ended with exit status:", exit_status);
             }
@@ -382,8 +389,10 @@ void Editor::OnUpdate(float _delta_time){
                 }
 
                 if(ImGui::MenuItem("Compile Game")){
-                    refresh_entire_project = true;
-                    will_compile_game = true;
+                    PosixSpawnBuildProcess(this, handle_to_cout_file_descriptor);
+
+                    //refresh_entire_project = true;
+                    //will_compile_game = true;
                 }
 
                 if(ImGui::MenuItem("Debug Game")){
@@ -394,8 +403,8 @@ void Editor::OnUpdate(float _delta_time){
 
                 if(ImGui::MenuItem("Run Game")){
                     PosixSpawnGame(this, handle_to_cout_file_descriptor);
-                    game_log = "";
-                    game_log.reserve(100000);
+                    //game_log_buffer = char[10000];
+                    //game_log_buffer_size = 0;
                     //const std::string build_directory = opened_directory_path+"/build";
                     //std::thread t(&PosixSpawnGame, this, std::ref(handle_to_cout_file_descriptor));
                     //t.detach();
@@ -458,7 +467,7 @@ void Editor::OnUpdate(float _delta_time){
 
             }
         }
-        ImGui::Text("Header file: %s",std::string(file_name+".h").c_str());
+        ImGui::Text("Header file: %s",std::string(file_name+".ufo.h").c_str());
         ImGui::Text("Source file: %s",std::string(file_name+".cpp").c_str());
         if(new_c_plus_plus_class_has_component_tree) ImGui::Text("Component file: %s",std::string(file_name+".ason").c_str());
 
@@ -473,7 +482,7 @@ void Editor::OnUpdate(float _delta_time){
 
                     while(pos != template_file_header.npos){
                         template_file_header.replace(pos, replace_by.size(), input_class_name);
-                        pos = template_file_header.find(replace_by,pos+replace_by.size());
+                        pos = template_file_header.find(replace_by,pos+input_class_name.size());
                     }
                 }
                 {
@@ -482,7 +491,7 @@ void Editor::OnUpdate(float _delta_time){
 
                     while(pos != template_file_source.npos){
                         template_file_source.replace(pos, replace_by.size(), input_class_name);
-                        pos = template_file_source.find(replace_by,pos+replace_by.size());
+                        pos = template_file_source.find(replace_by,pos+input_class_name.size());
                     }
                 }
 
@@ -497,7 +506,7 @@ void Editor::OnUpdate(float _delta_time){
 
                 while(pos != template_file_header.npos){
                     template_file_header.replace(pos, replace_by.size(), replacement_string);
-                    pos = template_file_header.find(replace_by,pos+replace_by.size());
+                    pos = template_file_header.find(replace_by,pos+replacement_string.size());
                 }
 
             }
@@ -508,7 +517,7 @@ void Editor::OnUpdate(float _delta_time){
 
                     while(pos != template_file_header.npos){
                         template_file_header.replace(pos, replace_by.size(), input_base_class_name);
-                        pos = template_file_header.find(replace_by,pos+replace_by.size());
+                        pos = template_file_header.find(replace_by,pos+input_base_class_name.size());
                     }
                 }
                 {
@@ -517,13 +526,50 @@ void Editor::OnUpdate(float _delta_time){
 
                     while(pos != template_file_source.npos){
                         template_file_source.replace(pos, replace_by.size(), input_base_class_name);
-                        pos = template_file_source.find(replace_by,pos+replace_by.size());
+                        pos = template_file_source.find(replace_by,pos+input_base_class_name.size());
+                    }
+                }
+            }
+
+            {
+                const std::string replace_by = "<actor.h>";
+                const std::string replacement_string = "<"+spawnable_actor_map.at(input_base_class_name)->header_file+">";
+
+                {
+                    size_t pos = template_file_header.find(replace_by);
+
+                    while(pos != template_file_header.npos){
+                        template_file_header.replace(pos, replace_by.size(), replacement_string);
+                        pos = template_file_header.find(replace_by, pos+replacement_string.size());
+                    }
+                }
+                {
+
+                    size_t pos = template_file_source.find(replace_by);
+
+                    while(pos != template_file_source.npos){
+                        template_file_source.replace(pos, replace_by.size(), replacement_string);
+                        pos = template_file_source.find(replace_by, pos+replacement_string.size());
+                    }
+                }
+            }
+
+            {
+                const std::string replace_by = "my_actor.h";
+                const std::string replacement_string = file_name+".ufo.h";
+                {
+
+                    size_t pos = template_file_source.find(replace_by);
+
+                    while(pos != template_file_source.npos){
+                        template_file_source.replace(pos, replace_by.size(), replacement_string);
+                        pos = template_file_source.find(replace_by,pos+replacement_string.size());
                     }
                 }
             }
 
             tabs.push_back(std::make_unique<TextEditorTab>("",template_file_header,this,true));
-            tabs.back()->path = file_name+".h";
+            tabs.back()->path = file_name+".ufo.h";
             tabs.push_back(std::make_unique<TextEditorTab>("",template_file_source,this,true));
             tabs.back()->path = file_name+".cpp";
             std::unique_ptr<LevelEditorTab> u_level_tab = std::make_unique<LevelEditorTab>(engine, this,true);
@@ -637,55 +683,55 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
     spawnable_actor_map.emplace("ufo::Actor",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Actor>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Actor", "ufo::Actor", "UFO-Engine"))
+        }, "ufo::Actor", "ufo::Actor", "actor.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::AnimationCluster",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::AnimationCluster>(Vector2f(0.0f, 0.0f));
-        }, "ufo::AnimationCluster", "ufo::AnimationCluster", "UFO-Engine"))
+        }, "ufo::AnimationCluster", "ufo::AnimationCluster","animation_cluster.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::CollisionGrid",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::CollisionGrid>(Vector2f(0.0f, 0.0f));
-        }, "ufo::CollisionGrid", "ufo::CollisionGrid", "UFO-Engine"))
+        }, "ufo::CollisionGrid", "ufo::CollisionGrid","collision_grid.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::PlatformerRectangleCollision",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::PlatformerRectangleCollision>(Vector2f(0.0f, 0.0f));
-        }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision", "UFO-Engine"))
+        }, "ufo::PlatformerRectangleCollision", "ufo::PlatformerRectangleCollision", "platformer_rectangle_collision.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::TileMap",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::TileMap>(Vector2f(0.0f, 0.0f));
-        }, "ufo::TileMap", "ufo::TileMap", "UFO-Engine"))
+        }, "ufo::TileMap", "ufo::TileMap", "tile_map.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Level",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Level>();
-        }, "ufo::Level", "ufo::Level", "UFO-Engine"))
+        }, "ufo::Level", "ufo::Level", "level.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Widget",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Widget>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Widget", "ufo::Widget", "UFO-Engine"))
+        }, "ufo::Widget", "ufo::Widget", "widget.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Text",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Text>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Text", "ufo::Text", "UFO-Engine"))
+        }, "ufo::Text", "ufo::Text", "text.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::Button",std::move(std::make_unique<AdvancedActorSpawner>(
         [](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Button>(Vector2f(0.0f, 0.0f));
-        }, "ufo::Button", "ufo::Button", "UFO-Engine"))
+        }, "ufo::Button", "ufo::Button", "button.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace(
@@ -703,7 +749,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::Sprite",
-            "ufo::Sprite", "UFO-Engine"
+            "ufo::Sprite", "sprite.h", "UFO-Engine"
         ))
     );
 
@@ -716,7 +762,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::BackgroundSprite",
-            "ufo::BackgroundSprite", "UFO-Engine"
+            "ufo::BackgroundSprite", "background_sprite.h", "UFO-Engine"
         ))
     );
 
@@ -729,7 +775,7 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
                 );
             },
             "ufo::Animation",
-            "ufo::Animation", "UFO-Engine"
+            "ufo::Animation", "animation.h", "UFO-Engine"
         ))
     );
 
@@ -737,14 +783,14 @@ void Editor::PopulateSpawnableActorMapWithBaseObjects(){
         std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::Camera>(Vector2f(0.0f, 0.0f));
         },
-        "ufo::Camera", "ufo::Camera", "UFO-Engine"))
+        "ufo::Camera", "ufo::Camera", "camera.h", "UFO-Engine"))
     );
 
     spawnable_actor_map.emplace("ufo::RectangularArea",
         std::move(std::make_unique<AdvancedActorSpawner>([](Editor* _editor, AdvancedActorSpawner* _this){
             return std::make_unique<ufo::RectangularArea>(Vector2f(0.0f, 0.0f));
         },
-        "ufo::RectangularArea", "ufo::RectangularArea", "UFO-Engine"))
+        "ufo::RectangularArea", "ufo::RectangularArea", "rectangular_area.h", "UFO-Engine"))
     );
 }
 
@@ -762,10 +808,18 @@ void Editor::ReloadSpawnableActorMap(){
     }
 
     for(const auto& j_class : exported_actors_json->map.at("contents")->AsArray()){
+        if(!j_class->AsMap().count("class")){
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, malformed class json");
+            continue;
+        }
+
         auto class_ = j_class->AsMap().at("class")->AsMap();
 
         std::string inherits = "";
         if(class_.at("extends")->AsArray().size() > 0) inherits = class_.at("extends")->AsArray()[0]->AsString();
+
+        std::string header_file;
+        if(class_.count("header_file")) class_.at("header_file")->AsString();
 
         auto act_spawner = std::make_unique<AdvancedActorSpawner>([&](Editor* _editor, AdvancedActorSpawner* _this){
                         if(_editor->spawnable_actor_map.count(_this->base)){
@@ -781,7 +835,8 @@ void Editor::ReloadSpawnableActorMap(){
                         return _editor->spawnable_actor_map.at("ufo::Actor")->Spawn(_editor);
                     },
                     inherits,
-                    class_.at("name")->AsString()
+                    class_.at("name")->AsString(),
+                    header_file
                 );
 
         bool hide_from_editor = false;
@@ -950,6 +1005,55 @@ void Editor::OnMark() {
     }
 }
 
+void PosixSpawnBuildProcess(Editor* _editor, int& _handle_to_cout_file_descriptor){
+
+    const int WRITE = 0;
+    const int READ = 1;
+    const int COUT = 1;
+    const int CERR = 2;
+
+    int return_value;
+    pid_t child_process_id;
+    posix_spawn_file_actions_t child_file_descriptor_actions;
+
+    int cout_pipe[2];
+
+    if(pipe2(cout_pipe, O_NONBLOCK | O_CLOEXEC) != 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to create pipe",strerror(errno));
+    }
+
+    posix_spawn_file_actions_init(&child_file_descriptor_actions);
+
+    //Cclose previous file stream WRITE, duplicate std coud file descritor, close the read file descriptor
+    if(posix_spawn_file_actions_addclose(&child_file_descriptor_actions, cout_pipe[WRITE]) != 0 ||
+        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDOUT_FILENO) != 0 ||
+        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDERR_FILENO) != 0)
+    {
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to close or open the cout_pipe",strerror(errno));
+        posix_spawn_file_actions_destroy(&child_file_descriptor_actions);
+    }
+
+    std::string full_executable_path = "/usr/bin/bash";
+
+    char* argv[] = {&full_executable_path[0],
+        "-c", "cmake .. -DUFO_ENGINE_STUDIO=OFF -DSDL_X11_XTEST=OFF -DSDL_VIDEO=ON -DSDL_X11=ON -DSDL_TESTS=OFF -DCMAKE_CXX_FLAGS='-O0 -ggdb' && make -j16",
+        nullptr};
+
+    if(posix_spawn_file_actions_addchdir_np(&child_file_descriptor_actions, std::string(_editor->opened_directory_path+"/build").c_str()) != 0){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to set working directory",strerror(errno));
+    }
+
+    if(posix_spawnp(&child_process_id, full_executable_path.c_str(), &child_file_descriptor_actions, nullptr, argv, environ) != 0){
+        Console::PrintLine("(posix_spawnp failed", strerror(errno));
+    }
+
+    close(cout_pipe[READ]);
+
+    _editor->current_process_id = child_process_id;
+    _handle_to_cout_file_descriptor = cout_pipe[WRITE];
+
+}
+
 void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
 
     const int WRITE = 0;
@@ -963,7 +1067,7 @@ void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
 
     int cout_pipe[2];
 
-    if(pipe(cout_pipe) != 0){
+    if(pipe2(cout_pipe, O_NONBLOCK | O_CLOEXEC) != 0){
         Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to create pipe");
     }
 
@@ -971,9 +1075,10 @@ void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
 
     //Cclose previous file stream WRITE, duplicate std coud file descritor, close the read file descriptor
     if(posix_spawn_file_actions_addclose(&child_file_descriptor_actions, cout_pipe[WRITE]) != 0 ||
-        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDOUT_FILENO) != 0)
+        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDOUT_FILENO) != 0 ||
+        posix_spawn_file_actions_adddup2(&child_file_descriptor_actions, cout_pipe[READ], STDERR_FILENO) != 0)
     {
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to close or open the cout_pipe");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Failed to close or open the cout_pipe", strerror(errno));
         posix_spawn_file_actions_destroy(&child_file_descriptor_actions);
     }
 
@@ -993,7 +1098,6 @@ void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
 
     _editor->current_process_id = child_process_id;
     _handle_to_cout_file_descriptor = cout_pipe[WRITE];
-    _editor->f = fdopen(_handle_to_cout_file_descriptor, "r");
 
 }
 

@@ -42,6 +42,8 @@ class Engine;
 
 }
 
+#define GAME_LOG_BUFFER_SIZE 4096
+
 namespace UFOEngineStudio{
 
 struct ProjectSettings{
@@ -79,7 +81,10 @@ public:
 
     ProjectSettings project_settings;
 
-    std::string game_log;
+    char* game_log_buffer = nullptr;
+    size_t game_log_buffer_size = 0;
+    ImGuiTextBuffer imgui_game_log_buffer;
+
     int handle_to_cout_file_descriptor = -1;
     FILE* f = nullptr;
     pid_t current_process_id = -1;
@@ -119,6 +124,7 @@ public:
     bool new_c_plus_plus_class_has_component_tree = false;
 
     Editor();
+    ~Editor();
     void ResetUFOEngineStudio();
     void OpenFolder(std::string _path);
     void RefreshFolder();
@@ -136,5 +142,6 @@ void DebugGame(const std::string& _build_directory, const std::string& _opened_d
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 void PosixSpawnGamePipe();
 void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor);
+void PosixSpawnBuildProcess(Editor* _editor, int& _handle_to_cout_file_descriptor);
 
 }

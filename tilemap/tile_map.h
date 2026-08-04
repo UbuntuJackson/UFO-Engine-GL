@@ -1,16 +1,15 @@
 #pragma once
 
-#include <algorithm>
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
 #include "../src/actor.h"
-#include "../src/actor_undo_and_redo.h"
 #include "../src/level.h"
 #include "console.h"
 #include "../ufo_garbage_collector/gc_json.h"
 #include "graphics.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../src/actor_undo_and_redo.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #endif
 

@@ -28,6 +28,8 @@
 #include "im_vec.h"
 #include "animation_cluster.h"
 
+#include <unistd.h>
+
 namespace UFOEngineStudio{
 
 void LevelEditorTab::SubmitUndoRedoAction(){
@@ -270,19 +272,43 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
         }
 
         if(ImGui::BeginTabItem("Game Output###LevelEditorTabGame Output")){
+            if(editor->handle_to_cout_file_descriptor != -1) ImGui::Text("%s","Process ongoing...");
+            else ImGui::Text("%s","No ongoing process.");
+
             ImGui::BeginChild("Game Output###LevelEditorTabGame OutputChildWindow");
+
+            bool added_to_log = false;
+
+            float former_scroll = ImGui::GetScrollY();
 
             if(editor->handle_to_cout_file_descriptor != -1){
 
-                char buffer[256];
+                //fgets_unlocked(buffer, sizeof(buffer), editor->f);
+
+                ssize_t number = read(editor->handle_to_cout_file_descriptor, _editor->game_log_buffer+_editor->game_log_buffer_size, GAME_LOG_BUFFER_SIZE-_editor->game_log_buffer_size);
+
+                if(number > 0) added_to_log = true;
+
+                if(number < 0){
+                    Console::PrintLine(__UFO_PRETTY_FUNCTION__);
+                    perror("Error");
+                }
+                else _editor->game_log_buffer_size+=number;
+
+                if(_editor->game_log_buffer_size >= GAME_LOG_BUFFER_SIZE){
 
 
-                fgets_unlocked(buffer, sizeof(buffer), editor->f);
-                _editor->game_log+=buffer;
+                    ssize_t amount_to_keep = _editor->game_log_buffer_size/2;
+
+                    memmove(_editor->game_log_buffer,_editor->game_log_buffer+amount_to_keep, _editor->game_log_buffer_size-amount_to_keep);
+                    _editor->game_log_buffer_size = amount_to_keep;
+                }
 
             }
 
-            ImGui::TextWrapped("%s", _editor->game_log.c_str());
+            ImGui::TextUnformatted(_editor->game_log_buffer, _editor->game_log_buffer+_editor->game_log_buffer_size);
+
+            if(added_to_log) ImGui::SetScrollHereY(1.0f);
 
             ImGui::EndChild();
 

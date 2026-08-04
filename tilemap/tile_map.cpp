@@ -14,15 +14,16 @@
 #include "../src/graphics.h"
 #include "../src/engine.h"
 #include "console.h"
-#include "im_vec.h"
 #include "tileset_manager.h"
 #include "../src/ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/im_vec.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
 #include "../src/actor_undo_and_redo.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
+#include "../imgui/imgui.h"
 #endif
 
 namespace ufo{

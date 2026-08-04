@@ -6,7 +6,6 @@
 #include "animation.h"
 
 #ifdef UFO_ENGINE_STUDIO
-#include "im_vec.h"
 #include "viewport_editing_utils.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #endif

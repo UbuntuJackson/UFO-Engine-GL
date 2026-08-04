@@ -8,7 +8,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 
 #ifdef UFO_ENGINE_STUDIO
-#include "im_vec.h"
+#include "../ufo_engine_studio/im_vec.h"
 #include "viewport_editing_utils.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #endif

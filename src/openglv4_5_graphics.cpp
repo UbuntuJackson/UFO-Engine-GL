@@ -3,10 +3,8 @@
 #include "shader.h"
 #include "../glad/include/glad/glad.h"
 #include "../utils/console.h"
-#include "ufo_macros.h"
 #include "openglv4_5_asset_manager.h"
 #include <glm/gtx/string_cast.hpp>
-#include "input.h"
 #include <SDL3/SDL.h>
 #include "engine.h"
 #include "../ufo_maths/ufo_maths.h"

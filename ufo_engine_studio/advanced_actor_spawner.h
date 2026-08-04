@@ -20,14 +20,16 @@ public:
     std::string category = "";
     std::string actor_config_path = "";
     std::string comment = "";
+    std::string header_file = "";
 
     std::vector<std::unique_ptr<ufo::EditorProperty>> custom_properties;
     ufo::gc::JsonMap* actor_as_json = nullptr;
 
     AdvancedActorSpawner(
         std::function<std::unique_ptr<ufo::Actor>(Editor* _editor, AdvancedActorSpawner* _this)> _spawner_function,
-        std::string _base = "",
-        std::string _class_name = "",
+        std::string _base,
+        std::string _class_name,
+        std::string _header_file,
         std::string _category = "Miscellaneous"
     );
 

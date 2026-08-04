@@ -14,7 +14,7 @@
 #include <unordered_map>
 
 #ifdef UFO_ENGINE_STUDIO
-#include "editor.h"
+#include "../ufo_engine_studio/editor.h"
 #endif
 
 struct TTF_Font;

@@ -3,7 +3,6 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "graphics.h"
-#include "shader.h"
 
 namespace ufo{
 

@@ -3,22 +3,17 @@
 #include <unordered_map>
 #include <string>
 #include <cmath>
-#include "../ufo_maths/ufo_maths.h"
 #include "tileset_manager.h"
-#include "../shapes/ray2.h"
 #include "tileset_data.h"
 #include "../external/olcPixelGameEngine.h"
 #include "../src/camera.h"
 #include "../src/engine.h"
 #include "../utils/console.h"
-#include "../utils/json.h"
-#include "../shapes/rectangle.h"
-#include "../ufo_garbage_collector/gc_json.h"
-#include "../ufo_garbage_collector/garbage_collector.h"
 #include "../utils/file_utils.h"
 #include "../src/ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../imgui/imgui.h"
 #include "../ufo_engine_studio/file_dialogue.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"

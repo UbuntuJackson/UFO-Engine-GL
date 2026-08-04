@@ -1,6 +1,5 @@
 #include <exception>
 #include <memory>
-#include <editor.h>
 #include <console.h>
 #include <level.h>
 #include <actor.h>

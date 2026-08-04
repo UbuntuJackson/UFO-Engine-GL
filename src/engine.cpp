@@ -310,7 +310,7 @@ void Engine::StartWithImGui(){
 
         style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.1f, 0.1f, 0.1f, 0.1f);
 
-        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.2f, 0.205f, 0.205f, 1.0f);
 
         style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.2f, 0.2f, 0.3f, 0.8f);
         style.Colors[ImGuiCol_TitleBg] = ImVec4(0.25f, 0.25f, 0.3f, 0.8f);

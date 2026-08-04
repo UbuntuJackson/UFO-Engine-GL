@@ -6,7 +6,7 @@
 #include "actor_undo_and_redo.h"
 #include "editor_property.h"
 #include "level.h"
-#include "level_editor_tab.h"
+#include "../ufo_engine_studio/level_editor_tab.h"
 
 namespace ufo{
 

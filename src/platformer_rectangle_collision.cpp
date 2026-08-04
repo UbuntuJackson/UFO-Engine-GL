@@ -3,12 +3,11 @@
 #include "../tilemap/tile_map.h"
 #include "camera.h"
 #include "graphics.h"
-#include "../tilemap/tileset_data.h"
 #include "platformer_rectangle_collision.h"
 #include "engine.h"
 
 #ifdef UFO_ENGINE_STUDIO
-#include "im_vec.h"
+#include "../ufo_engine_studio/im_vec.h"
 #include "viewport_editing_utils.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
