@@ -4,7 +4,7 @@
 #include "level.h"
 #include "../ufo_maths/ufo_maths.h"
 #include "collision_grid.h"
-
+#include "../utils/console.h"
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
 #endif

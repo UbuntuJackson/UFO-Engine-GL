@@ -5,6 +5,7 @@
 #include "camera.h"
 #include "graphics.h"
 #include "../tilemap/tileset_data.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "viewport_editing_utils.h"
