@@ -183,7 +183,17 @@ void Widget::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                     }
                     ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
                     ImGui::Text(("name: "+name).c_str(),"%s");
-                    ImGui::Text(texture.permanent ? "Status: Permanent" : "Status: Temporary");
+                    ImGui::Text(texture.is_savable ? "Status: Savable" : "Status: Not Savable");
+                    if(is_savable){
+
+                        bool is_level_asset = level->level_textures.count(name);
+
+                        if(!ImGui::Checkbox("Is Level Asset",&is_level_asset)){
+                            if(!is_level_asset) level->level_textures.erase(name);
+                            else level->level_textures.insert(name);
+                        }
+                        ImGui::Checkbox("Is Global Asset",&texture.is_global_asset);
+                    }
                 }
 
             }

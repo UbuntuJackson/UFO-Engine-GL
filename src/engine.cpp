@@ -189,7 +189,7 @@ void Engine::Start(){
     level_handle->actors.reserve(50);
     level_handle->engine = this;
 
-    actor_generator->Initialise();
+    actor_generator->Initialise(this);
 
     m_tp1 = std::chrono::system_clock::now();
 
@@ -247,7 +247,7 @@ void Engine::StartWithImGui(){
     level_handle->actors.reserve(50);
     level_handle->engine = this;
 
-    actor_generator->Initialise();
+    actor_generator->Initialise(this);
 
     m_tp1 = std::chrono::system_clock::now();
 

@@ -143,5 +143,6 @@ void RunGame(const std::string& _build_directory, const std::string& _opened_dir
 void PosixSpawnGamePipe();
 void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor);
 void PosixSpawnBuildProcess(Editor* _editor, int& _handle_to_cout_file_descriptor);
+void PrepareBuildUtilities(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path);
 
 }

@@ -132,7 +132,7 @@ void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineSt
     try{
         std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _editor->opened_directory_path);
         _editor->engine->asset_manager.LoadTexture(_path, relative_path, true);
-        _editor->engine->asset_manager.textures.at(relative_path).permanent = true;
+        _editor->engine->asset_manager.textures.at(relative_path).is_savable = true;
 
     } catch (const std::runtime_error& _error){
         Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());

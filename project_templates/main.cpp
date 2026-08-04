@@ -42,7 +42,7 @@ int main(int _arg_count, char** _arg_variables){
     ufo::Engine engine;
     engine.InitIndependant();
     engine.actor_generator = std::make_unique<ufo::Generated::ActorGenerator>();
-    engine.actor_generator->Initialise();
+    engine.actor_generator->Initialise(&engine);
     engine.actor_generator->InitialiseActorClassJsons("..");
     try{
         engine.GoToLevel(start_scene);

@@ -46,7 +46,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
         nullptr, "sprite_shader");
 
     sprite_shader = _engine->asset_manager.GetShader("sprite_shader");
-    _engine->asset_manager.GetShader("sprite_shader").permanent = true;
+    _engine->asset_manager.GetShader("sprite_shader").is_savable = false;
 
     _engine->asset_manager.LoadShader(
         std::string(_engine->engine_path+"/shaders/partial_sprite_vertex.cs").c_str(),
@@ -54,7 +54,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
         nullptr, "partial_sprite_shader");
 
     partial_sprite_shader = _engine->asset_manager.GetShader("partial_sprite_shader");
-    _engine->asset_manager.GetShader("partial_sprite_shader").permanent = true;
+    _engine->asset_manager.GetShader("partial_sprite_shader").is_savable = false;
 
     _engine->asset_manager.LoadShader(
         std::string(_engine->engine_path+"/shaders/rounded_corners_shader/partial_sprite_vertex.cs").c_str(),
@@ -62,7 +62,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
         nullptr, "rounded_corners_shader");
 
     rounded_corners_shader = _engine->asset_manager.GetShader("rounded_corners_shader");
-    _engine->asset_manager.GetShader("rounded_corners_shader").permanent = true;
+    _engine->asset_manager.GetShader("rounded_corners_shader").is_savable = false;
 
     _engine->asset_manager.LoadShader(
         std::string(_engine->engine_path+"/shaders/rectangle_vertex_shader.cs").c_str(),
@@ -70,7 +70,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
         nullptr, "rectangle_shader");
 
     rectangle_shader = _engine->asset_manager.GetShader("rectangle_shader");
-    _engine->asset_manager.GetShader("rectangle_shader").permanent = true;
+    _engine->asset_manager.GetShader("rectangle_shader").is_savable = false;
 
     _engine->asset_manager.LoadShader(
         std::string(_engine->engine_path+"/shaders/circle_vertex_shader.cs").c_str(),
@@ -78,7 +78,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
         nullptr, "circle_shader");
 
     circle_shader = _engine->asset_manager.GetShader("circle_shader");
-    _engine->asset_manager.GetShader("circle_shader").permanent = true;
+    _engine->asset_manager.GetShader("circle_shader").is_savable = false;
 
     glm::mat4 projection = glm::ortho(
         0.0f, static_cast<float>(_engine->width),

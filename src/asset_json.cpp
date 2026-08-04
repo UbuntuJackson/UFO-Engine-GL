@@ -14,7 +14,7 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
             const std::string relative_texture_path = j_relative_texture_path->AsString();
             Console::PrintLine("AssetJson::Read:",_opened_directory_path+"/"+relative_texture_path);
             _asset_manager->LoadTexture(_opened_directory_path+"/"+relative_texture_path,relative_texture_path,true);
-            if(_asset_manager->textures.count(relative_texture_path)) _asset_manager->textures.at(relative_texture_path).permanent = true;
+            if(_asset_manager->textures.count(relative_texture_path)) _asset_manager->textures.at(relative_texture_path).is_savable = true;
         }
     }
     if(j->map.count("shaders")){
@@ -42,6 +42,7 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
                 -1.0f, 0.0f
             );
 
+            _asset_manager->GetShader(relative_shader_path).is_savable = true;
             _asset_manager->GetShader(relative_shader_path).Use();
             _asset_manager->GetShader(relative_shader_path).SetInt("image", 0);
             _asset_manager->GetShader(relative_shader_path).SetMatrix4("projection", projection);
@@ -63,7 +64,7 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
             //Here the first two characters are removed, which always have to be ..
             // would be simpler if the default path was just the project root after all
             _asset_manager->LoadTexture(_opened_directory_path+"/"+relative_texture_path,relative_texture_path,true);
-            if(_asset_manager->textures.count(relative_texture_path)) _asset_manager->textures.at(relative_texture_path).permanent = true;
+            if(_asset_manager->textures.count(relative_texture_path)) _asset_manager->textures.at(relative_texture_path).is_savable = true;
         }
     }
 
@@ -92,6 +93,7 @@ void AssetJson::ReadEditor(const std::string& _path, const std::string& _opened_
                 -1.0f, 0.0f
             );
 
+            _asset_manager->GetShader(relative_shader_path).is_savable = true;
             _asset_manager->GetShader(relative_shader_path).Use();
             _asset_manager->GetShader(relative_shader_path).SetInt("image", 0);
             _asset_manager->GetShader(relative_shader_path).SetMatrix4("projection", projection);
@@ -105,7 +107,7 @@ void AssetJson::Write(OpenGLv4_5_AssetManager* _asset_manager){
     auto texture_arr = gc.New<ufo::gc::JsonArray>();
 
     for(const auto& [k,v] : _asset_manager->textures){
-        if(v.permanent) texture_arr->array.push_back(gc.New<ufo::gc::JsonString>(k));
+        if(v.is_savable && v.is_global_asset) texture_arr->array.push_back(gc.New<ufo::gc::JsonString>(k));
     }
 
     j->map.emplace("assets", texture_arr);
@@ -114,7 +116,7 @@ void AssetJson::Write(OpenGLv4_5_AssetManager* _asset_manager){
     auto shader_arr = gc.New<ufo::gc::JsonArray>();
 
     for(const auto& [k,v] : _asset_manager->shaders){
-        if(!v.permanent) shader_arr->array.push_back(gc.New<ufo::gc::JsonString>(k));
+        if(v.is_savable) shader_arr->array.push_back(gc.New<ufo::gc::JsonString>(k));
     }
 
     j->map.emplace("shaders", shader_arr);

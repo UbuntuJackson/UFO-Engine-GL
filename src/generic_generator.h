@@ -12,6 +12,8 @@ class Engine;
 
 class GenericGenerator : public ufo::gc::Root{
 public:
+    ufo::Engine* engine = nullptr;
+
     GenericGenerator(){
         name = "GC_GenericGenerator";
     }
@@ -37,7 +39,7 @@ public:
     std::map<std::string, std::function<std::unique_ptr<Actor>(ufo::gc::JsonMap* _json)>> factory_map;
     std::map<std::string, std::function<std::unique_ptr<Actor>(Vector2f)>> factory_map_runtime;
 
-    virtual void Initialise();
+    virtual void Initialise(ufo::Engine* _engine);
 
     std::unique_ptr<Actor> JsonToActorTree(ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json);
 

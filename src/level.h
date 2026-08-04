@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <set>
 #include <memory>
 #include "actor.h"
 #include "../tilemap/tileset_manager.h"
@@ -71,6 +72,10 @@ public:
     }
 
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
+
+    void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+    std::set<std::string> level_textures;
 
 #ifdef UFO_ENGINE_STUDIO
 

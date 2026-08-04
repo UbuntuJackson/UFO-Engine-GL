@@ -240,6 +240,7 @@ void Editor::OnUpdate(float _delta_time){
                     -1.0f, 0.0f
                 );
 
+                engine->asset_manager.GetShader(relative_path).is_savable = true;
                 engine->asset_manager.GetShader(relative_path).Use();
                 engine->asset_manager.GetShader(relative_path).SetInt("image", 0);
                 engine->asset_manager.GetShader(relative_path).SetMatrix4("projection", projection);
@@ -307,8 +308,11 @@ void Editor::OnUpdate(float _delta_time){
     if(will_compile_game){
 
         const std::string build_directory = opened_directory_path + "/build";
-        std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
-        t.detach();
+        //std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
+        //t.detach();
+        PrepareBuildUtilities(this, build_directory, opened_directory_path);
+        PosixSpawnBuildProcess(this, handle_to_cout_file_descriptor);
+
         will_compile_game = false;
     }
 
@@ -389,10 +393,9 @@ void Editor::OnUpdate(float _delta_time){
                 }
 
                 if(ImGui::MenuItem("Compile Game")){
-                    PosixSpawnBuildProcess(this, handle_to_cout_file_descriptor);
 
-                    //refresh_entire_project = true;
-                    //will_compile_game = true;
+                    refresh_entire_project = true;
+                    will_compile_game = true;
                 }
 
                 if(ImGui::MenuItem("Debug Game")){
@@ -1099,6 +1102,46 @@ void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
     _editor->current_process_id = child_process_id;
     _handle_to_cout_file_descriptor = cout_pipe[WRITE];
 
+}
+
+void PrepareBuildUtilities(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path){
+    try{
+        const std::string cmake_file_path = _opened_directory_path+"/CMakeLists.txt";
+        if(!ufo::FileSystem::FileExists(cmake_file_path)){
+            const std::string cmake_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/CMakeLists.txt");
+            ufo::FileSystem::Write(cmake_file_path, cmake_file);
+        }
+    } catch(const std::exception& _error){
+        Console::PrintLine(_error.what());
+    }
+
+    try{
+        const std::string main_file_path = _opened_directory_path+"/main.cpp";
+
+        if(!ufo::FileSystem::FileExists(main_file_path)){
+            std::string main_file = ufo::FileSystem::Read("../UFO-Engine/project_templates/main.cpp");
+            ufo::FileSystem::Write(main_file_path, main_file);
+        }
+    } catch(const std::exception& _error){
+        Console::PrintLine(_error.what());
+    }
+
+    if(ufo::FileSystem::FileExists(_opened_directory_path+"/UFO-Engine-GL")){
+        Console::PrintLine("[UFO-Engine Studio] Error, please rename cloned repository to UFO-Engine");
+        return;
+    }
+
+    if(!ufo::FileSystem::FileExists(_opened_directory_path+"/UFO-Engine")){
+        Console::PrintLine("[UFO-Engine Studio] Could not find folder "+_opened_directory_path+"/UFO-Engine");
+        return;
+    }
+
+    try{
+        if(!ufo::FileSystem::FileExists(_build_directory)) std::filesystem::create_directory(_build_directory.c_str());
+
+    } catch(const std::exception& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, _error.what());
+    }
 }
 
 void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path){

@@ -4,6 +4,7 @@
 #include "level.h"
 #include "console.h"
 #include "engine.h"
+#include "gc_json.h"
 #include "graphics.h"
 #include "camera.h"
 #include "../glad/include/glad/glad.h"
@@ -160,6 +161,53 @@ void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
 
 }
 
+void Level::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    try{
+        float size_x = _json->map.at("size_x")->AsFloat();
+        float size_y = _json->map.at("size_y")->AsFloat();
+        size.x = size_x;
+        size.y = size_y;
+    } catch(const std::exception& _error){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Level instance", _error.what());
+    }
+
+    ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
+    for(const auto& j_tileset : j_tilesets->AsArray()){
+
+        tileset_manager.tileset_data.push_back(
+            TilesetData{
+                j_tileset->AsMap().at("name")->AsString(),
+                (int)j_tileset->AsMap().at("columns")->AsFloat(),
+                (int)j_tileset->AsMap().at("tileset_start_id")->AsFloat(),
+                j_tileset->AsMap().at("image_width")->AsFloat(),
+                j_tileset->AsMap().at("image_height")->AsFloat(),
+                j_tileset->AsMap().at("tile_width")->AsFloat(),
+                j_tileset->AsMap().at("tile_height")->AsFloat(),
+                (int)j_tileset->AsMap().at("tile_count")->AsFloat()
+            }
+        );
+    }
+    if(_json->map.count("level_textures")){
+        ufo::gc::Json* j_level_textures = _json->map.at("level_textures");
+        for(ufo::gc::Json* j_texture : j_level_textures->AsArray()){
+
+            if(!engine->asset_manager.textures.count(j_texture->AsString())){
+
+                #ifdef UFO_ENGINE_STUDIO
+                engine->asset_manager.LoadTexture(engine->editor.opened_directory_path + "/" + j_texture->AsString(), j_texture->AsString(), true);
+                #else
+                engine->asset_manager.LoadTexture(engine->editor.game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
+                #endif
+                engine->asset_manager.textures.at(j_texture->AsString()).is_global_asset = false;
+            }
+
+            level_textures.insert(j_texture->AsString());
+
+        }
+    }
+
+}
+
 ufo::gc::JsonMap* Level::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
@@ -180,6 +228,15 @@ ufo::gc::JsonMap* Level::GetAsJson(ufo::GarbageCollector* _gc){
     }
 
     parent_class_as_json->map.emplace("tilesets",tilesets);
+
+    ufo::gc::JsonArray* level_textures = _gc->New<ufo::gc::JsonArray>();
+    for(const auto& texture : level->level_textures){
+
+        level_textures->array.push_back(_gc->New<ufo::gc::JsonString>(texture));
+
+    }
+
+    parent_class_as_json->map.emplace("level_textures",level_textures);
 
     parent_class_as_json->map.emplace("size_x",_gc->New<ufo::gc::JsonNumber>(size.x));
     parent_class_as_json->map.emplace("size_y",_gc->New<ufo::gc::JsonNumber>(size.y));

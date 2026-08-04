@@ -92,7 +92,9 @@ void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_direct
     }
 }
 
-void GenericGenerator::Initialise(){
+void GenericGenerator::Initialise(ufo::Engine* _engine){
+
+    engine = _engine;
 
     //Gotta add all the ufo classes to class_jsons
 
@@ -224,32 +226,6 @@ void GenericGenerator::Initialise(){
 
             auto instance = std::make_unique<Level>();
 
-            try{
-                float size_x = _json->map.at("size_x")->AsFloat();
-                float size_y = _json->map.at("size_y")->AsFloat();
-                instance->size.x = size_x;
-                instance->size.y = size_y;
-            } catch(const std::exception& _error){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Could not find properties for json representing Level instance", _error.what());
-            }
-
-            ufo::gc::Json* j_tilesets = _json->map.at("tilesets");
-            for(const auto& j_tileset : j_tilesets->AsArray()){
-
-                instance->tileset_manager.tileset_data.push_back(
-                    TilesetData{
-                        j_tileset->AsMap().at("name")->AsString(),
-                        (int)j_tileset->AsMap().at("columns")->AsFloat(),
-                        (int)j_tileset->AsMap().at("tileset_start_id")->AsFloat(),
-                        j_tileset->AsMap().at("image_width")->AsFloat(),
-                        j_tileset->AsMap().at("image_height")->AsFloat(),
-                        j_tileset->AsMap().at("tile_width")->AsFloat(),
-                        j_tileset->AsMap().at("tile_height")->AsFloat(),
-                        (int)j_tileset->AsMap().at("tile_count")->AsFloat()
-                    }
-                );
-            }
-
             return instance;
         }
     );
@@ -376,6 +352,8 @@ std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
 
 		}
 
+		instance->engine = engine;
+
 		instance->OnLoadDefaultProperties(_json);
 
 		if(instance->import_mode == Actor::ImportModes::BUILT_IN_CLASS){
@@ -485,6 +463,8 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
 		try{
 		    if(instance->class_name != instance->base_class_name){
           		ufo::gc::JsonMap* class_json = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
+
+                instance->engine = engine;
           		instance->OnLoadDefaultProperties(class_json);
 
                 for(const auto& j_actor : class_json->AsMap().at("actors")->AsArray()){
@@ -492,6 +472,7 @@ std::unique_ptr<Actor> GenericGenerator::FromJsonInGame(ufo::gc::JsonMap* _json)
                 }
 			}
     	    else{
+                instance->engine = engine;
             	instance->OnLoadDefaultProperties(_json);
                 for(const auto& j_actor : _json->AsMap().at("actors")->AsArray()){
                     instance->AddActorUniquePtr(FromJsonInGame(j_actor->AsJsonMap()));

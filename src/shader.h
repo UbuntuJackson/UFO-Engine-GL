@@ -14,7 +14,8 @@ public:
 
     unsigned int shader_program_id = 0;
 
-    bool permanent = false;
+    bool is_savable = false;
+    bool is_level_asset = false;
 
     Shader();
     void Initialise();

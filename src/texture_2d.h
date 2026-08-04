@@ -17,7 +17,11 @@ public:
     unsigned int wrapping_mode_t_axis = GL_REPEAT;
     unsigned int filter_mode_min = GL_NEAREST; //Filtering mode if texture pixles < screen pixels?
     unsigned int filter_mode_max = GL_NEAREST; //Filtering mode if texture pixles > screen pixels?
-    bool permanent = false; //If the asset is supposed to be preloaded and saved
+
+    //To be deprecated
+    bool is_savable = false; //If the asset is supposed to be preloaded and saved
+
+    bool is_global_asset = true;
 
     int number_of_colour_channels = 4;
 
