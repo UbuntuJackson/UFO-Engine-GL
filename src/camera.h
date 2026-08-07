@@ -28,7 +28,7 @@ struct Bounds{
 class Camera : public Actor{
 public:
 
-    bool camera_moves_independently = true;
+    bool camera_moves_independently = false;
 
     //Unused for now
     Vector2f original_position;

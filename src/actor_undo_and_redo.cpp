@@ -28,6 +28,9 @@ void ActorChange_Move::Undo(){
 
     actor->level->EnumerateActorsAnew();
 
+    //Isn't the value I first assign completely fine? Why update it?
+    //current_order_index = actor->order_index;
+
     level_editor_tab->this_level->inserted_actors.push_back(Actor::MovedActor{
         actor,
         current_parent,

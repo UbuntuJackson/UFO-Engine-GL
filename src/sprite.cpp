@@ -165,6 +165,40 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             SDL_ShowOpenFileDialog(&UFOEngineStudio::OnOpenTexture, _level_editor_tab, engine->window, UFOEngineStudio::global_texture_filters, 2, _level_editor_tab->editor->opened_directory_path.c_str(), true);
         }
 
+        ImGui::SameLine();
+
+        std::string preview_value = "";
+
+        switch(_level_editor_tab->asset_view_mode){
+            case UFOEngineStudio::LevelEditorTab::AssetViewMode::GLOBAL:{
+                preview_value = "Global Assets";
+                break;
+            }
+            case UFOEngineStudio::LevelEditorTab::AssetViewMode::LOCAL:{
+                preview_value = "Local Assets";
+                break;
+            }
+            case UFOEngineStudio::LevelEditorTab::AssetViewMode::ALL:{
+                preview_value = "All Assets";
+                break;
+            }
+        }
+
+        if(ImGui::BeginCombo("View###ViewGlobalOrLocalAsset", preview_value.c_str())){
+
+            if(ImGui::Selectable("Global Assets")){
+                _level_editor_tab->asset_view_mode = UFOEngineStudio::LevelEditorTab::AssetViewMode::GLOBAL;
+            }
+            if(ImGui::Selectable("Local Assets")){
+                _level_editor_tab->asset_view_mode = UFOEngineStudio::LevelEditorTab::AssetViewMode::LOCAL;
+            }
+            if(ImGui::Selectable("All Assets")){
+                _level_editor_tab->asset_view_mode = UFOEngineStudio::LevelEditorTab::AssetViewMode::ALL;
+            }
+
+            ImGui::EndCombo();
+        }
+
         if(ImGui::InputText("Search###SearchAssetBrowser", &_level_editor_tab->asset_browser_search)){
 
         }
@@ -201,6 +235,12 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             });
 
             for(const std::string& name : texture_names){
+                if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::LOCAL){
+                    if(!level->level_textures.count(name)) continue;
+                }
+                if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::GLOBAL){
+                    if(level->level_textures.count(name)) continue;
+                }
 
                 auto& texture = engine->asset_manager.textures.at(name);
 

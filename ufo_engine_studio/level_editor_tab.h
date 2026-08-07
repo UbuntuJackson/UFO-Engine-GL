@@ -42,6 +42,13 @@ public:
     };
 
     std::string asset_browser_search;
+    enum AssetViewMode{
+        GLOBAL,
+        LOCAL,
+        ALL
+    };
+
+    AssetViewMode asset_view_mode = AssetViewMode::ALL;
 
     bool focused_actor_found = false;
     bool show_multi_selection_right_click_pop_up_menu = false;

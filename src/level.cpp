@@ -196,6 +196,9 @@ void Level::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
                 #else
                 engine->asset_manager.LoadTexture(engine->game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
                 #endif
+
+                if(!engine->asset_manager.textures.count(j_texture->AsString())) continue;
+
                 engine->asset_manager.textures.at(j_texture->AsString()).is_global_asset = false;
                 engine->asset_manager.textures.at(j_texture->AsString()).is_savable = true;
             }
