@@ -78,6 +78,8 @@ public:
     std::set<std::string> level_textures;
 
 #ifdef UFO_ENGINE_STUDIO
+    bool moving_actor_with_undo_and_redo = false;
+    std::vector<Actor::MovedActor> inserted_actors;
 
     Actor* OnGetFocusedActor(Vector2f _mouse_position_over_screenspace) override;
 

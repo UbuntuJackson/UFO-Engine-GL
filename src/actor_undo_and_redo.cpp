@@ -26,11 +26,19 @@ void ActorChange_Move::Undo(){
     ufo::Actor* current_parent = level_editor_tab->this_level->actors_with_stable_id.at(current_parent_id);
     ufo::Actor* former_parent = level_editor_tab->this_level->actors_with_stable_id.at(former_parent_id);
 
-    current_order_index = actor->order_index;
+    actor->level->EnumerateActorsAnew();
 
-    former_parent->InsertActorUniquePtr(std::move(current_parent->actors[actor->order_index]), former_order_index);
+    level_editor_tab->this_level->inserted_actors.push_back(Actor::MovedActor{
+        actor,
+        current_parent,
+        current_order_index,
+        former_parent,
+        former_order_index,
+    });
 
-    current_parent->actors.erase(current_parent->actors.begin()+actor->order_index);
+    actor->level->moving_actor_with_undo_and_redo = true;
+
+    //former_parent->InsertActorUniquePtr(current_parent, current_order_index, former_order_index);
 
 }
 
@@ -39,16 +47,22 @@ void ActorChange_Move::Redo(){
     ufo::Actor* current_parent = level_editor_tab->this_level->actors_with_stable_id.at(current_parent_id);
     ufo::Actor* former_parent = level_editor_tab->this_level->actors_with_stable_id.at(former_parent_id);
 
-    current_parent->InsertActorUniquePtr(std::move(former_parent->actors[former_order_index]), current_order_index);
+    actor->level->EnumerateActorsAnew();
 
-    former_order_index = actor->order_index;
+    //current_parent->InsertActorUniquePtr(former_parent,former_order_index,current_order_index);
 
-    former_parent->actors.erase(former_parent->actors.begin()+former_order_index);
+    level_editor_tab->this_level->inserted_actors.push_back(Actor::MovedActor{
+        actor,
+        former_parent,
+        former_order_index,
+        current_parent,
+        current_order_index
+    });
 
-    current_parent->should_be_sorted = true;
-    former_parent->should_be_sorted = true;
+    actor->level->EnumerateActorsAnew();
 
-    Console::PrintLine("ActorChange_Move Undo",actor->editor_name, former_parent->editor_name, former_order_index);
+    actor->level->moving_actor_with_undo_and_redo = true;
+
 }
 
 void ActorChange_Move::Do(){
@@ -99,7 +113,7 @@ void ActorChange_RemoveActor::Undo(){
             Console::PrintLine("Undo ActorChange_RemoveActor",actor->class_name,actor,"in",parent->class_name);
             //actor->parent->AddActorUniquePtr(std::move(actor->level->stashed_actors[a]));
 
-            parent->InsertActorUniquePtr(std::move(actor->level->stashed_actors[a]), actor->order_index);
+            parent->actors.insert(parent->actors.begin()+actor->order_index,std::move(actor->level->stashed_actors[a]));
 
             actor->level->stashed_actors.erase(actor->level->stashed_actors.begin()+a);
             actor->stash = false;

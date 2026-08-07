@@ -147,16 +147,15 @@ public:
 
     }
 
-    struct InsertedActor{
-        int index;
-        std::unique_ptr<Actor> actor;
+    struct MovedActor{
+        ufo::Actor* actor_to_move;
+        ufo::Actor* original_parent;
+        int original_index;
+        ufo::Actor* move_to_parent;
+        int move_to_index;
     };
 
-    std::vector<InsertedActor> inserted_actor_queue;
-
-    void InsertActors();
-
-    void InsertActorUniquePtr(std::unique_ptr<Actor>&& _ptr, const int _index);
+    void EnumerateActorsAnew();
 
     int order_index = 0;
     bool should_be_sorted = false;
@@ -246,6 +245,7 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
     void ReplaceCustomActors(UFOEngineStudio::Editor* _editor, std::vector<std::unique_ptr<Actor>>& _actor_queue);
     void UpdateActorStructure(UFOEngineStudio::Editor* _editor);
 
+    void DragDropMiddleButton(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
     virtual void UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index);
 
     std::vector<std::unique_ptr<ufo::EditorProperty>> editor_properties;
@@ -305,5 +305,7 @@ protected:
 #endif //UFO_ENGINE_STUDIO
 
 };
+
+void MoveActor(Actor::MovedActor& _inserted_actor);
 
 }

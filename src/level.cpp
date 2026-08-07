@@ -55,8 +55,6 @@ void Level::UpdatePhase(float _delta_time){
 
     AddNewActors();
 
-    InsertActors();
-
     //Run local OnUpdate function on level too
     OnUpdate(_delta_time);
 

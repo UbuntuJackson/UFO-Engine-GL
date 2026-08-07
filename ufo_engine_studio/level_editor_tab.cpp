@@ -369,6 +369,55 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
 
     this_level->UpdateEditorTree(_editor, this, 0);
 
+    if(this_level->inserted_actors.size() > 0){
+        if(!this_level->moving_actor_with_undo_and_redo) this_level->RemoveFutureChanges();
+
+        /*std::sort(this_level->inserted_actors.begin(), this_level->inserted_actors.end(),[](ufo::Actor::MovedActor& _a, ufo::Actor::MovedActor& _b){
+            return _a.move_to_index > _b.move_to_index;
+            });*/
+
+        std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
+
+        for(auto& moved_actor : this_level->inserted_actors){
+
+            this_level->EnumerateActorsAnew();
+            for(ufo::Actor::MovedActor& nested_moved_actor : this_level->inserted_actors){
+                nested_moved_actor.original_index = nested_moved_actor.actor_to_move->order_index;
+
+                Console::PrintLine("Original index",nested_moved_actor.original_index);
+
+            }
+
+            ufo::Actor* actor_to_move = moved_actor.original_parent->actors[moved_actor.original_index].get();
+
+            multiple_actor_change->changes.push_back(std::make_unique<ufo::ActorChange_Move>(
+                this,
+                actor_to_move->editor_id,
+                moved_actor.original_parent->editor_id,
+                moved_actor.original_index,
+                moved_actor.move_to_parent->editor_id,
+                moved_actor.move_to_index)
+            );
+
+            Console::PrintLine(moved_actor.original_parent->editor_name, moved_actor.original_index,
+                moved_actor.move_to_parent->editor_name, moved_actor.move_to_index);
+
+            actor_to_move->parent = moved_actor.move_to_parent;
+
+            MoveActor(moved_actor);
+
+        }
+
+        if(!this_level->moving_actor_with_undo_and_redo) this_level->level_changes.push_back(std::move(multiple_actor_change));
+
+        this_level->inserted_actors.clear();
+
+    }
+
+    this_level->moving_actor_with_undo_and_redo = false;
+
+    this_level->EnumerateActorsAnew();
+
     ImGui::End();
 
     //ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, 0.0f);
