@@ -27,7 +27,10 @@ Level::Level() : Actor(Vector2f(0.0f, 0.0f)){
     base_class_name = class_name;
 
     level = this;
+#ifdef UFO_ENGINE_STUDIO
     is_permanently_non_selectable = true;
+#endif
+
 }
 
 void Level::OnSpawn(){

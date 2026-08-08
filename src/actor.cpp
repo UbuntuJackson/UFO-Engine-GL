@@ -307,7 +307,6 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
     auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
-    this_actor->map.emplace("is_selectable", _gc->New<ufo::gc::JsonNumber>((float)is_selectable));
 
 #ifdef UFO_ENGINE_STUDIO
     if(editor_name == "Main"){
@@ -327,6 +326,8 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
         j_custom_editor_properties->map.emplace(property->variable_name, property->GetJson(_gc));
 
     }
+
+    this_actor->map.emplace("is_selectable", _gc->New<ufo::gc::JsonNumber>((float)is_selectable));
 #endif
 
     this_actor->map.emplace("x", _gc->New<ufo::gc::JsonNumber>(local_position.x));
@@ -348,7 +349,10 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
 //Actor generator calls this.
 void Actor::OnLoadDefaultProperties([[maybe_unused]] ufo::gc::JsonMap* _json){
+#ifdef UFO_ENGINE_STUDIO
     _json->TryToGetValueAsBool("is_selectable", is_selectable, GetInfo()+__UFO_PRETTY_FUNCTION__);
+#endif
+
 }
 
 void Actor::OnInvokeGarbageCollector(){
