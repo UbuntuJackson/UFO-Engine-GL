@@ -270,7 +270,7 @@ def get_sprite_loading_code(_instance, _actor_json):
     rotation = str(_actor_json["rotation"])
     frame_index = str(_actor_json["frame_index"])
 
-    default_properties_string += "    " + _instance + '->key = "' + key + '";\n'
+    default_properties_string += "    " + _instance + '->texture_key = "' + key + '";\n'
     default_properties_string += "    " + _instance + "->offset.x = " + offset_x + ";\n"
     default_properties_string += "    " + _instance + "->offset.y = " + offset_y + ";\n"
     default_properties_string += (
@@ -349,7 +349,7 @@ def get_animation_loading_code(_instance, _actor_json):
 
     # Need to set the key because otherwise SetCostume will try to access the engine before AddNewActors, resulting in a crash
     default_properties_string += (
-        "    " + _instance + '->key ="' + _actor_json["current_costume"] + '";\n'
+        "    " + _instance + '->texture_key ="' + _actor_json["current_costume"] + '";\n'
     )
 
     return default_properties_string
