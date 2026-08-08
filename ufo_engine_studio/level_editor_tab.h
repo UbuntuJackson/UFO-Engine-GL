@@ -19,6 +19,10 @@ namespace UFOEngineStudio{
 class LevelEditorTab : public Tab{
 public:
 
+    const static int STATIC_GIZMO_COLOUR = 0xFFFFFFFF;
+    const static int MOVABLE_GIZMO_COLOUR = 0xFFFFFF00;
+    const static int RESIZABLE_GIZMO_COLOUR = 0xFFFF00FF;
+
     //ufo::visual::VirtualMachine vm;
 
     // This is the actor currently used as the layer. It can be of type ufo::Level, ufo::CollisionGrid, and ufo::TileMap

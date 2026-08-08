@@ -36,9 +36,9 @@ void BackgroundSprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
 
         screen_position.x = ufo::Maths::Wrap(screen_position.x, -scaled_frame_size_x*1.0f, 1.0f*scaled_frame_size_x*number_of_background_sprites);
 
-        ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,key,current_frame_index,frame_size);
+        ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,texture_key,current_frame_index,frame_size);
         _graphics->DrawPartialSprite(
-            key,
+            texture_key,
             screen_position,
             /*size,*/
             offset,

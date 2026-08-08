@@ -375,7 +375,6 @@ public:
     float speed_loss_by_slope = 3.0f;
 
     void Collision(const ufo::TileMap* _tile_map, const std::string& _tileset, float _delta_time){
-        former_local_position = local_position;
 
         was_hitting_floor = hit_floor;
 

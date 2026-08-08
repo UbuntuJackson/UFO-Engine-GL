@@ -36,7 +36,7 @@ void Animation::SetCostume(const std::string& _configuration_key){
 
     if(costumes.count(_configuration_key)){
         Costume& costume = costumes.at(_configuration_key);
-        key = costume.key;
+        texture_key = costume.key;
         offset = costume.offset;
         frame_size = costume.frame_size;
         scale = costume.scale;
@@ -56,7 +56,7 @@ void Animation::SetCostume(const std::string& _configuration_key){
         return;
     }
 
-    ufo::Texture2D& ref_texture = engine->asset_manager.textures.at(key);
+    ufo::Texture2D& ref_texture = engine->asset_manager.textures.at(texture_key);
     number_of_frames = (float)((unsigned int)ref_texture.width/(unsigned int)frame_size.x * (unsigned int)ref_texture.height/(unsigned int)frame_size.y);
 
     if(frame_size.x == 0.0f || frame_size.y == 0.0f){
@@ -89,7 +89,7 @@ void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2
 void Animation::OnSpawn(){
 
     AddCostume("placeholder_icon", Vector2f(0.0f,0.0f), Vector2f(0.0f,0.0f), Vector2f(32.0f,32.0f), Vector2f(1.0f, 1.0f), 0.0f, 0.0f, 0.0f);
-    SetCostume(key);
+    SetCostume(texture_key);
 
 }
 
@@ -139,7 +139,7 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("tint", j_colour);
 
     parent_class_as_json->map.emplace("costumes",j_costumes);
-    parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(key));
+    parent_class_as_json->map.emplace("current_costume",_gc->New<ufo::gc::JsonString>(texture_key));
     parent_class_as_json->map.emplace("preview",_gc->New<ufo::gc::JsonNumber>(preview));
 
 
@@ -171,7 +171,7 @@ void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
         costumes.emplace(costume.key, costume);
     }
 
-    _json->TryToGetValueAsString("current_costume", key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsString("current_costume", texture_key, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
 
     float f_preview = 0.0f;
     _json->TryToGetValueAsFloat("preview", f_preview, GetInfo() + " " + __UFO_PRETTY_FUNCTION__);
@@ -290,7 +290,7 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
             engine->asset_manager.textures.at(name_of_erased_texture).Delete();
             engine->asset_manager.textures.erase(name_of_erased_texture);
 
-            if(key == name_of_erased_texture) SetCostume("placeholder_icon");
+            if(texture_key == name_of_erased_texture) SetCostume("placeholder_icon");
 
         }
             ImGui::EndChild();
@@ -400,10 +400,10 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
         for(const std::string& costume_name : costumes_to_erase) costumes.erase(costume_name);
 
         //Actor::OnViewProperties(_level_editor_tab, _index);
-        if(ImGui::BeginCombo(std::string("Costume###Costume"+std::to_string(editor_id)).c_str(), key.c_str())){
+        if(ImGui::BeginCombo(std::string("Costume###Costume"+std::to_string(editor_id)).c_str(), texture_key.c_str())){
 
             for(const auto& [k,v] : costumes){
-                bool is_selected = (key == k);
+                bool is_selected = (texture_key == k);
 
                 bool selectable_pressed = ImGui::Selectable(k.c_str(), &is_selected);
 
@@ -420,24 +420,24 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
         }
 
         //This could be faulty. Better to have assets marked removable and non-removable.
-        if(key != "placeholder_icon"){
+        if(texture_key != "placeholder_icon"){
             ImGui::SameLine();
 
             if(ImGui::Button(std::string("Remove###RemoveAnimationDialogue"+std::to_string(editor_id)).c_str())){
-                costumes.erase(key);
+                costumes.erase(texture_key);
                 SetCostume("placeholder_icon");
             }
         }
 
-        if(ImGui::InputFloat("offset.x",&costumes.at(key).offset.x)) offset.x = costumes.at(key).offset.x;
-        if(ImGui::InputFloat("offset.y",&costumes.at(key).offset.y)) offset.y = costumes.at(key).offset.y;
-        if(ImGui::InputFloat("frame_size.x",&costumes.at(key).frame_size.x)) frame_size.x = costumes.at(key).frame_size.x;
-        if(ImGui::InputFloat("frame_size.y",&costumes.at(key).frame_size.y)) frame_size.y = costumes.at(key).frame_size.y;
-        if(ImGui::InputFloat("scale.x",&costumes.at(key).scale.x)) scale.x = costumes.at(key).scale.x;
-        if(ImGui::InputFloat("scale.y",&costumes.at(key).scale.y)) scale.y = costumes.at(key).scale.y;
-        if(ImGui::InputFloat("rotation (degrees)",&costumes.at(key).rotation)) rotation = costumes.at(key).rotation;
-        if(ImGui::InputFloat("current_frame_index",&costumes.at(key).frame_index)) current_frame_index = costumes.at(key).frame_index;
-        if(ImGui::InputFloat("animation_speed",&costumes.at(key).animation_speed)) animation_speed = costumes.at(key).animation_speed;
+        if(ImGui::InputFloat("offset.x",&costumes.at(texture_key).offset.x)) offset.x = costumes.at(texture_key).offset.x;
+        if(ImGui::InputFloat("offset.y",&costumes.at(texture_key).offset.y)) offset.y = costumes.at(texture_key).offset.y;
+        if(ImGui::InputFloat("frame_size.x",&costumes.at(texture_key).frame_size.x)) frame_size.x = costumes.at(texture_key).frame_size.x;
+        if(ImGui::InputFloat("frame_size.y",&costumes.at(texture_key).frame_size.y)) frame_size.y = costumes.at(texture_key).frame_size.y;
+        if(ImGui::InputFloat("scale.x",&costumes.at(texture_key).scale.x)) scale.x = costumes.at(texture_key).scale.x;
+        if(ImGui::InputFloat("scale.y",&costumes.at(texture_key).scale.y)) scale.y = costumes.at(texture_key).scale.y;
+        if(ImGui::InputFloat("rotation (degrees)",&costumes.at(texture_key).rotation)) rotation = costumes.at(texture_key).rotation;
+        if(ImGui::InputFloat("current_frame_index",&costumes.at(texture_key).frame_index)) current_frame_index = costumes.at(texture_key).frame_index;
+        if(ImGui::InputFloat("animation_speed",&costumes.at(texture_key).animation_speed)) animation_speed = costumes.at(texture_key).animation_speed;
         ImGui::InputFloat("corner_rounding",&corner_rounding);
 
         ImVec4 start_colour =  ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -454,10 +454,10 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
 }
 
 void Animation::OnResourcesEdited(){
-    if(!engine->asset_manager.textures.count(key)){
-        costumes.erase(key);
-        key = "placeholder_icon";
-        SetCostume(key);
+    if(!engine->asset_manager.textures.count(texture_key)){
+        costumes.erase(texture_key);
+        texture_key = "placeholder_icon";
+        SetCostume(texture_key);
     }
     if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";

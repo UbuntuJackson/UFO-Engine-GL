@@ -334,7 +334,6 @@ void Editor::OnUpdate(float _delta_time){
     {
         if (ImGui::BeginMenu("File"))
         {
-            if(ImGui::MenuItem("Crash Test")) throw std::runtime_error("Crash Test");
 
             if (ImGui::BeginMenu("Open Recent"))
             {
@@ -430,10 +429,12 @@ void Editor::OnUpdate(float _delta_time){
             }
         }
 
-        if(ImGui::BeginMenu("Tools")){
+        if(ImGui::BeginMenu("Don't touch")){
             if(ImGui::MenuItem("Calculator")){
                 view_calculator = true;
             }
+
+            if(ImGui::MenuItem("Crash Test")) throw std::runtime_error("Crash Test");
 
             ImGui::EndMenu();
         }

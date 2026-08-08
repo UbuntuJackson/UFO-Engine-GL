@@ -11,7 +11,7 @@ class Camera;
 
 class Sprite : public Actor{
 public:
-    std::string key;
+    std::string texture_key;
     Vector2f offset;
     Vector2f frame_size;
     Vector2f scale = {1.0f, 1.0f};

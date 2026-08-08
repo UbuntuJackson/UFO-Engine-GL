@@ -210,6 +210,8 @@ void Actor::Update(float _delta_time){
         actor->Update(_delta_time);
     }
 
+    former_local_position = local_position;
+
     OnUpdate(_delta_time);
 
     if(should_be_sorted){
@@ -503,7 +505,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     std::string imported_or_not_str = (import_mode != ImportModes::CUSTOM_CLASS) ? "" : "(.ason)";
 
-    std::string visible_text = std::to_string(_index) + " " + std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
+    std::string visible_text = std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
 
     std::string unique_id_actor = editing_name ?
         std::string("###Actor"+std::to_string(editor_id)).c_str() :
@@ -535,14 +537,12 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         if(selectable_text){
             _level_editor_tab->actor_dedicated_to_viewport_id = this->editor_id;
             _level_editor_tab->selected_actors.clear();
+            _level_editor_tab->selected_actors.push_back(this->editor_id);
 
             if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
-                if(_editor->active_tab){
-                    UFOEngineStudio::LevelEditorTab* level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(_editor->active_tab);
-                    level_editor_tab->reset_selection_status = true;
-                    should_be_selected = is_selected;
 
-                }
+                _level_editor_tab->reset_selection_status = true;
+                should_be_selected = is_selected;
 
             }
 
@@ -683,7 +683,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             actors[i]->UpdateEditorTree(_editor,_level_editor_tab,i);
 
         }
-        actors[actors.size()-1]->DragDropMiddleButton(_editor, _level_editor_tab, actors.size());
+        if(actors.size() > 0) actors[actors.size()-1]->DragDropMiddleButton(_editor, _level_editor_tab, actors.size());
 
 
         ImGui::TreePop();
@@ -857,6 +857,18 @@ void Actor::OnHandleSingleSelect(UFOEngineStudio::LevelEditorTab* _level_editor_
 }
 
 void Actor::UpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, [[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+
+    const float cross_hair_size = 5.0f;
+
+    Vector2f cross_hair_draw_position = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+
+    Vector2f cross_hair_draw_position_start_x = cross_hair_draw_position-Vector2f(5.0f, 0.0f);
+    Vector2f cross_hair_draw_position_end_x = cross_hair_draw_position+Vector2f(5.0f, 0.0f);
+    Vector2f cross_hair_draw_position_start_y = cross_hair_draw_position-Vector2f(0.0f, 5.0f);
+    Vector2f cross_hair_draw_position_end_y = cross_hair_draw_position+Vector2f(0.0f, 5.0f);
+
+    ImGui::GetWindowDrawList()->AddLine(UFOEngineStudio::FromVector2fToImVec2(cross_hair_draw_position_start_x), UFOEngineStudio::FromVector2fToImVec2(cross_hair_draw_position_end_x), 0xFFFFFF00);
+    ImGui::GetWindowDrawList()->AddLine(UFOEngineStudio::FromVector2fToImVec2(cross_hair_draw_position_start_y), UFOEngineStudio::FromVector2fToImVec2(cross_hair_draw_position_end_y), 0xFFFFFF00);
 
     if(import_mode != ImportModes::CUSTOM_CLASS){
         for(const auto& actor : actors){

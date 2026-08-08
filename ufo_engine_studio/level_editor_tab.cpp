@@ -816,6 +816,7 @@ void LevelEditorTab::LevelDrawPhase(ufo::Graphics* _graphics){
     glClearColor(0.0125f, 0.025f, 0.05f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     this_level->DrawPhase(_graphics,ImGui::GetWindowSize().x,ImGui::GetWindowSize().y);
+    spawn_cursor->Draw(_graphics, this_level->active_camera_handles.back());
     this_level->DrawGizmosPhase(editor->engine->graphics.get(), this);
 
     _graphics->UnbindFrameBuffer();

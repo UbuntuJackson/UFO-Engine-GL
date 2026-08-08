@@ -28,6 +28,7 @@ struct Bounds{
 class Camera : public Actor{
 public:
 
+    Vector2f approach_original_position_speed;
     bool camera_moves_independently = false;
 
     //Unused for now

@@ -40,7 +40,7 @@ void Camera::OnUpdate(float _delta_time){
         if(parent){
             Vector2f towards_player = (parent->GetGlobalPosition()-GetGlobalPosition()+original_position)*1.5f;
 
-            local_position += towards_player*1.0f*_delta_time*Vector2f(1.0f, 10.0f);
+            local_position += towards_player*1.0f*_delta_time*movement_offset;
             local_position += (parent->local_position-parent->former_local_position)*_delta_time*16.0f;
         }
     }
@@ -122,19 +122,26 @@ ufo::gc::JsonMap* Camera::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
 
-    parent_class_as_json->map.emplace("clamp",_gc->New<ufo::gc::JsonNumber>(clamp));
-    parent_class_as_json->map.emplace("scale",_gc->New<ufo::gc::JsonNumber>(scale));
-    parent_class_as_json->map.emplace("camera_moves_independently",_gc->New<ufo::gc::JsonNumber>(bool(camera_moves_independently)));
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
+        parent_class_as_json->map.emplace("clamp",_gc->New<ufo::gc::JsonNumber>(clamp));
+        parent_class_as_json->map.emplace("scale",_gc->New<ufo::gc::JsonNumber>(scale));
+        parent_class_as_json->map.emplace("camera_moves_independently",_gc->New<ufo::gc::JsonNumber>(bool(camera_moves_independently)));
+        parent_class_as_json->map.emplace("approach_original_position_speed.x",_gc->New<ufo::gc::JsonNumber>(approach_original_position_speed.x));
+        parent_class_as_json->map.emplace("approach_original_position_speed.y",_gc->New<ufo::gc::JsonNumber>(approach_original_position_speed.y));
+    }
 
     return parent_class_as_json;
 }
 
 void Camera::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
+        _json->TryToGetValueAsBool("clamp", clamp, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+        _json->TryToGetValueAsFloat("scale", scale, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+        _json->TryToGetValueAsBool("camera_moves_independently", camera_moves_independently, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
 
-    _json->TryToGetValueAsBool("clamp", clamp, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-    _json->TryToGetValueAsFloat("scale", scale, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-    _json->TryToGetValueAsBool("camera_moves_independently", camera_moves_independently, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
-
+        _json->TryToGetValueAsFloat("approach_original_position_speed.x", approach_original_position_speed.x, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+        _json->TryToGetValueAsFloat("approach_original_position_speed.y", approach_original_position_speed.y, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    }
 }
 
 #ifdef UFO_ENGINE_STUDIO
@@ -142,9 +149,14 @@ void Camera::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 void Camera::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
 
     Actor::OnViewProperties(_level_editor_tab, _index);
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
+        ImGui::Checkbox("Clamp", &clamp);
+        ImGui::InputFloat("Scale", &scale);
+        ImGui::Checkbox("Camera Moves Independently",&camera_moves_independently);
 
-    ImGui::Checkbox("Clamp", &clamp);
-    ImGui::InputFloat("Scale", &scale);
+        ImGui::InputFloat("approach_original_position_speed.x", &approach_original_position_speed.x);
+        ImGui::InputFloat("approach_original_position_speed.y", &approach_original_position_speed.y);
+    }
 
 }
 

@@ -22,7 +22,7 @@ namespace ufo{
 
 Sprite::Sprite(olc::vf2d _position, std::string _key, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index) :
 Actor(_position),
-key{_key},
+texture_key{_key},
 offset{_offset},
 frame_size{_frame_size},
 scale{_scale},
@@ -35,7 +35,7 @@ current_frame_index{_frame_index}
 
 Sprite::Sprite(olc::vf2d _position) :
 Actor(_position),
-key{"placeholder_icon"},
+texture_key{"placeholder_icon"},
 offset{Vector2f(0.0f,0.0f)},
 frame_size{Vector2f(32.0f,32.0f)},
 scale{Vector2f(1.0f,1.0f)},
@@ -48,8 +48,8 @@ current_frame_index{0.0f}
 
 void Sprite::OnSpawn(){
 
-    if(!engine->asset_manager.textures.count(key)){
-        key = "placeholder_icon";
+    if(!engine->asset_manager.textures.count(texture_key)){
+        texture_key = "placeholder_icon";
     }
     if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";
@@ -60,9 +60,9 @@ void Sprite::OnSpawn(){
 void Sprite::OnDraw(ufo::Graphics* _graphics, Camera* _camera){
     if(!visible) return;
 
-    ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,key,current_frame_index,frame_size);
+    ufo::Rectangle sample_rectangle = SpriteUtils::GetFrameFromSpriteSheet(&engine->asset_manager,texture_key,current_frame_index,frame_size);
     _graphics->DrawPartialSprite(
-        key,
+        texture_key,
         _camera->Transform(GetGlobalPosition()),
         /*size,*/
         offset,
@@ -85,7 +85,7 @@ ufo::gc::JsonMap* Sprite::GetAsJson(ufo::GarbageCollector* _gc){
     //These properties don't need to be stored if this actor's import_mode is == ImportModes::WRAPPED.
     // However they need to be recovered.
 
-    parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(key));
+    parent_class_as_json->map.emplace("key", _gc->New<ufo::gc::JsonString>(texture_key));
     parent_class_as_json->map.emplace("offset_x", _gc->New<ufo::gc::JsonNumber>(offset.x));
     parent_class_as_json->map.emplace("offset_y", _gc->New<ufo::gc::JsonNumber>(offset.y));
     parent_class_as_json->map.emplace("frame_size_x", _gc->New<ufo::gc::JsonNumber>(frame_size.x));
@@ -118,7 +118,7 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     //if(import_mode == Actor::ImportModes::UNWRAPPED){
 
     try{
-        key = _json->map.at("key")->AsString();
+        texture_key = _json->map.at("key")->AsString();
         offset.x = _json->map.at("offset_x")->AsFloat();
         offset.y = _json->map.at("offset_y")->AsFloat();
         frame_size.x = _json->map.at("frame_size_x")->AsFloat();
@@ -235,18 +235,17 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             });
 
             for(const std::string& name : texture_names){
-                if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::LOCAL){
-                    if(!level->level_textures.count(name)) continue;
-                }
-                if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::GLOBAL){
-                    if(level->level_textures.count(name)) continue;
-                }
 
                 auto& texture = engine->asset_manager.textures.at(name);
 
-                if(!texture.is_global_asset && !level->level_textures.count(name)) continue;
-
-                if(!texture.is_global_asset && !level->level_textures.count(name)) continue;
+                if(_level_editor_tab->asset_view_mode != UFOEngineStudio::LevelEditorTab::ALL){
+                    if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::LOCAL){
+                        if(!level->level_textures.count(name)) continue;
+                    }
+                    if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::GLOBAL){
+                        if(!texture.is_global_asset) continue;
+                    }
+                }
 
                 float w = (float)texture.width;
                 float h = (float)texture.height;
@@ -274,7 +273,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                     }
                     ImGui::SameLine();
                     if(ImGui::Button(std::string("Assign Texture to Current Sprite###AddCostume"+name).c_str())){
-                        key = name;
+                        texture_key = name;
                         frame_size = Vector2f(w,h);
                         number_of_frames = 1;
 
@@ -292,7 +291,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                 engine->asset_manager.textures.erase(name_of_erased_texture);
                 for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
-                if(key == name_of_erased_texture) key = "placeholder_icon";
+                if(texture_key == name_of_erased_texture) texture_key = "placeholder_icon";
 
             }
 
@@ -390,7 +389,8 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
     Actor::OnViewProperties(_level_editor_tab, _index);
 
     if(import_mode == ImportModes::BUILT_IN_CLASS){
-
+        ImGui::Separator();
+        ImGui::Text("Texture: %s",texture_key.c_str());
         ImGui::InputFloat("offset.x",&offset.x);
         ImGui::InputFloat("offset.y",&offset.y);
         ImGui::InputFloat("frame_size.x",&frame_size.x);
@@ -425,8 +425,8 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
 }
 
 void Sprite::OnResourcesEdited(){
-    if(!engine->asset_manager.textures.count(key)){
-        key = "placeholder_icon";
+    if(!engine->asset_manager.textures.count(texture_key)){
+        texture_key = "placeholder_icon";
     }
     if(!engine->asset_manager.shaders.count(shader_key)){
         shader_key = "partial_sprite_shader";
