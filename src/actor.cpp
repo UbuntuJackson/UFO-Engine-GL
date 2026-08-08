@@ -15,6 +15,7 @@
 #include <gc_json.h>
 #include "../ufo_garbage_collector/object.h"
 #include "../utils/conversion.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/advanced_actor_spawner.h"
@@ -58,6 +59,10 @@ Vector2f Actor::GetGlobalPosition(){
 
 ufo::Rectangle Actor::GetRectangle(){
     return ufo::Rectangle(GetGlobalPosition(), Vector2f(16.0f, 16.0f));
+}
+
+ufo::Rectangle Actor::GetLocalRectangle(){
+    return rectangle;
 }
 
 Actor* Actor::GetActor(std::string _path){
@@ -302,6 +307,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
     this_actor->map.emplace("class_name", _gc->New<ufo::gc::JsonString>(class_name));
     auto j_custom_editor_properties = _gc->New<ufo::gc::JsonMap>();
     this_actor->map.emplace("custom_editor_properties", j_custom_editor_properties);
+    this_actor->map.emplace("is_selectable", _gc->New<ufo::gc::JsonNumber>((float)is_selectable));
 
 #ifdef UFO_ENGINE_STUDIO
     if(editor_name == "Main"){
@@ -342,7 +348,7 @@ ufo::gc::JsonMap* Actor::GetAsJson(ufo::GarbageCollector* _gc){
 
 //Actor generator calls this.
 void Actor::OnLoadDefaultProperties([[maybe_unused]] ufo::gc::JsonMap* _json){
-
+    _json->TryToGetValueAsBool("is_selectable", is_selectable, GetInfo()+__UFO_PRETTY_FUNCTION__);
 }
 
 void Actor::OnInvokeGarbageCollector(){
@@ -430,6 +436,7 @@ void Actor::ReplaceCustomActors(UFOEngineStudio::Editor* _editor, std::vector<st
             _actor_queue[a]->properties_open = old_actor->properties_open;
             _actor_queue[a]->editor_name = old_actor->editor_name;
             _actor_queue[a]->editor_id = old_actor->editor_id;
+            _actor_queue[a]->is_selectable = old_actor->is_selectable;
             if(old_actor->is_editor_hit_box_unique_per_instance) _actor_queue[a]->editor_hitbox = old_actor->editor_hitbox;
             level->actors_with_stable_id.at(_actor_queue[a]->editor_id) = _actor_queue[a].get();
 
@@ -669,6 +676,16 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     OnAdditionalButtonsForTreeItem();
 
+    if(!is_permanently_non_selectable){
+        ImGui::SameLine();
+
+        const std::string lock_button_preview_text = (is_selectable ? "Unlocked" : "Locked")+std::string("###LockButtonPreviewTextufo::Actor")+std::to_string(editor_id);
+
+        if(ImGui::Button(lock_button_preview_text.c_str())){
+            is_selectable = !is_selectable;
+        }
+    }
+
     if(tree_node_opened){
 
         OnUpdateEditorTree(_index);
@@ -690,13 +707,17 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     }
 }
 
+bool Actor::IsSelectable(){
+    return editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)" && editor_name != "Awaiting ..." &&
+    base_class_name != "ufo::TileMap" && base_class_name != "ufo::CollisionGrid" && base_class_name != "ufo::Level" && is_selectable && !is_permanently_non_selectable;
+}
+
 void Actor::GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space){
     if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)) is_selected_in_viewport = false;
 
     if(
         ufo::Maths::RectangleVsPoint(_selection_rectangle_world_space , GetGlobalPosition())
-        && editor_name != "ControllableCamera (Editor Tool)" && editor_name != "SpawnCursor (Editor Tool)" && editor_name != "Awaiting ..." &&
-        base_class_name != "ufo::TileMap" && base_class_name != "ufo::CollisionGrid" && base_class_name != "ufo::Level"
+        && IsSelectable()
     ){
         _selected_actors.push_back(this->editor_id);
         return;
@@ -811,6 +832,8 @@ void Actor::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab,
     InputFloatWithUndoAndRedo(_level_editor_tab,
         std::string("local_position.y###local_position.y"+editor_name+std::to_string(_index)).c_str(), "local_position.y");
 
+    ImGui::Checkbox("Is Selectable", &is_selectable);
+
 }
 
 void Actor::ViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -839,6 +862,8 @@ Actor* Actor::GetFocusedActor([[maybe_unused]] Vector2f _mouse_position_over_scr
             if(act) return act;
         }
     }
+
+    if(!IsSelectable()) return nullptr;
 
     return OnGetFocusedActor(_mouse_position_over_screenspace);
 }

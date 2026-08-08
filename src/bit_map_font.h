@@ -27,6 +27,9 @@ public:
     int character_height = 0;
     std::string texture_key;
 
+    bool is_savable = false;
+    bool is_global_asset = true;
+
     BitMapFont(OpenGLv4_5_AssetManager* _asset_manager, const std::string& _texture_key, int _character_width, int _character_height);
 
     ufo::Rectangle
@@ -42,6 +45,7 @@ public:
         Vector2f _scale,
         const std::string& _shader_key,
         const ufo::Colour& _tint,
+        const ufo::Rectangle& _rectangle,
         bool _is_wrapping = false,
         int _wrap_width = 1000
     );

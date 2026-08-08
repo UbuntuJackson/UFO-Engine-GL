@@ -47,9 +47,6 @@ Text::Text(Vector2f _) : Widget(_){
 
 void Text::OnSpawn(){
     OnIrregularUpdate();
-
-    if(engine->asset_manager.textures.count("res/gfx/unifont.png")) engine->asset_manager.LoadBitMapFont("res/gfx/unifont.png", 18, 18);
-    else Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, couldn't find bitmap font", "res/gfx/unifont.png");
 }
 
 Text::~Text(){
@@ -149,6 +146,7 @@ void Text::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
             Vector2f(1.0f, 1.0f)*_camera->scale,
             shader_key,
             ufo::Colour(255,255,255,255),
+            parent->GetLocalRectangle(),
             is_wrapping,
             parent ? parent->rectangle.size.x : 1000
         );
@@ -159,14 +157,31 @@ ufo::gc::JsonMap* Text::GetAsJson(ufo::GarbageCollector* _gc){
     Console::PrintLine("Does this even run?");
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
+    if(import_mode == ImportModes::BUILT_IN_CLASS){
+        parent_class_as_json->map.emplace("is_wrapping", _gc->New<ufo::gc::JsonNumber>(is_wrapping));
+        parent_class_as_json->map.emplace("bit_map_font_key",_gc->New<ufo::gc::JsonString>(bit_map_font_key));
 
-    parent_class_as_json->map.emplace("is_wrapping", _gc->New<ufo::gc::JsonNumber>(is_wrapping));
+        auto j_language_to_text = _gc->New<ufo::gc::JsonMap>();
+        for(const auto& [k,v] : language_to_text) j_language_to_text->map.emplace(k,_gc->New<ufo::gc::JsonString>(v));
 
-    auto j_language_to_text = _gc->New<ufo::gc::JsonMap>();
-    for(const auto& [k,v] : language_to_text) j_language_to_text->map.emplace(k,_gc->New<ufo::gc::JsonString>(v));
+        parent_class_as_json->map.emplace("language_to_text", j_language_to_text);
+    }
 
-    parent_class_as_json->map.emplace("language_to_text", j_language_to_text);
     return parent_class_as_json;
+}
+
+void Text::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+
+    _json->TryToGetValueAsBool("is_wrapping", is_wrapping, GetInfo()+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsString("bit_map_font_key", bit_map_font_key, GetInfo()+__UFO_PRETTY_FUNCTION__);
+
+    try{
+        for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
+            language_to_text[k] = v->AsString();
+        }
+    } catch(const std::exception& _error){
+        Console::PrintLine(GetInfo(), __UFO_PRETTY_FUNCTION__, _error.what());
+    }
 }
 
 #ifdef UFO_ENGINE_STUDIO
@@ -175,7 +190,7 @@ void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, 
     Widget::OnViewProperties(_level_editor_tab, _index);
 
     if(ImGui::InputTextMultiline("Text", &language_to_text[engine->language])) OnIrregularUpdate();
-    if(ImGui::Checkbox("Wrap", &is_wrapping)){
+    if(ImGui::Checkbox("Wrap", &is_wrapping), ImVec2(0.0f,0.0f), ImGuiInputTextFlags_WordWrap){
         OnIrregularUpdate();
     }
 
@@ -216,29 +231,7 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
         bool font_was_erased = false;
         std::string name_of_erased_texture = "";
 
-        std::vector<std::string> font_names;
-        for(const auto& [name, bit_map_font] : engine->asset_manager.bit_map_fonts){
-            bool search_is_in_word = false;
-
-            for(int c = 0; c < (int)name.size(); c++){
-                bool found_match_from_this_character = true;
-
-                for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                    if(c+d > (int)name.size()-1) continue;
-
-                    if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                        found_match_from_this_character = false;
-                    }
-                }
-
-                if(found_match_from_this_character) search_is_in_word = true;
-            }
-
-            if(search_is_in_word) font_names.push_back(name);
-        }
-        std::sort(font_names.begin(), font_names.end(), [](const std::string& _a,const std::string& _b){
-            return _a<_b;
-        });
+        std::vector<std::string> font_names = engine->asset_manager.SearchForAsset(engine->asset_manager.bit_map_fonts, _level_editor_tab->asset_browser_search);
 
         for(const std::string& name : font_names){
 
@@ -275,8 +268,8 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
                     bit_map_font_key = name;
                 }
 
-                ImGui::InputInt("Character Width", &engine->asset_manager.bit_map_fonts.at(name).character_width);
-                ImGui::InputInt("Character Height", &engine->asset_manager.bit_map_fonts.at(name).character_height);
+                ImGui::InputInt(std::string("Character Width###Character Width"+name).c_str(), &engine->asset_manager.bit_map_fonts.at(name).character_width);
+                ImGui::InputInt(std::string("Character Height###Character Height"+name).c_str(), &engine->asset_manager.bit_map_fonts.at(name).character_height);
 
                 ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
                 ImGui::Text(("name: "+name).c_str(),"%s");
@@ -317,29 +310,7 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
             bool texture_was_erased = false;
             std::string name_of_erased_texture = "";
 
-            std::vector<std::string> texture_names;
-            for(const auto& [name, texture] : engine->asset_manager.textures){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) texture_names.push_back(name);
-            }
-            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> texture_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : texture_names){
 
@@ -372,8 +343,11 @@ void Text::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_
                         texture_was_erased = true;
                     }
                     ImGui::SameLine();
-                    if(ImGui::Button(std::string("Crete Font###AddCostume"+name).c_str())){
-                        engine->asset_manager.LoadBitMapFont(name, 1, 1);
+                    if(ImGui::Button(std::string("Create Font###AddCostume"+name).c_str())){
+                        engine->asset_manager.AddBitMapFont(name, 1, 1);
+                        if(engine->asset_manager.bit_map_fonts.count(name)){
+                            engine->asset_manager.bit_map_fonts.at(name).is_savable = true;
+                        }
 
                     }
                     ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");

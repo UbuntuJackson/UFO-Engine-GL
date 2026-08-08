@@ -30,7 +30,7 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
     LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
 
-    LoadBitMapFont("bitmap_unifont", 18, 18);
+    AddBitMapFont("bitmap_unifont", 18, 18);
 
     if(!textures.count("placeholder_icon")){
         Console::PrintLine("Could not load placeholder_icon");
@@ -107,7 +107,7 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
     LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
     LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
 
-    LoadBitMapFont("bitmap_unifont", 18, 18);
+    AddBitMapFont("bitmap_unifont", 18, 18);
 
     if(!textures.count("placeholder_icon")){
         Console::PrintLine("Could not load placeholder_icon");
@@ -124,7 +124,7 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
 
     Console::PrintLine(save_path);
     AssetJson j;
-    j.ReadEditor(save_path,_editor->opened_directory_path, this, _engine);
+    j.Read(save_path,_editor->opened_directory_path, this, _engine);
 
 }
 
@@ -160,7 +160,7 @@ ufo::Shader& OpenGLv4_5_AssetManager::GetShader(const std::string& _name){
     return shaders.at(_name);
 }
 
-void OpenGLv4_5_AssetManager::LoadBitMapFont(const std::string& _name, int _character_width, int _character_height){
+void OpenGLv4_5_AssetManager::AddBitMapFont(const std::string& _name, int _character_width, int _character_height){
      bit_map_fonts.emplace(_name, ufo::BitMapFont(this, _name, _character_width, _character_height));
 }
 

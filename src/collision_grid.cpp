@@ -14,6 +14,7 @@ namespace ufo{
 CollisionGrid::CollisionGrid(Vector2f _) : Actor(_){
     base_class_name = "ufo::CollisionGrid";
     class_name = base_class_name;
+    is_permanently_non_selectable = true;
 
 }
 

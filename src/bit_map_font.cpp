@@ -69,10 +69,10 @@ BitMapFont::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2
         _frame_size); //1 can only give y = 1
 }
 
-void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint, bool _is_wrapping, int _wrap_width){
+void BitMapFont::Draw(ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint, const ufo::Rectangle& _rectangle, bool _is_wrapping, int _wrap_width){
 
     int current_character_x = 0;
-    int current_character_y = 0;
+    int current_character_y = _rectangle.position.y;
 
     std::string::const_iterator it = _text.begin();
 

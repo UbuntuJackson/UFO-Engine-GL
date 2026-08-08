@@ -510,6 +510,7 @@ public:
     }
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+        Actor::OnLoadDefaultProperties(_json);
 
         try{
             auto j_rectangle = _json->map.at("editor_hitbox")->AsMap();

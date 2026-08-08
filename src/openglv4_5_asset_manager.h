@@ -27,6 +27,35 @@ public:
     void Initialise(ufo::Engine* _engine);
 
 #ifdef UFO_ENGINE_STUDIO
+    template<typename tType>
+    std::vector<std::string> SearchForAsset(std::unordered_map<std::string,tType>& _assets, const std::string& _asset_browser_search){
+        std::vector<std::string> texture_names;
+        for(const auto& [name, texture] : _assets){
+            bool search_is_in_word = false;
+
+            for(int c = 0; c < (int)name.size(); c++){
+                bool found_match_from_this_character = true;
+
+                for(int d = 0; d < (int)_asset_browser_search.size(); d++){
+                    if(c+d > (int)name.size()-1) continue;
+
+                    if(_asset_browser_search[d]!=name[c+d]){
+                        found_match_from_this_character = false;
+                    }
+                }
+
+                if(found_match_from_this_character) search_is_in_word = true;
+            }
+
+            if(search_is_in_word) texture_names.push_back(name);
+        }
+        std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
+            return _a<_b;
+        });
+
+        return texture_names;
+    }
+
     void Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine);
     //This is a callback function that is called upon reading a .png from an SDL file dialogue.
     void OnAddTexture(const std::string& _path, UFOEngineStudio::Editor* _editor);
@@ -58,7 +87,7 @@ public:
      //void LoadAudio(const std::string& _path, const std::string& _name){}
 
      std::unordered_map<std::string, BitMapFont> bit_map_fonts;
-     void LoadBitMapFont(const std::string& _name, int _character_width, int _character_height);
+     void AddBitMapFont(const std::string& _name, int _character_width, int _character_height);
 
     //Editor only. Todo: When the editor refreshes or closes I want the assets to be saved in the project folder. However,
     // right now it only does so upon closing the editor.

@@ -44,7 +44,7 @@
 namespace UFOEngineStudio{
 
 Editor::Editor(){
-    name = "GC_Editor";
+    garbage_collected_object_name = "GC_Editor";
 
     game_log_buffer = (char*)malloc(GAME_LOG_BUFFER_SIZE);
 
@@ -63,6 +63,8 @@ void Editor::ResetUFOEngineStudio(){
     engine->asset_manager.shaders.clear();
 
     engine->asset_manager.textures.clear();
+
+    engine->asset_manager.bit_map_fonts.clear();
 
     engine->graphics->InitialiseRenderData(engine);
 

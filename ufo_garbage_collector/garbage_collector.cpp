@@ -29,7 +29,7 @@ void GarbageCollector::Collect(){
         }
     }
 
-    if(number_of_objects_garbage_collected != 0u) Console::PrintLine("[UFO-Engine] Beam Garbage Collector with root '" + root->name + "' ran, collected",number_of_objects_garbage_collected,"instances of gc::Object");
+    if(number_of_objects_garbage_collected != 0u) Console::PrintLine("[UFO-Engine] Beam Garbage Collector with root '" + root->garbage_collected_object_name + "' ran, collected",number_of_objects_garbage_collected,"instances of gc::Object");
 
 }
 

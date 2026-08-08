@@ -32,6 +32,7 @@ TileMap::TileMap(Vector2f _) : Actor(_){
     base_class_name = "ufo::TileMap";
     class_name = base_class_name;
     tilemap_data = std::vector<int>(number_of_rows*number_of_columns, 0);
+    is_permanently_non_selectable = true;
 }
 
 void TileMap::OnSpawn(){
@@ -220,29 +221,7 @@ void TileMap::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edit
             bool shader_was_erased = false;
             std::string name_of_erased_shader = "";
 
-            std::vector<std::string> shader_names;
-            for(const auto& [name, shader] : engine->asset_manager.shaders){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) shader_names.push_back(name);
-            }
-            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> shader_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : shader_names){
 

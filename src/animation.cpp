@@ -148,6 +148,8 @@ ufo::gc::JsonMap* Animation::GetAsJson(ufo::GarbageCollector* _gc){
 
 void Animation::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
+    Actor::OnLoadDefaultProperties(_json);
+
     //if(import_mode == Actor::ImportModes::UNWRAPPED){
 
     if(!_json->map.count("costumes")){
@@ -219,29 +221,7 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
         bool texture_was_erased = false;
         std::string name_of_erased_texture = "";
 
-        std::vector<std::string> texture_names;
-        for(const auto& [name, texture] : engine->asset_manager.textures){
-            bool search_is_in_word = false;
-
-            for(int c = 0; c < (int)name.size(); c++){
-                bool found_match_from_this_character = true;
-
-                for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                    if(c+d > (int)name.size()-1) continue;
-
-                    if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                        found_match_from_this_character = false;
-                    }
-                }
-
-                if(found_match_from_this_character) search_is_in_word = true;
-            }
-
-            if(search_is_in_word) texture_names.push_back(name);
-        }
-        std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-            return _a<_b;
-        });
+        std::vector<std::string> texture_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
         for(const std::string& name : texture_names){
 
@@ -315,29 +295,7 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
             bool shader_was_erased = false;
             std::string name_of_erased_shader = "";
 
-            std::vector<std::string> shader_names;
-            for(const auto& [name, shader] : engine->asset_manager.shaders){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) shader_names.push_back(name);
-            }
-            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> shader_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : shader_names){
 

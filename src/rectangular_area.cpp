@@ -26,6 +26,8 @@ ufo::Rectangle RectangularArea::GetRectangle(){
 }
 
 void RectangularArea::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
+    Actor::OnLoadDefaultProperties(_json);
+
     //A good example of large amount of properties being written to an object
     // Potential solution, have an additional map which handles writing of default properties.
     // Other solution, pass json. I like this solution more, because that makes the generated code more managable.

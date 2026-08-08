@@ -117,6 +117,8 @@ void Sprite::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
     //if(import_mode == Actor::ImportModes::UNWRAPPED){
 
+    Actor::OnLoadDefaultProperties(_json);
+
     try{
         texture_key = _json->map.at("key")->AsString();
         offset.x = _json->map.at("offset_x")->AsFloat();
@@ -210,29 +212,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             bool texture_was_erased = false;
             std::string name_of_erased_texture = "";
 
-            std::vector<std::string> texture_names;
-            for(const auto& [name, texture] : engine->asset_manager.textures){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) texture_names.push_back(name);
-            }
-            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> texture_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : texture_names){
 
@@ -317,29 +297,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             bool shader_was_erased = false;
             std::string name_of_erased_shader = "";
 
-            std::vector<std::string> shader_names;
-            for(const auto& [name, shader] : engine->asset_manager.shaders){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) shader_names.push_back(name);
-            }
-            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> shader_names = engine->asset_manager.SearchForAsset(engine->asset_manager.shaders, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : shader_names){
 
@@ -419,7 +377,7 @@ void Sprite::OnAdditionalButtonsForTreeItem(){
 
     std::string visible_or_not_string = visible ? "<o>###" : "</>###";
 
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))){
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
         visible = !visible;
     }
 }

@@ -183,15 +183,6 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
-
-            try{
-                for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
-                    instance->language_to_text[k] = v->AsString();
-                }
-                instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
-            } catch(const std::exception& _error){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing Button instance", _error.what());
-            }
             return instance;
         }
     );

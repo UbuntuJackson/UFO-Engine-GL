@@ -52,7 +52,7 @@ public:
 friend GarbageCollector;
 
     //To make it easier to tell what is destroyed and created, every object can be given a name.
-    std::string name  = "<Unnamed>";
+    std::string garbage_collected_object_name  = "<Unnamed>";
 
 private:
     std::vector<std::unique_ptr<MemberVariableHandleBase>> member_handles;

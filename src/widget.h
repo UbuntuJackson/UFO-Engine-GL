@@ -32,9 +32,12 @@ public:
     std::string shader_key = "partial_sprite_shader";
     float corner_rounding = 0.0f;
 
+    bool has_header = false;
+    int header_height = 16;
+
     Widget(Vector2f _);
 
-    ufo::Rectangle GetRectangle() override;
+    ufo::Rectangle GetLocalRectangle() override;
 
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
 

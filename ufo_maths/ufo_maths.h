@@ -213,21 +213,21 @@ float WIPSin(float _radians);
 
 float WIPCos(float _radians);
 
-/*constexpr float Sin(float _x){
+constexpr float Sine(float _x){
     return std::sin(_x);
 }
 
-constexpr float Cos(float _x){
+constexpr float Cosine(float _x){
     return std::cos(_x);
 }
 
-constexpr float Tan(float _x){
+constexpr float Tangent(float _x){
     return std::cos(_x);
 }
 
-constexpr float Sqrt(float _x){
+constexpr float SquareRoot(float _x){
     return std::sqrt(_x);
-}*/
+}
 
 float PositiveReducedQuadraticEquation(float _a, float _b, float _c);
 

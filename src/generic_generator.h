@@ -15,7 +15,7 @@ public:
     ufo::Engine* engine = nullptr;
 
     GenericGenerator(){
-        name = "GC_GenericGenerator";
+        garbage_collected_object_name = "GC_GenericGenerator";
     }
 
     std::map<std::string, ufo::gc::JsonMap*> actor_jsons_with_unaltered_default_properties;

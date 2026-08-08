@@ -29,8 +29,11 @@ Widget::Widget(Vector2f _) : Actor(_){
     editor_hitbox = ufo::Rectangle(Vector2f(0.0f, 0.0f), Vector2f(32.0f, 32.0f));
 }
 
-ufo::Rectangle Widget::GetRectangle(){
-    return ufo::Rectangle(GetGlobalPosition()+rectangle.position,rectangle.size);
+ufo::Rectangle Widget::GetLocalRectangle(){
+
+    if(!has_header) return rectangle;
+
+    return ufo::Rectangle(Vector2f(rectangle.position.x, rectangle.position.y+(float)header_height),rectangle.size-Vector2f(0.0f, (float)header_height));
 }
 
 void Widget::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
@@ -58,6 +61,8 @@ void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     // Other solution, pass json. I like this solution more, because that makes the generated code more managable.
     // Son of a biscuit this has been redundant.
     // Writing of custom properties handled in generated.h.
+
+    Actor::OnLoadDefaultProperties(_json);
 
     try{
         auto j_rectangle = _json->map.at("rectangle")->AsMap();
@@ -123,29 +128,7 @@ void Widget::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             bool texture_was_erased = false;
             std::string name_of_erased_texture = "";
 
-            std::vector<std::string> texture_names;
-            for(const auto& [name, texture] : engine->asset_manager.textures){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) texture_names.push_back(name);
-            }
-            std::sort(texture_names.begin(), texture_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> texture_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : texture_names){
 
@@ -223,29 +206,7 @@ void Widget::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             bool shader_was_erased = false;
             std::string name_of_erased_shader = "";
 
-            std::vector<std::string> shader_names;
-            for(const auto& [name, shader] : engine->asset_manager.shaders){
-                bool search_is_in_word = false;
-
-                for(int c = 0; c < (int)name.size(); c++){
-                    bool found_match_from_this_character = true;
-
-                    for(int d = 0; d < (int)_level_editor_tab->asset_browser_search.size(); d++){
-                        if(c+d > (int)name.size()-1) continue;
-
-                        if(_level_editor_tab->asset_browser_search[d]!=name[c+d]){
-                            found_match_from_this_character = false;
-                        }
-                    }
-
-                    if(found_match_from_this_character) search_is_in_word = true;
-                }
-
-                if(search_is_in_word) shader_names.push_back(name);
-            }
-            std::sort(shader_names.begin(), shader_names.end(), [](const std::string& _a,const std::string& _b){
-                return _a<_b;
-            });
+            std::vector<std::string> shader_names = engine->asset_manager.SearchForAsset(engine->asset_manager.textures, _level_editor_tab->asset_browser_search);
 
             for(const std::string& name : shader_names){
 
@@ -288,6 +249,7 @@ void Widget::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
 void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* _level_editor_tab, [[maybe_unused]] int _index){
     ImGui::InputFloat("corner_rounding", &corner_rounding);
+    ImGui::Checkbox("Has header",&has_header);
 }
 
 void Widget::OnResize(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
