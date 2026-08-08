@@ -40,7 +40,7 @@ void Camera::OnUpdate(float _delta_time){
         if(parent){
             Vector2f towards_player = (parent->GetGlobalPosition()-GetGlobalPosition()+original_position)*1.5f;
 
-            local_position += towards_player*1.0f*_delta_time*movement_offset;
+            local_position += towards_player*1.0f*_delta_time*approach_original_position_speed;
             local_position += (parent->local_position-parent->former_local_position)*_delta_time*16.0f;
         }
     }
