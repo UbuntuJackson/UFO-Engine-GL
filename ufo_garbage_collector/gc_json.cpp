@@ -9,6 +9,34 @@
 
 namespace ufo::gc{
 
+gc::Json* GetJson(ufo::GarbageCollector* _gc, cJSON* _obj){
+
+    gc::Json* json_obj = nullptr;
+
+    if(cJSON_IsNumber(_obj)){
+        json_obj = _gc->New<JsonNumber>(_obj->valuedouble);
+    }
+
+    if(cJSON_IsBool(_obj)){
+        json_obj = _gc->New<JsonNumber>(_obj->valueint);
+    }
+
+    if(cJSON_IsString(_obj)){
+        json_obj = _gc->New<JsonString>(_obj->valuestring);
+    }
+
+    if(cJSON_IsObject(_obj)){
+        json_obj = GetDictionaryAsTree(_gc,_obj);
+    }
+
+    if(cJSON_IsArray(_obj)){
+        json_obj = cJSON_ToArray(_gc,_obj);
+    }
+
+    return json_obj;
+
+}
+
 gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj){
 
     gc::JsonMap* json_map = _gc->New<gc::JsonMap>();

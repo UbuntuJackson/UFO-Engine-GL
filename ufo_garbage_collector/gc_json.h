@@ -89,6 +89,8 @@ public:
 
 };
 
+gc::Json* GetJson(ufo::GarbageCollector* _gc, cJSON* _obj);
+
 class JsonNumber : public gc::Json{
 public:
     float value = 0;
