@@ -41,6 +41,9 @@ public:
 
 #ifdef UFO_ENGINE_STUDIO
 
+    bool paint_mode = false;
+    void TogglePaintMode();
+
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;

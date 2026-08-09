@@ -144,6 +144,7 @@ target_include_directories(UFO PUBLIC ufo_maths)
 target_include_directories(UFO PUBLIC ufo_garbage_collector)
 target_include_directories(UFO PUBLIC shared_json)
 target_include_directories(UFO PUBLIC utils)
+target_include_directories(UFO PUBLIC shapes)
 target_include_directories(UFO PUBLIC tilemap)
 
 if(UFO_ENGINE_STUDIO)

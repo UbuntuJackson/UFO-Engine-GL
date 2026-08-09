@@ -20,6 +20,7 @@ public:
 
     //To be deprecated
     bool is_savable = false; //If the asset is supposed to be preloaded and saved
+    void Update();
 
     bool is_global_asset = true;
 
@@ -27,11 +28,14 @@ public:
 
     unsigned char* pixel_data;
 
+    Vector2i Size();
+
     Texture2D();
 
     void Generate(unsigned int _width, unsigned int _height, unsigned char* _data);
 
     olc::Pixel GetPixel(Vector2i _position);
+    void SetPixel(Vector2i _position, const olc::Pixel& _colour);
 
     void Bind();
 

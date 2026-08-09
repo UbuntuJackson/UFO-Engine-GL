@@ -2,6 +2,7 @@
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
+#include "console.h"
 #include "engine.h"
 #include "camera.h"
 #include "../../shapes/rectangle.h"
@@ -9,6 +10,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "graphics.h"
 #include "sprite_utils.h"
+#include "texture_2d.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -339,8 +341,30 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 }
 
 void Sprite::OnUpdateEditorViewport([[maybe_unused]] UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
+    if(paint_mode){
+        ufo::Camera* cam = level->active_camera_handles.back();
+
+        Vector2i pos = cam->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace)-GetGlobalPosition();
+
+        Texture2D& tex = engine->asset_manager.textures.at(texture_key);
+
+        if(engine->mouse.is_left_button_held){
+            tex.SetPixel(pos, ufo::Colour(255,255,0,255));
+            tex.Update();
+        }
+    }
+
     editor_hitbox.size = Vector2f(frame_size.x*scale.x,frame_size.y*scale.y);
     editor_hitbox.position = -offset;
+}
+
+void Sprite::TogglePaintMode(){
+    if(paint_mode){
+        is_selectable = false;
+    }
+    else{
+        is_selectable = true;
+    }
 }
 
 void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
@@ -367,6 +391,19 @@ void Sprite::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab
         }
 
         ImGui::Text("Shader: %s", shader_key.c_str());
+
+        ufo::Camera* cam = level->active_camera_handles.back();
+
+        Vector2i pos = cam->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace)-GetGlobalPosition();
+
+        Texture2D& tex = engine->asset_manager.textures.at(texture_key);
+
+        ufo::Colour pixel = tex.GetPixel(pos);
+
+        ImGui::Text("Red: %i",(int)pixel.r); ImGui::SameLine();
+        ImGui::Text("Green: %i",(int)pixel.g); ImGui::SameLine();
+        ImGui::Text("Blue: %i",(int)pixel.b); ImGui::SameLine();
+        ImGui::Text("Alpha: %i",(int)pixel.a);
 
     }
 
