@@ -7,9 +7,7 @@
 #include "../utils/json.h"
 #include "gc_json.h"
 
-namespace ufo{
-
-namespace gc{
+namespace ufo::gc{
 
 gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj){
 
@@ -118,6 +116,21 @@ gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path){
     return j;
 }
 
+void TryAsString(std::string& _variable, Json*& _json, const std::string& _location){
+    if(_json->IsString()) _variable = _json->AsString();
+    else Console::PrintLine(_location,"Could not get value for variable",&_variable);
+}
+void TryAsFloat(float& _variable, Json*& _json, const std::string& _location){
+    if(_json->IsFloat()) _variable = _json->AsFloat();
+    else Console::PrintLine(_location,"Could not get value for variable",&_variable);
+}
+void TryAsArray(std::vector<Json*>& _variable, Json*& _json, const std::string& _location){
+    if(_json->IsArray()) _variable = _json->AsArray();
+    else Console::PrintLine(_location,"Could not get value for variable",&_variable);
+}
+void TryAsMap(std::map<std::string,Json*>& _variable, Json*& _json, const std::string& _location){
+    if(_json->IsMap()) _variable = _json->AsMap();
+    else Console::PrintLine(_location,"Could not get value for variable",&_variable);
 }
 
 }

@@ -21,6 +21,8 @@ class Animation : public Sprite{
 public:
 
     float animation_speed = 100.0f;
+    //int cycle_count = 0;
+    //float frame_counter = 0.0f;
 
     struct Costume{
         std::string key;
@@ -36,8 +38,8 @@ public:
 
     bool preview = false;
 
-    //Make a special type of Sprite with overwritten Draw function to not have the OnDraw callback call by default
-    Sprite* current_animation = nullptr;
+    //Make a special type of Sprite with overwritten Draw function to not have the OnDraw callback call by default (scrapped idea)
+    //Sprite* current_animation = nullptr;
 
     std::unordered_map<std::string, Costume> costumes;
 

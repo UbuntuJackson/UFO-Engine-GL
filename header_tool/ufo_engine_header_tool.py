@@ -951,7 +951,7 @@ def analyse_compound_object(_compound_object, _line_number, _currently_searched_
     macro_part = []
     variable_or_class_as_list = []
 
-    # ufo_header_tool_log.ufo_header_tool_print("compound_object", _compound_object)
+    ufo_header_tool_log.ufo_header_tool_print("compound_object", _compound_object)
 
     is_namespace = analyse_namespace(_compound_object)
     if is_namespace is not None:

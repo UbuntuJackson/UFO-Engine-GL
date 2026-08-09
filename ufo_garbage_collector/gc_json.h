@@ -9,10 +9,9 @@
 #include "../external/cJSON.h"
 #include "../utils/json.h"
 #include "../utils/file_utils.h"
+#include "ufo_macros.h"
 
-namespace ufo{
-
-namespace gc{
+namespace ufo::gc{
 
 class JsonMap;
 
@@ -25,6 +24,10 @@ public:
     virtual gc::JsonMap* AsJsonMap(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Map");}
     virtual std::vector<gc::Json*> AsArray(){throw std::runtime_error("ufo::gc::Json Invalid conversion, Object is not Array");}
     virtual bool IsNull(){return true;}
+    virtual bool IsFloat(){return false;}
+    virtual bool IsString(){return false;}
+    virtual bool IsMap(){return false;}
+    virtual bool IsArray(){return false;}
 
     ~Json(){
 
@@ -32,6 +35,56 @@ public:
 
     virtual cJSON* GetObject(){
         return nullptr;
+    }
+
+    std::string GetJsonAsString(){
+        cJSON* json_obj = GetObject();
+
+        char* json_as_string = cJSON_Print(json_obj);
+
+        std::string string_to_return = json_as_string;
+
+        free(json_as_string);
+
+        cJSON_Delete(json_obj);
+
+        return std::string(string_to_return);
+    }
+
+    std::string GetJsonAsUnformattedString(){
+        cJSON* json_obj = GetObject();
+
+        char* json_as_string = cJSON_PrintUnformatted(json_obj);
+
+        std::string string_to_return = json_as_string;
+
+        free(json_as_string);
+
+        cJSON_Delete(json_obj);
+
+        return std::string(string_to_return);
+    }
+
+    void WriteUnformatted(const std::string& _path){
+        std::string json_as_string = GetJsonAsUnformattedString();
+        try{
+            FileSystem::Write(_path, json_as_string);
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__ ,"saved unformatted json:", _path);
+        }
+        catch(const std::exception& _error){
+            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
+        }
+    }
+
+    void Write(const std::string& _path){
+        std::string json_as_string = GetJsonAsString();
+        try{
+            FileSystem::Write(_path, json_as_string);
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__ ,"saved formatted json:", _path);
+        }
+        catch(const std::exception& _error){
+            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
+        }
     }
 
 };
@@ -43,6 +96,7 @@ public:
 
     float AsFloat(){return value;}
     bool IsNull(){return false;}
+    bool IsFloat(){return true;}
 
     cJSON* GetObject(){
         cJSON* self = cJSON_CreateNumber(value);
@@ -58,6 +112,7 @@ public:
 
     std::string AsString(){return value;}
     bool IsNull(){return false;}
+    bool IsString(){return true;}
 
     cJSON* GetObject(){
         cJSON* self = cJSON_CreateString(value.c_str());
@@ -72,6 +127,7 @@ public:
 
     std::vector<gc::Json*> AsArray(){return array;}
     bool IsNull(){return false;}
+    bool IsArray(){return true;}
 
     void OnMark(){
         alive = true;
@@ -98,6 +154,7 @@ public:
     std::map<std::string,gc::Json*> AsMap(){return map;}
     gc::JsonMap* AsJsonMap(){return this;}
     bool IsNull(){return false;}
+    bool IsMap(){return true;}
 
     void OnMark(){
         alive = true;
@@ -160,54 +217,6 @@ public:
         return self;
     }
 
-    std::string GetJsonAsString(){
-        cJSON* json_obj = GetObject();
-
-        char* json_as_string = cJSON_Print(json_obj);
-
-        std::string string_to_return = json_as_string;
-
-        free(json_as_string);
-
-        cJSON_Delete(json_obj);
-
-        return std::string(string_to_return);
-    }
-
-    std::string GetJsonAsUnformattedString(){
-        cJSON* json_obj = GetObject();
-
-        char* json_as_string = cJSON_PrintUnformatted(json_obj);
-
-        std::string string_to_return = json_as_string;
-
-        free(json_as_string);
-
-        cJSON_Delete(json_obj);
-
-        return std::string(string_to_return);
-    }
-
-    void WriteUnformatted(const std::string& _path){
-        std::string json_as_string = GetJsonAsUnformattedString();
-        try{
-            FileSystem::Write(_path, json_as_string);
-        }
-        catch(const std::exception& _error){
-            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
-        }
-    }
-
-    void Write(const std::string& _path){
-        std::string json_as_string = GetJsonAsString();
-        try{
-            FileSystem::Write(_path, json_as_string);
-        }
-        catch(const std::exception& _error){
-            Console::PrintLine("ufo::gc::JsonMap: Something went wrong writing json to path", _path, _error.what());
-        }
-    }
-
 };
 
 class FaultyJsonMap : public JsonMap{
@@ -221,6 +230,9 @@ gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member);
 
 gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path);
 
-}
+void TryAsString(std::string& _variable, Json*& _json, const std::string& _location);
+void TryAsFloat(float& _variable, Json*& _json, const std::string& _location);
+void TryAsArray(std::vector<Json*>& _variable, Json*& _json, const std::string& _location);
+void TryAsMap(std::map<std::string,Json*>& _variable, Json*& _json, const std::string& _location);
 
 }
