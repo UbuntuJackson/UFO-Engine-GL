@@ -121,6 +121,11 @@ olc::Pixel Texture2D::GetPixel(Vector2i _position){
     return olc::Pixel(pixel_data[i],pixel_data[i+1],pixel_data[i+2],pixel_data[i+3]);
 }
 
+olc::Pixel Texture2D::GetPixel(int _x, int _y){
+
+    return GetPixel(Vector2i(_x, _y));
+}
+
 void Texture2D::SetPixel(Vector2i _position, const olc::Pixel& _colour){
     if(_position.x < 0 || _position.x > width || _position.y < 0 || _position.y > height) return;
     int colour_start = _position.x*4+width*4*(_position.y);
@@ -128,6 +133,10 @@ void Texture2D::SetPixel(Vector2i _position, const olc::Pixel& _colour){
     pixel_data[colour_start+1] = _colour.g;
     pixel_data[colour_start+2] = _colour.b;
     pixel_data[colour_start+3] = _colour.a;
+}
+
+void Texture2D::SetPixel(int _x, int _y,const olc::Pixel& _colour){
+    SetPixel(Vector2i(_x, _y), _colour);
 }
 
 void Texture2D::Bind(){

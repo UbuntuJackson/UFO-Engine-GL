@@ -35,7 +35,9 @@ public:
     void Generate(unsigned int _width, unsigned int _height, unsigned char* _data);
 
     olc::Pixel GetPixel(Vector2i _position);
+    olc::Pixel GetPixel(int _x, int _y);
     void SetPixel(Vector2i _position, const olc::Pixel& _colour);
+    void SetPixel(int _x, int _y, const olc::Pixel& _colour);
 
     void Bind();
 
