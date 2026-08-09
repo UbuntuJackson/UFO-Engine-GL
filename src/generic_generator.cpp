@@ -47,7 +47,7 @@ void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_direct
 
     if(!FileSystem::FileExists(structured_classes_full_path)) return;
 
-    ufo::gc::JsonMap* j_structured_classes = gc::JsonRead(&gc, structured_classes_full_path);
+    ufo::gc::JsonMap* j_structured_classes = gc::JsonReadMap(&gc, structured_classes_full_path);
 
     if(j_structured_classes->IsNull()) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "j_structured_classes is invalid");
 
@@ -76,7 +76,7 @@ void GenericGenerator::InitialiseActorClassJsons(const std::string& _game_direct
 
                     if(ufo::FileSystem::FileExists(_game_directory+"/"+actor_config_path)){
 
-                        const auto& actor_config_json = gc::JsonRead(&gc, _game_directory+"/"+actor_config_path)->AsMap().at("actors")->AsArray();
+                        const auto& actor_config_json = gc::JsonReadMap(&gc, _game_directory+"/"+actor_config_path)->AsMap().at("actors")->AsArray();
 
                         for(const auto actor_json : actor_config_json){
                             if(actor_json->AsMap().at("name")->AsString() == "Main"){

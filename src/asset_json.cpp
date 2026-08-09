@@ -9,7 +9,7 @@
 namespace ufo{
 
 void AssetJson::Read(const std::string& _path, const std::string& _opened_directory_path, OpenGLv4_5_AssetManager* _asset_manager, ufo::Engine* _engine){
-    auto j = ufo::gc::JsonRead(&gc, _path);
+    auto j = ufo::gc::JsonReadMap(&gc, _path);
 
     if(j->map.count("assets")){
         auto arr_textures = j->map.at("assets")->AsArray();

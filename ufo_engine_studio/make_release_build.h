@@ -52,13 +52,13 @@ inline void MakeReleaseBuild(const std::string& _development_build_directory, co
             if(ufo::FileSystem::HasExtension(entry_name, "ason")){
                 Console::PrintLine("Copying entry", ufo::FileSystem::GetFilenameFromPath(directory_entry.path().generic_string()));
                 //std::filesystem::copy(directory_entry.path().c_str(),release_build_file_path);
-                auto shared_json = ufo::SharedMemory::JsonRead(directory_entry.path().generic_string());
+                auto shared_json = ufo::SharedMemory::JsonReadMap(directory_entry.path().generic_string());
                 if(!shared_json->IsNull()) shared_json->WriteUnformatted(release_build_file_path);
             }
             if(ufo::FileSystem::HasExtension(entry_name, "json")){
                 Console::PrintLine("Copying entry", ufo::FileSystem::GetFilenameFromPath(directory_entry.path().generic_string()));
                 //std::filesystem::copy(directory_entry.path().c_str(),release_build_file_path);
-                auto shared_json = ufo::SharedMemory::JsonRead(directory_entry.path().generic_string());
+                auto shared_json = ufo::SharedMemory::JsonReadMap(directory_entry.path().generic_string());
                 if(!shared_json->IsNull()) shared_json->WriteUnformatted(release_build_file_path);
             }
             if(ufo::FileSystem::HasExtension(entry_name, "png")){

@@ -73,7 +73,7 @@ void Engine::InitIndependant(){
         class SettingsReader : public ufo::gc::Root{
             public:
             void Read(const std::string& _path, std::string& _window_title, bool& _v_sync, bool& _multi_player, unsigned int& _game_width, unsigned int& _game_height){
-                auto j_settings = gc::JsonRead(&gc, _path);
+                auto j_settings = gc::JsonReadMap(&gc, _path);
 
                 if(!j_settings->map.count("vsync")) j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(0.0f);
                 if(!j_settings->map.count("multi_player")) j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(0.0f);

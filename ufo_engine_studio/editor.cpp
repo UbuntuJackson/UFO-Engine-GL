@@ -96,7 +96,7 @@ void Editor::OpenFolder(std::string _path){
     active_tab = nullptr;
 
     if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
-        auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
+        auto j_settings = ufo::gc::JsonReadMap(&gc, opened_directory_path+"/settings.json");
         try{
             ProjectSettings default_settings;
 
@@ -163,7 +163,7 @@ Editor::Load(){
     json_config->Write("../editor_config.json");*/
 
     if(ufo::FileSystem::FileExists("../editor_config.json")){
-        ufo::gc::JsonMap* json_config = ufo::gc::JsonRead(&gc, "../editor_config.json");
+        ufo::gc::JsonMap* json_config = ufo::gc::JsonReadMap(&gc, "../editor_config.json");
         if(json_config->map.count("recently_opened")) for(const auto& recently_opened_path : json_config->map.at("recently_opened")->AsArray()){
             if(ufo::FileSystem::FileExists(recently_opened_path->AsString())) recently_opened.insert(recently_opened_path->AsString());
         }
@@ -630,7 +630,7 @@ void Editor::OnUpdate(float _delta_time){
 
         if(ImGui::Button("Apply & Save")){
             if(ufo::FileSystem::FileExists(opened_directory_path+"/settings.json")){
-                auto j_settings = ufo::gc::JsonRead(&gc, opened_directory_path+"/settings.json");
+                auto j_settings = ufo::gc::JsonReadMap(&gc, opened_directory_path+"/settings.json");
                 try{
                     if(!j_settings->map.count("vsync")) j_settings->map["vsync"] = gc.New<ufo::gc::JsonNumber>(0.0f);
                     if(!j_settings->map.count("multi_player")) j_settings->map["multi_player"] = gc.New<ufo::gc::JsonNumber>(0.0f);
@@ -807,7 +807,7 @@ void Editor::ReloadSpawnableActorMap(){
 
     if(!ufo::FileSystem::FileExists(structured_classes_full_path)) return;
 
-    auto exported_actors_json = ufo::gc::JsonRead(&gc, structured_classes_full_path);
+    auto exported_actors_json = ufo::gc::JsonReadMap(&gc, structured_classes_full_path);
 
     if(exported_actors_json->IsNull()){
         Console::PrintLine("[UFO-Engine Studio] Warning: Could not find file with exported actors",opened_directory_path+"/structured_classes.json");

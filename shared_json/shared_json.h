@@ -33,6 +33,8 @@ namespace ufo::SharedMemory{
 
     };
 
+    std::shared_ptr<Json> GetJson(cJSON* _obj);
+
     class JsonNumber : public Json{
     public:
         float value = 0;
@@ -196,10 +198,16 @@ namespace ufo::SharedMemory{
         bool IsNull() override{return true;}
     };
 
+    class FaultyJson : public Json{
+    public:
+        bool IsNull() override{return true;}
+    };
+
     std::shared_ptr<JsonMap> GetDictionaryAsTree(cJSON* _obj);
 
     std::shared_ptr<JsonArray> cJSON_ToArray(cJSON* member);
 
-    std::shared_ptr<JsonMap> JsonRead(std::string _path);
+    std::shared_ptr<JsonMap> JsonReadMap(std::string _path);
+    std::shared_ptr<Json> JsonRead(std::string _path);
 
 }

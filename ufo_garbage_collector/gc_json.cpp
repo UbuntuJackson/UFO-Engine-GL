@@ -129,7 +129,7 @@ gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member){
     return arr;
 }
 
-gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path){
+gc::JsonMap* JsonReadMap(GarbageCollector* _gc,std::string _path){
     std::string s = FileSystem::Read(_path);
     cJSON* member = ujson::JsonParse(s);
 
@@ -140,6 +140,21 @@ gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path){
     }
     else Console::PrintLine("[!]", "[Json::JsonRead()]","Json loaded successfully", _path);
     gc::JsonMap* j = GetDictionaryAsTree(_gc,member);
+    cJSON_Delete(member);
+    return j;
+}
+
+gc::Json* JsonRead(GarbageCollector* _gc,std::string _path){
+    std::string s = FileSystem::Read(_path);
+    cJSON* member = ujson::JsonParse(s);
+
+    if(!member){
+
+        Console::PrintLine("[!]", "[Json::JsonRead()]" ,"Could not load json from path:", _path);
+        return _gc->New<gc::FaultyJson>();
+    }
+    else Console::PrintLine("[!]", "[Json::JsonRead()]","Json loaded successfully", _path);
+    gc::Json* j = ufo::gc::GetJson(_gc,member);
     cJSON_Delete(member);
     return j;
 }

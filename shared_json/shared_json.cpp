@@ -9,6 +9,34 @@
 
 namespace ufo::SharedMemory{
 
+std::shared_ptr<Json> GetJson(cJSON* _obj){
+
+    std::shared_ptr<Json> json_obj = nullptr;
+
+    if(cJSON_IsNumber(_obj)){
+        json_obj = std::make_shared<JsonNumber>(_obj->valuedouble);
+    }
+
+    if(cJSON_IsBool(_obj)){
+        json_obj = std::make_shared<JsonNumber>(_obj->valueint);
+    }
+
+    if(cJSON_IsString(_obj)){
+        json_obj = std::make_shared<JsonString>(_obj->valuestring);
+    }
+
+    if(cJSON_IsObject(_obj)){
+        json_obj = GetDictionaryAsTree(_obj);
+    }
+
+    if(cJSON_IsArray(_obj)){
+        json_obj = cJSON_ToArray(_obj);
+    }
+
+    return json_obj;
+
+}
+
 std::shared_ptr<JsonMap> GetDictionaryAsTree(cJSON* _obj){
 
     std::shared_ptr<JsonMap> json_map = std::make_shared<JsonMap>();
@@ -97,7 +125,7 @@ std::shared_ptr<JsonArray> cJSON_ToArray(cJSON* member){
     return arr;
 }
 
-std::shared_ptr<JsonMap> JsonRead(std::string _path){
+std::shared_ptr<JsonMap> JsonReadMap(std::string _path){
     std::string s = FileSystem::Read(_path);
     cJSON* member = ujson::JsonParse(s);
 
@@ -108,6 +136,21 @@ std::shared_ptr<JsonMap> JsonRead(std::string _path){
     }
     else Console::PrintLine("[!]", "[Json::JsonRead()]","Json loaded successfully", _path);
     std::shared_ptr<JsonMap> j = GetDictionaryAsTree(member);
+    cJSON_Delete(member);
+    return j;
+}
+
+std::shared_ptr<Json> JsonRead(std::string _path){
+    std::string s = FileSystem::Read(_path);
+    cJSON* member = ujson::JsonParse(s);
+
+    if(!member){
+
+        Console::PrintLine("[!]", "[Json::JsonRead()]" ,"Could not load json from path:", _path);
+        return std::make_unique<FaultyJson>();
+    }
+    else Console::PrintLine("[!]", "[Json::JsonRead()]","Json loaded successfully", _path);
+    std::shared_ptr<Json> j = GetJson(member);
     cJSON_Delete(member);
     return j;
 }

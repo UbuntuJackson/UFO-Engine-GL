@@ -226,11 +226,18 @@ public:
      bool IsNull() override {return true;}
 };
 
+class FaultyJson : public Json{
+public:
+     bool IsNull() override {return true;}
+};
+
 gc::JsonMap* GetDictionaryAsTree(ufo::GarbageCollector* _gc, cJSON* _obj);
 
 gc::JsonArray* cJSON_ToArray(ufo::GarbageCollector* _gc, cJSON* member);
 
-gc::JsonMap* JsonRead(GarbageCollector* _gc,std::string _path);
+gc::JsonMap* JsonReadMap(GarbageCollector* _gc,std::string _path);
+
+gc::Json* JsonRead(GarbageCollector* _gc,std::string _path);
 
 void TryAsString(std::string& _variable, Json*& _json, const std::string& _location);
 void TryAsFloat(float& _variable, Json*& _json, const std::string& _location);

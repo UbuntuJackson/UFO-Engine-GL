@@ -84,7 +84,7 @@ namespace UFOEngineStudio{
 
             //If the file is a level file
             if(ufo::FileSystem::HasExtension(path+"/"+file_name, "ason")){
-                ufo::gc::JsonMap* level_json = ufo::gc::JsonRead(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
+                ufo::gc::JsonMap* level_json = ufo::gc::JsonReadMap(&(_editor->gc), _editor->opened_directory_path+path+"/"+file_name);
 
                 if(!level_json->IsNull()){
 

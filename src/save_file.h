@@ -20,7 +20,7 @@ public:
     }
 
     void Load(){
-        if(ufo::FileSystem::FileExists(save_file_path)) OnLoad(ufo::gc::JsonRead(&gc,save_file_path));
+        if(ufo::FileSystem::FileExists(save_file_path)) OnLoad(ufo::gc::JsonReadMap(&gc,save_file_path));
     }
 
     void Save(){
