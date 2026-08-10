@@ -396,9 +396,21 @@ std::unique_ptr<Actor> GenericGenerator::SpawnAtRuntime(const std::string& _clas
 
 	    std::unique_ptr<Actor> instance = runtime_factory_map.at(_class_name)(_local_position);
 
-		if(actor_jsons_with_unaltered_default_properties.count(_class_name)){
+		instance->class_name = _class_name;
 
-		    instance->OnLoadDefaultProperties(actor_jsons_with_unaltered_default_properties.at(GetBaseClassOf(_class_name)));
+		if(instance->class_name != instance->base_class_name && actor_jsons_with_unaltered_default_properties.count(_class_name)){
+		    //If it's not a custom class, then there's no point in doing anything. Just spawn a new default instance of the built-in class
+			// Also if it doesn't have a class json either, then same can be done. It just means it doesn't have components
+      		ufo::gc::JsonMap* class_json = actor_jsons_with_unaltered_default_properties.at(instance->class_name);
+
+            instance->engine = engine;
+      		instance->OnLoadDefaultProperties(class_json);
+
+            for(const auto& j_actor : class_json->AsMap().at("actors")->AsArray()){
+                instance->AddActorUniquePtr(FromJsonInGame(j_actor->AsJsonMap()));
+            }
+
+		    instance->OnLoadDefaultProperties(actor_jsons_with_unaltered_default_properties.at(_class_name));
 		}
 
 		return instance;
