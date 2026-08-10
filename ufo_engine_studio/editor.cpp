@@ -32,6 +32,7 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../src/animation_cluster.h"
 #include "imgui_utils.h"
+#include "../external/IconsFontAwesome7.h"
 
 #include <spawn.h>
 #include <fcntl.h>
@@ -334,7 +335,7 @@ void Editor::OnUpdate(float _delta_time){
 
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("File"))
+        if (ImGui::BeginMenu((std::string("File")+ICON_FA_FILE).c_str()))
         {
 
             if (ImGui::BeginMenu("Open Recent"))

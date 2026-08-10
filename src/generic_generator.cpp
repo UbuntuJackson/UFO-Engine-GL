@@ -110,6 +110,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+	runtime_factory_map.emplace(
+        "ufo::Actor",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Actor>(_local_position);
+            return std::move(instance);
+        }
+    );
+
 	factory_map.emplace(
         "ufo::AnimationCluster",
         [](ufo::gc::JsonMap* _json){
@@ -117,6 +125,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::AnimationCluster>(Vector2f(_x, _y));
             return instance;
+        }
+    );
+
+	runtime_factory_map.emplace(
+        "ufo::AnimationCluster",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::AnimationCluster>(_local_position);
+            return std::move(instance);
         }
     );
 
@@ -130,6 +146,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+    runtime_factory_map.emplace(
+        "ufo::CollisionGrid",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::CollisionGrid>(_local_position);
+            return std::move(instance);
+        }
+    );
+
     factory_map.emplace(
         "ufo::PlatformerRectangleCollision",
         [](ufo::gc::JsonMap* _json){
@@ -140,20 +164,29 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+    runtime_factory_map.emplace(
+        "ufo::PlatformerRectangleCollision",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::PlatformerRectangleCollision>(_local_position);
+            return std::move(instance);
+        }
+    );
+
     factory_map.emplace(
         "ufo::TileMap",
         [](ufo::gc::JsonMap* _json){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::TileMap>(Vector2f(_x, _y));
-
-            try{
-                instance->OnLoadDefaultProperties(_json);
-
-            } catch(const std::exception& _error){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing TileMap instance", _error.what());
-            }
             return instance;
+        }
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::TileMap",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::TileMap>(_local_position);
+            return std::move(instance);
         }
     );
 
@@ -163,16 +196,15 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             float _x = _json->map.at("x")->AsFloat();
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Text>(Vector2f(_x, _y));
-
-            try{
-                for(auto& [k,v] : _json->map.at("language_to_text")->AsMap()){
-                    instance->language_to_text[k] = v->AsString();
-                }
-                instance->is_wrapping = (bool)_json->map.at("is_wrapping")->AsFloat();
-            } catch(const std::exception& _error){
-                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error finding attribute in json representing Text instance", _error.what());
-            }
             return instance;
+        }
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::Text",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Text>(_local_position);
+            return std::move(instance);
         }
     );
 
@@ -184,6 +216,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             float _y = _json->map.at("y")->AsFloat();
             auto instance = std::make_unique<ufo::Button>(Vector2f(_x, _y));
             return instance;
+        }
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::Button",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Button>(_local_position);
+            return std::move(instance);
         }
     );
 
@@ -199,6 +239,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+    runtime_factory_map.emplace(
+        "ufo::Widget",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Widget>(_local_position);
+            return std::move(instance);
+        }
+    );
+
     factory_map.emplace(
         "ufo::Camera",
         [](ufo::gc::JsonMap* _json){
@@ -211,6 +259,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+    runtime_factory_map.emplace(
+        "ufo::Camera",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Camera>(_local_position);
+            return std::move(instance);
+        }
+    );
+
     factory_map.emplace(
         "ufo::Level",
         [](ufo::gc::JsonMap* _json){
@@ -218,6 +274,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             auto instance = std::make_unique<Level>();
 
             return instance;
+        }
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::Level",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Level>();
+            return std::move(instance);
         }
     );
 
@@ -244,7 +308,15 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
 
             return instance;
         }
-        );
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::Sprite",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Sprite>(_local_position);
+            return std::move(instance);
+        }
+    );
 
     factory_map.emplace(
         "ufo::Animation",
@@ -256,6 +328,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
                	Vector2f(_x, _y));
 
             return instance;
+        }
+    );
+
+    runtime_factory_map.emplace(
+        "ufo::Animation",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::Animation>(_local_position);
+            return std::move(instance);
         }
     );
 
@@ -272,6 +352,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
         }
     );
 
+    runtime_factory_map.emplace(
+        "ufo::BackgroundSprite",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::BackgroundSprite>(_local_position);
+            return std::move(instance);
+        }
+    );
+
     factory_map.emplace(
         "ufo::RectangularArea",
         [](ufo::gc::JsonMap* _json){
@@ -284,6 +372,14 @@ void GenericGenerator::Initialise(ufo::Engine* _engine){
             return instance;
         }
     );
+
+    runtime_factory_map.emplace(
+        "ufo::RectangularArea",
+        [](Vector2f _local_position){
+            auto instance = std::make_unique<ufo::RectangularArea>(_local_position);
+            return std::move(instance);
+        }
+    );
 }
 
 std::unique_ptr<Actor> GenericGenerator::JsonToActorTree([[maybe_unused]] ufo::GarbageCollector* _gc, ufo::gc::JsonMap* _json){
@@ -294,20 +390,28 @@ std::unique_ptr<Actor> GenericGenerator::JsonToActorTree([[maybe_unused]] ufo::G
 
 }
 
-#ifdef UFO_ENGINE_STUDIO
-
 //Not done yet
 std::unique_ptr<Actor> GenericGenerator::SpawnAtRuntime(const std::string& _class_name, Vector2f _local_position){
-    if(factory_map_runtime.count(GetBaseClassOf(_class_name))){
+    if(runtime_factory_map.count(_class_name)){
 
-	    std::unique_ptr<Actor> instance = factory_map_runtime.at(GetBaseClassOf(_class_name))(_local_position);
+	    std::unique_ptr<Actor> instance = runtime_factory_map.at(_class_name)(_local_position);
+
+		if(actor_jsons_with_unaltered_default_properties.count(_class_name)){
+
+		    instance->OnLoadDefaultProperties(actor_jsons_with_unaltered_default_properties.at(GetBaseClassOf(_class_name)));
+		}
 
 		return instance;
     }
 
+    Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, could not spawn class",_class_name,"from runtime_factory_map");
 
-    throw;
+    throw std::runtime_error(
+        std::string(__UFO_PRETTY_FUNCTION__)+" Error, could not spawn class"+_class_name+"from runtime_factory_map"
+    );
 }
+
+#ifdef UFO_ENGINE_STUDIO
 
 std::unique_ptr<Actor> GenericGenerator::FromJson(ufo::gc::JsonMap* _json){
     std::string class_name = _json->map.at("class_name")->AsString();

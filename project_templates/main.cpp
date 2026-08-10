@@ -26,7 +26,7 @@ int main(int _arg_count, char** _arg_variables){
     }
 
     if(start_scene == "" && ufo::FileSystem::FileExists("../settings.json")){
-        auto shared_json_settings = ufo::SharedMemory::JsonRead("../settings.json");
+        auto shared_json_settings = ufo::SharedMemory::JsonReadMap("../settings.json");
         if(shared_json_settings->map.count("start_level")){
             shared_json_settings->TryToGetValueAsString("start_level", start_scene, std::string(__UFO_PRETTY_FUNCTION__)+" Error, could not find start_scene");
             if(start_scene != "") start_scene= "../"+start_scene;
