@@ -276,6 +276,10 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
             if(editor->handle_to_cout_file_descriptor != -1) ImGui::Text("%s","Process ongoing...");
             else ImGui::Text("%s","No ongoing process.");
 
+            #ifdef WIN32
+            ImGui::Text("Windows version of output view not implemented.");
+            #endif
+
             ImGui::BeginChild("Game Output###LevelEditorTabGame OutputChildWindow");
 
             bool added_to_log = false;

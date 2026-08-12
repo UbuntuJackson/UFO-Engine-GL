@@ -906,13 +906,46 @@ bool TileMap::OnEndUndoRedoAction(UFOEngineStudio::LevelEditorTab* _level_editor
 
 void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngineStudio::LevelEditorTab* _level_editor_tab){
 
+
+
     /*if(_level_editor_tab->actor_dedicated_to_viewport != ufo::Maths::NULL_ID){
         if(level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent){
             if(level->actors_with_stable_id.at(_level_editor_tab->actor_dedicated_to_viewport)->parent->GetTileMap() != this) return;
 
         }
     }*/
-    if(_level_editor_tab->actor_dedicated_to_viewport_id != editor_id && _level_editor_tab->inspected_actor_id != editor_id) return;
+
+    //Trying to show grid only off of
+    if(_level_editor_tab->inspected_actor_id != ufo::Maths::NULL_ID){
+        if(!level->actors_with_stable_id.at(_level_editor_tab->inspected_actor_id)->GetTileMap()) return;
+        if(editor_id != level->actors_with_stable_id.at(_level_editor_tab->inspected_actor_id)->GetTileMap()->editor_id) return;
+    }
+    else return;
+
+    {
+        Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
+        Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
+
+        ImU32 colour = 0x66777755;
+
+        for(int rr = 0; rr < number_of_rows; rr++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
+
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        for(int cc = 0; cc < number_of_columns; cc++){
+            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
+            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
+
+            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
+        }
+
+        ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
+    }
+
+    //if(_level_editor_tab->inspected_actor_id != editor_id) return;
 
     world_mouse = level->active_camera_handles.back()->TransformScreenToWorld(_level_editor_tab->mouse_position_over_screenspace);
 
@@ -986,29 +1019,6 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
             //level->tileset_manager.tilemap_selected_tiles.clear();
             _level_editor_tab->current_tool = UFOEngineStudio::LevelEditorTab::Tools::TILE_MAP_RECTANGLE_SELECTION_RESIZE;
         }
-    }
-
-    {
-        Vector2f bounds_min = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition());
-        Vector2f bounds_max = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, number_of_rows*tile_height));
-
-        ImU32 colour = 0x66777755;
-
-        for(int rr = 0; rr < number_of_rows; rr++){
-            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(0.0f, rr*tile_height));
-            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(number_of_columns*tile_width, rr*tile_height));
-
-            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
-        }
-
-        for(int cc = 0; cc < number_of_columns; cc++){
-            Vector2f line_start_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, 0.0f));
-            Vector2f line_end_screen_space = _level_editor_tab->TranslateToEditorScreenSpace(GetGlobalPosition()+Vector2f(cc*tile_width, number_of_rows*tile_height));
-
-            ImGui::GetWindowDrawList()->AddLine(ImVec2(line_start_screen_space.x, line_start_screen_space.y), ImVec2(line_end_screen_space.x, line_end_screen_space.y), colour);
-        }
-
-        ImGui::GetWindowDrawList()->AddRect(ImVec2(bounds_min.x,bounds_min.y), ImVec2(bounds_max.x,bounds_max.y), colour, 1.0f,ImDrawFlags_RoundCornersAll);
     }
 
     //Draw selection

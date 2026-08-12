@@ -31,6 +31,10 @@ Animation::Animation(Vector2f _local_position) : Sprite(_local_position, "placeh
 
 }
 
+int Animation::GetCycleCount(){
+    return (int)(current_frame_index/number_of_frames);
+}
+
 void Animation::SetCostume(const std::string& _configuration_key){
     // If the key does not exist in the asset manager, then this code will just fail silently. That's pretty bad.
 
@@ -65,7 +69,12 @@ void Animation::SetCostume(const std::string& _configuration_key){
     }
 }
 
-void Animation::AddCostume(std::string _key, olc::vf2d _local_position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index, float _animation_speed){
+void Animation::ChangeCostume(const std::string& _configuration_key){
+    if(_configuration_key == texture_key) return;
+    SetCostume(_configuration_key);
+}
+
+void Animation::AddCostume(const std::string& _key, olc::vf2d _local_position, olc::vf2d _offset, olc::vf2d _frame_size, olc::vf2d _scale, float _rotation, float _frame_index, float _animation_speed){
     Costume costume = {
         _key,
         _local_position,

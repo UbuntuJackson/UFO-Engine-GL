@@ -30,7 +30,7 @@
 #include "../imgui/imgui.h"
 #include "../imgui/backends/imgui_impl_opengl3.h"
 #include "../imgui/backends/imgui_impl_sdl3.h"
-#include "../external/IconsFontAwesome7.h"
+//#include "../external/IconsFontAwesome7.h"
 #endif
 
 namespace ufo{
@@ -352,11 +352,10 @@ void Engine::StartWithImGui(){
     //io.Fonts->AddFontFromFileTTF("/etc/alternatives/fonts-japanese-mincho.ttf");
 
     io.Fonts->AddFontFromFileTTF("../UFO-Engine/res/fonts-japanese-gothic.ttf", 12);
-    ImFontConfig font_config;
+    /*ImFontConfig font_config;
     font_config.MergeMode = true;
     font_config.GlyphMinAdvanceX = 12;
-    static const ImWchar icon_ranges[] = {ICON_MIN_FA, ICON_MAX_FA, 0};
-    auto font = io.Fonts->AddFontFromFileTTF("../UFO-Engine/res/OpenFontIcons.ttf", 12, &font_config);
+    auto font = io.Fonts->AddFontFromFileTTF("../UFO-Engine/res/Font Awesome 7 Free-Regular-400.otf", 12, &font_config);*/
 
     //io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\segoeui.ttf");
     //io.Fonts->AddFontFromFileTTF("../../misc/fonts/DroidSans.ttf");

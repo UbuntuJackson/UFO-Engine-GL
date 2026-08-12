@@ -45,10 +45,14 @@ public:
 
     Animation(Vector2f _local_position);
 
+    int GetCycleCount();
+
     void SetCostume(const std::string& _costume_key);
 
+    void ChangeCostume(const std::string& _configuration_key);
+
     void AddCostume(
-        std::string _key,
+        const std::string& _key,
         olc::vf2d _local_position,
         olc::vf2d _offset,
         olc::vf2d _frame_size,

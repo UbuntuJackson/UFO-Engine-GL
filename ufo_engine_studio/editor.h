@@ -140,9 +140,11 @@ public:
 void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path);
 void DebugGame(const std::string& _build_directory, const std::string& _opened_directory_path);
 void RunGame(const std::string& _build_directory, const std::string& _opened_directory_path);
-void PosixSpawnGamePipe();
+#ifndef WIN32
 void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor);
 void PosixSpawnBuildProcess(Editor* _editor, int& _handle_to_cout_file_descriptor);
+#endif
+
 void PrepareBuildUtilities(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path);
 
 }

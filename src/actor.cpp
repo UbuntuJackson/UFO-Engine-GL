@@ -16,6 +16,7 @@
 #include "../ufo_garbage_collector/object.h"
 #include "../utils/conversion.h"
 #include "ufo_macros.h"
+#include "engine.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/advanced_actor_spawner.h"
@@ -689,6 +690,18 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
             is_selectable = !is_selectable;
         }
     }
+
+    //Experimenting with imagebutton, commented out for now
+    /*ImGui::SameLine();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, { 2, 2 });
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f);
+
+    if(ImGui::ImageButton(std::string("Test###ActorImgButton"+std::to_string(editor_id)).c_str(),engine->asset_manager.textures.at("actor_icon").id,ImVec2(14.0f, 14.0f), ImVec2(0, 0), ImVec2(1, 1))){
+
+    }
+    ImGui::PopStyleVar();
+    ImGui::PopStyleVar();*/
 
     if(tree_node_opened){
 

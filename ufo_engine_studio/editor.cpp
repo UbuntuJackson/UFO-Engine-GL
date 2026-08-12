@@ -32,8 +32,9 @@
 #include "../ufo_garbage_collector/gc_json.h"
 #include "../src/animation_cluster.h"
 #include "imgui_utils.h"
-#include "../external/IconsFontAwesome7.h"
+//#include "../external/IconsFontAwesome7.h"
 
+#ifndef WIN32
 #include <spawn.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -41,6 +42,7 @@
 #include <unistd.h>
 #include <poll.h>
 #include <sys/wait.h>
+#endif
 
 namespace UFOEngineStudio{
 
@@ -310,14 +312,16 @@ void Editor::OnUpdate(float _delta_time){
     ImGui::End();
 
     if(will_compile_game){
-
         const std::string build_directory = opened_directory_path + "/build";
-        //std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
-        //t.detach();
+        #ifdef WIN32
+        std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
+        t.detach();
+        #else
         PrepareBuildUtilities(this, build_directory, opened_directory_path);
         PosixSpawnBuildProcess(this, handle_to_cout_file_descriptor);
 
         will_compile_game = false;
+        #endif
     }
 
 
@@ -335,7 +339,7 @@ void Editor::OnUpdate(float _delta_time){
 
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu((std::string("File")+ICON_FA_FILE).c_str()))
+        if (ImGui::BeginMenu((std::string("File")).c_str()))
         {
 
             if (ImGui::BeginMenu("Open Recent"))
@@ -408,12 +412,13 @@ void Editor::OnUpdate(float _delta_time){
                 }
 
                 if(ImGui::MenuItem("Run Game")){
+                    #ifndef WIN32
                     PosixSpawnGame(this, handle_to_cout_file_descriptor);
-                    //game_log_buffer = char[10000];
-                    //game_log_buffer_size = 0;
-                    //const std::string build_directory = opened_directory_path+"/build";
-                    //std::thread t(&PosixSpawnGame, this, std::ref(handle_to_cout_file_descriptor));
-                    //t.detach();
+                    #else
+                    const std::string build_directory = opened_directory_path+"/build";
+                    std::thread t(&PosixSpawnGame, this, std::ref(handle_to_cout_file_descriptor));
+                    t.detach();
+                    #endif
                 }
 
                 if(ImGui::MenuItem("Settings")){
@@ -504,7 +509,7 @@ void Editor::OnUpdate(float _delta_time){
                 }
 
             }
-            {
+            if(new_c_plus_plus_class_has_component_tree){
                 const std::string replace_by = "// ufo_actor_config(\"my_actor.ason\")";
                 const std::string ason_file_name = file_name+".ason";
 
@@ -580,12 +585,14 @@ void Editor::OnUpdate(float _delta_time){
             tabs.back()->path = file_name+".ufo.h";
             tabs.push_back(std::make_unique<TextEditorTab>(template_file_source,this,true));
             tabs.back()->path = file_name+".cpp";
-            std::unique_ptr<LevelEditorTab> u_level_tab = std::make_unique<LevelEditorTab>(engine, this,true);
+            if(new_c_plus_plus_class_has_component_tree){
+                std::unique_ptr<LevelEditorTab> u_level_tab = std::make_unique<LevelEditorTab>(engine, this,true);
 
-            engine->loaded_levels_for_editor.push_back(std::make_unique<ufo::Level>());
+                engine->loaded_levels_for_editor.push_back(std::make_unique<ufo::Level>());
 
-            u_level_tab->Initialise(engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>(), file_name+".ason");
-            tabs.push_back(std::move(u_level_tab));
+                u_level_tab->Initialise(engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>(), file_name+".ason");
+                tabs.push_back(std::move(u_level_tab));
+            }
 
             is_creating_new_c_plus_plus_class = false;
             input_class_name = "";
@@ -669,6 +676,12 @@ void Editor::OnUpdate(float _delta_time){
                 j_settings->Write(opened_directory_path+"/settings.json");
             }
             project_settings_open = false;
+
+            //#ifdef WIN32
+
+            ufo::FileSystem::Write(opened_directory_path+"/build.bat","cd build && "+project_settings.compile_command);
+
+            //#endif
         }
 
         ImGui::SameLine();
@@ -1020,6 +1033,7 @@ void Editor::OnMark() {
     }
 }
 
+#ifndef WIN32
 void PosixSpawnBuildProcess(Editor* _editor, int& _handle_to_cout_file_descriptor){
 
     const int WRITE = 0;
@@ -1115,6 +1129,7 @@ void PosixSpawnGame(Editor* _editor, int& _handle_to_cout_file_descriptor){
     _handle_to_cout_file_descriptor = cout_pipe[WRITE];
 
 }
+#endif
 
 void PrepareBuildUtilities(Editor* _editor, const std::string& _build_directory, const std::string& _opened_directory_path){
     try{
