@@ -113,6 +113,8 @@ public:
     //When the tab is open this runs
     void OnActive(ImGuiID _local_dockspace_id , Editor* _editor, float _delta_time);
 
+    void MoveActors();
+
     void PlaceInActor(ufo::Actor* _place_inside_actor);
     void PlaceActors();
     void SelectionUpdate();

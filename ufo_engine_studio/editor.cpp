@@ -12,6 +12,7 @@
 #include <string>
 #include <camera.h>
 #include <filesystem>
+#include <functional>
 #include "SDL3/SDL_dialog.h"
 #include "console.h"
 #include "error_dialogue.h"
@@ -275,7 +276,8 @@ void Editor::OnUpdate(float _delta_time){
         spawnable_actor_map.clear();
 #ifdef __MINGW32__
         Console::PrintLine("__MINGW32__");
-        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd "++ std::filesystem::current_path().generic_string()+"/UFO-Engine/header_tool && " + std::filesystem::current_path().generic_string() + "/build/python.exe "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
+        std::string engine_executable_directory = std::filesystem::current_path().generic_string();
+        [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd "+engine_executable_directory+"/../UFO-Engine/header_tool && " + engine_executable_directory + "/python.exe "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 #else
         [[maybe_unused]] int execution_fail = std::system(std::string(std::string("cd ../UFO-Engine/header_tool && python3 "+header_tool_parser + " ")+std::string("\"")+opened_directory_path+std::string("\"")).c_str());
 #endif
@@ -316,15 +318,14 @@ void Editor::OnUpdate(float _delta_time){
         #ifdef WIN32
         std::thread t(&BuildAndRunProgram, this, build_directory, opened_directory_path);
         t.detach();
+        will_compile_game = false;
         #else
         PrepareBuildUtilities(this, build_directory, opened_directory_path);
         PosixSpawnBuildProcess(this, handle_to_cout_file_descriptor);
-
-        will_compile_game = false;
         #endif
     }
 
-
+#ifndef WIN32
     {
         if(current_process_id != -1){
             int exit_status = 0;
@@ -336,6 +337,7 @@ void Editor::OnUpdate(float _delta_time){
             }
         }
     }
+#endif
 
     if (ImGui::BeginMainMenuBar())
     {
@@ -416,7 +418,7 @@ void Editor::OnUpdate(float _delta_time){
                     PosixSpawnGame(this, handle_to_cout_file_descriptor);
                     #else
                     const std::string build_directory = opened_directory_path+"/build";
-                    std::thread t(&PosixSpawnGame, this, std::ref(handle_to_cout_file_descriptor));
+                    std::thread t(&RunGame, build_directory,opened_directory_path);
                     t.detach();
                     #endif
                 }
@@ -677,11 +679,11 @@ void Editor::OnUpdate(float _delta_time){
             }
             project_settings_open = false;
 
-            //#ifdef WIN32
+            #ifdef WIN32
 
-            ufo::FileSystem::Write(opened_directory_path+"/build.bat","cd build && "+project_settings.compile_command);
+            ufo::FileSystem::Write(opened_directory_path+"/build.bat",project_settings.compile_command);
 
-            //#endif
+            #endif
         }
 
         ImGui::SameLine();
@@ -1213,7 +1215,8 @@ void BuildAndRunProgram(Editor* _editor, const std::string& _build_directory, co
 
     //Could build with max available CPU here.
 #ifdef __MINGW32__
-    int success = std::system(std::string("cd "+_build_directory+" && cmd \""+_editor->project_settings.compile_command+" && \"Press any key to continue...\" && read p\"").c_str());
+    Console::PrintLine("Trying to open cmd to build and run game...", std::string("cd "+_opened_directory_path+" && start cmd /c ./build.bat"));
+    int success = std::system(std::string("cd "+_opened_directory_path+" && start cmd /c ./build.bat").c_str());
 #else
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \""+_editor->project_settings.compile_command+" && echo 'Press any key to continue...' && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Project Process Success?", success);
@@ -1228,9 +1231,13 @@ void DebugGame(const std::string& _build_directory, [[maybe_unused]] const std::
 }
 
 void RunGame(const std::string& _build_directory, [[maybe_unused]] const std::string& _opened_directory_path){
-    //Could build with max available CPU here.
+#ifdef __MINGW32__
+    int success = std::system(std::string("cd "+_opened_directory_path+" && start cmd /c \"cd build && ./OUT\"").c_str());
+#else
     int success = std::system(std::string("cd "+_build_directory+" && gnome-terminal -- bash -c \"./OUT && echo \"\"Press any key to continue...\"\" && read p\"").c_str());
     Console::PrintLine("[UFO-Engine Studio] Game Run Success?", success);
+#endif
+
 }
 
 }

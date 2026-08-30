@@ -373,12 +373,8 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
 
     this_level->UpdateEditorTree(_editor, this, 0);
 
-    if(this_level->inserted_actors.size() > 0){
+    /*if(this_level->inserted_actors.size() > 0){
         if(!this_level->moving_actor_with_undo_and_redo) this_level->RemoveFutureChanges();
-
-        /*std::sort(this_level->inserted_actors.begin(), this_level->inserted_actors.end(),[](ufo::Actor::MovedActor& _a, ufo::Actor::MovedActor& _b){
-            return _a.move_to_index > _b.move_to_index;
-            });*/
 
         std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
 
@@ -414,13 +410,14 @@ void LevelEditorTab::OnActive([[maybe_unused]] ImGuiID _local_dockspace_id , Edi
 
         if(!this_level->moving_actor_with_undo_and_redo) this_level->level_changes.push_back(std::move(multiple_actor_change));
 
-        this_level->inserted_actors.clear();
-
     }
 
     this_level->moving_actor_with_undo_and_redo = false;
 
-    this_level->EnumerateActorsAnew();
+    this_level->EnumerateActorsAnew();*/
+
+    MoveActors();
+    this_level->inserted_actors.clear();
 
     ImGui::End();
 
@@ -658,6 +655,90 @@ void LevelEditorTab::PlaceActors(){
 
 }
 
+void LevelEditorTab::MoveActors(){
+    int move_from_id = -1;
+    int move_to_id = -1;
+    int from_index = -1;
+    int to_index = -1;
+    int number_of_moved_actors = 0;
+
+    if(this_level->inserted_actors.size() == 0) return;
+
+    move_from_id = this_level->inserted_actors[0].original_parent->editor_id;
+    move_to_id = this_level->inserted_actors[0].move_to_parent->editor_id;
+    to_index = this_level->inserted_actors[0].move_to_index;
+    from_index = this_level->inserted_actors[0].original_index;
+    number_of_moved_actors = this_level->inserted_actors.size();
+
+    std::vector<std::unique_ptr<ufo::Actor>> new_actors;
+
+    ufo::Actor* move_to_actor = this_level->actors_with_stable_id.at(move_to_id);
+    ufo::Actor* move_from_actor = this_level->actors_with_stable_id.at(move_from_id);
+
+    if(!this_level->moving_actor_with_undo_and_redo){
+        this_level->RemoveFutureChanges();
+        std::unique_ptr multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
+        for(auto& moved_actor : this_level->inserted_actors){
+            int calculated_to_index = to_index;
+            int calculated_from_index = from_index;
+            if(move_to_id == move_from_id){
+                if(to_index > from_index) calculated_to_index -= number_of_moved_actors;
+                else calculated_from_index+=number_of_moved_actors;
+            }
+
+            multiple_actor_change->changes.push_back(
+                std::make_unique<ufo::ActorChange_Move>(
+                    this,
+                    moved_actor.actor_to_move->editor_id,
+                    moved_actor.original_parent->editor_id,
+                    calculated_from_index,
+                    moved_actor.move_to_parent->editor_id,
+                    calculated_to_index,
+                    to_index-from_index,
+                    number_of_moved_actors
+                )
+            );
+        }
+
+        this_level->level_changes.push_back(std::move(multiple_actor_change));
+    }
+
+    std::vector<std::unique_ptr<ufo::Actor>> extracting_moved_actors;
+
+    for(int a = from_index; a < from_index+number_of_moved_actors; a++){
+        if( move_from_actor->actors[a] == nullptr) continue;
+        extracting_moved_actors.push_back(std::move(move_from_actor->actors[a]));
+    }
+
+    for(int a = 0; a < to_index; a++){
+        if( move_to_actor->actors[a] == nullptr) continue;
+        new_actors.push_back(std::move(move_to_actor->actors[a]));
+    }
+
+    for(auto&& actor : extracting_moved_actors){
+        if(actor == nullptr) continue;
+        new_actors.push_back(std::move(actor));
+    }
+
+    for(int a = 0; a < move_to_actor->actors.size(); a++){
+        if( move_to_actor->actors[a] == nullptr) continue;
+        new_actors.push_back(std::move(move_to_actor->actors[a]));
+    }
+
+    move_to_actor->actors.clear();
+
+    ufo::PurgeNullPointers(move_from_actor->actors);
+
+    for(auto&& actor : new_actors){
+        actor->parent = move_to_actor;
+        move_to_actor->actors.push_back(std::move(actor));
+
+    }
+
+    this_level->moving_actor_with_undo_and_redo = false;
+
+}
+
 void LevelEditorTab::SelectionUpdate(){
 
     if(engine->mouse.is_right_button_pressed){
@@ -698,30 +779,36 @@ void LevelEditorTab::SelectionUpdate(){
             ufo::Actor* focused_actor = actor->OnGetFocusedActor(mouse_position_over_screenspace);
 
             if(focused_actor){
-                current_tool = Tools::MOVE_ACTOR_CLUSTER;
+                if(focused_actor->IsMovable()){
+                    current_tool = Tools::MOVE_ACTOR_CLUSTER;
 
-                this_level->RemoveFutureChanges();
+                    this_level->RemoveFutureChanges();
 
-                std::unique_ptr<ufo::ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
+                    std::unique_ptr<ufo::ActorChange_MultipleActorChange> multiple_actor_change = std::make_unique<ufo::ActorChange_MultipleActorChange>(false);
 
-                for(const auto& inner_actor_id : selected_actors){
+                    for(const auto& inner_actor_id : selected_actors){
 
-                    ufo::Actor* inner_actor = this_level->actors_with_stable_id.at(inner_actor_id);
+                        ufo::Actor* inner_actor = this_level->actors_with_stable_id.at(inner_actor_id);
 
-                    multiple_actor_change->changes.push_back(
-                        std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(
-                            this,
-                            inner_actor_id,
-                            "local_position",
-                            inner_actor->local_position,Vector2f(0.0f, 0.0f))
-                    );
+                        multiple_actor_change->changes.push_back(
+                            std::make_unique<ufo::ActorChange_CustomVariableVector2fHandle>(
+                                this,
+                                inner_actor_id,
+                                "local_position",
+                                inner_actor->local_position,Vector2f(0.0f, 0.0f))
+                        );
+                    }
+
+                    this_level->level_changes.push_back(std::move(multiple_actor_change));
+
+                    break;
                 }
-
-                this_level->level_changes.push_back(std::move(multiple_actor_change));
-
-                break;
             }
         }
+    }
+
+    if(inspected_actor_id != ufo::Maths::NULL_ID) if(!this_level->actors_with_stable_id.at(inspected_actor_id)->IsMovable()){
+        return;
     }
 
     if(current_tool == Tools::MOVE_ACTOR_CLUSTER){

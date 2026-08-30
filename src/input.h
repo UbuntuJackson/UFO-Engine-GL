@@ -1,5 +1,6 @@
 #pragma once
 #include <unordered_map>
+#include <set>
 #include <SDL3/SDL.h>
 #include "../ufo_maths/ufo_maths.h"
 
@@ -51,6 +52,8 @@ public:
     void CheckEvents(SDL_Event& event);
 
     void ClearPressedAndReleased();
+
+    std::set<unsigned int> keys_pressed_this_frame;
 
     std::unordered_map<unsigned int, Key> keys;
 };

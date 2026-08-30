@@ -28,9 +28,21 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
     );
 
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
     LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
+    LoadTexture(_engine->engine_path+"/res/white_square.png", "white_square", true);
 
     AddBitMapFont("bitmap_unifont", 18, 18);
+
+    if(!textures.count("actor_icon")){
+        Console::PrintLine("Could not load actor_icon");
+        throw;
+    }
+
+    if(!textures.count("white_square")){
+        Console::PrintLine("Could not load white_square");
+        throw;
+    }
 
     if(!textures.count("placeholder_icon")){
         Console::PrintLine("Could not load placeholder_icon");
@@ -106,8 +118,19 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
     LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
     LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
     LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
+    LoadTexture(_engine->engine_path+"/res/white_square.png", "white_square", true);
 
     AddBitMapFont("bitmap_unifont", 18, 18);
+
+    if(!textures.count("actor_icon")){
+        Console::PrintLine("Could not load actor_icon");
+        throw;
+    }
+
+    if(!textures.count("white_square")){
+        Console::PrintLine("Could not load white_square");
+        throw;
+    }
 
     if(!textures.count("placeholder_icon")){
         Console::PrintLine("Could not load placeholder_icon");

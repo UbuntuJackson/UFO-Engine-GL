@@ -4,6 +4,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include "camera.h"
 #include "level.h"
 #include "actor.h"
 #include "../ufo_maths/ufo_maths.h"
@@ -179,10 +180,9 @@ void Actor::EnumerateActorsAnew(){
 }
 
 void PurgeNullPointers(std::vector<std::unique_ptr<ufo::Actor>>& _v){
-    for(int a = 0; a < _v.size(); a++){
-        if(!_v[a]){
+    for(int a = _v.size()-1; a != -1; a--){
+        if(_v[a] == nullptr){
             _v.erase(_v.begin()+a);
-            break;
         }
     }
 }
@@ -241,25 +241,28 @@ void Actor::Pause(float _delta_time){
 }
 
 void Actor::IrregularUpdate(){
+    OnIrregularUpdate();
     for(const auto& actor : actors){
         actor->IrregularUpdate();
     }
-    OnIrregularUpdate();
 }
 
 void Actor::OnIrregularUpdate(){
 
 }
 
-void Actor::WidgetDraw(ufo::Graphics* _graphics){
-    for(const auto& actor : actors){
-        actor->WidgetDraw(_graphics);
-    }
+void Actor::CreateWidgetTexture(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent,unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max){
 
-    OnWidgetDraw(_graphics);
 }
 
-void Actor::OnWidgetDraw([[maybe_unused]] ufo::Graphics* _graphics){
+void Actor::WidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera){
+    OnWidgetDraw(_graphics, _camera);
+    for(const auto& actor : actors){
+        actor->WidgetDraw(_graphics, _camera);
+    }
+}
+
+void Actor::OnWidgetDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
 
 }
 
@@ -276,7 +279,7 @@ void Actor::OnDraw([[maybe_unused]] ufo::Graphics* _graphics, [[maybe_unused]] C
 
 ufo::Rectangle Actor::GetEditorHitBox(){
 
-    if(class_name == "ufo::Sprite" ||
+    if( class_name == "ufo::Sprite" ||
         class_name == "ufo::Animation" ||
         class_name == "ufo::PlatformerRectangleCollision" ||
         class_name == "ufo::RectangularArea"
@@ -287,7 +290,7 @@ ufo::Rectangle Actor::GetEditorHitBox(){
     }
 
     for(const auto& actor : actors){
-        if(actor->class_name == "ufo::Sprite" ||
+        if( actor->class_name == "ufo::Sprite" ||
             actor->class_name == "ufo::Animation" ||
             actor->class_name == "ufo::PlatformerRectangleCollision" ||
             actor->class_name == "ufo::RectangularArea"
@@ -377,6 +380,14 @@ TileMap* Actor::GetTileMap(){
         }
     }
     return nullptr;
+}
+
+bool Actor::ClickableArea(){
+
+}
+
+void Actor::OnClickableArea(){
+
 }
 
 // UFO-Engine Studio
@@ -547,15 +558,87 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
         bool selectable_text = ImGui::Selectable(unique_id_actor.c_str(),&is_selected, ImGuiSelectableFlags_None, ImVec2(ImGui::CalcTextSize(visible_text.c_str()).x,ImGui::GetFontSize()));
 
         if(selectable_text){
+
+            is_selected = true;
+            should_be_selected = true;
+
             _level_editor_tab->actor_dedicated_to_viewport_id = this->editor_id;
             _level_editor_tab->selected_actors.clear();
             _level_editor_tab->selected_actors.push_back(this->editor_id);
 
-            if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
+            if(parent){
+                if(!ImGui::IsKeyDown(ImGuiKey_LeftShift)){
 
-                _level_editor_tab->reset_selection_status = true;
-                should_be_selected = is_selected;
+                    _level_editor_tab->reset_selection_status = true;
+                    should_be_selected = is_selected;
 
+                }
+                else{
+
+                    int clicked = -1;
+                    int second_clicked = -1;
+
+                    for(int a = 0; a < parent->actors.size(); a++){
+                        if(parent->actors[a]->is_selected){
+                            if(parent->actors[a].get() == this){
+
+                                if(second_clicked == -1) second_clicked = a;
+
+                                if(clicked != -1) break;
+
+                            }
+                            else{
+                                if(clicked == -1) clicked = a;
+                                if(second_clicked != -1) break;
+                            }
+                        }
+
+                    }
+
+                    if(clicked > second_clicked) std::swap(clicked, second_clicked);
+
+                    if(clicked != -1 && second_clicked != -1){
+                        for(int _a = clicked; _a <= second_clicked; _a++){
+                            parent->actors[_a]->is_selected = true;
+                            parent->actors[_a]->should_be_selected = true;
+                        }
+                    }
+
+                    /*bool selected_actor_range_begin = false;
+                    int selected_actor_range_start_index = 0;
+                    int selected_actor_range_end_index = 0;
+
+                    bool other_selected_actor_under_parent = false;
+                    for(int a = 0; a < parent->actors.size(); a++){
+                        if(parent->actors[a].get() == this) continue;
+                        if(parent->actors[a]->is_selected){
+                            other_selected_actor_under_parent = true;
+                        }
+                    }
+
+                    if(other_selected_actor_under_parent){
+                        for(int a = 0; a < parent->actors.size(); a++){
+                            if(parent->actors[a]->is_selected){
+                                if(!selected_actor_range_begin){
+                                    selected_actor_range_begin = true;
+                                    selected_actor_range_start_index = a;
+                                }
+                                else{
+                                    selected_actor_range_end_index = a;
+
+                                    for(int _a = selected_actor_range_start_index; _a <= selected_actor_range_end_index; _a++){
+                                        parent->actors[_a]->is_selected = true;
+                                        parent->actors[_a]->should_be_selected = true;
+                                    }
+                                }
+                            }
+
+                        }
+                    }*/
+
+                    _level_editor_tab->reset_selection_status = true;
+
+                }
             }
 
         }
@@ -722,6 +805,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
         ImGui::TreePop();
     }
+}
+
+bool Actor::IsMovable(){
+    return true;
 }
 
 bool Actor::IsSelectable(){

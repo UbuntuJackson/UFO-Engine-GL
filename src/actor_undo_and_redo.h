@@ -29,6 +29,8 @@ private:
     int former_order_index;
     int current_parent_id;
     int current_order_index;
+    int delta_index;
+    int number_of_moved_actors;
 public:
 
     ActorChange_Move(
@@ -36,7 +38,9 @@ public:
         int _actor, int _former_parent,
         int _former_order_index,
         int _current_parent,
-        int _current_order_index);
+        int _current_order_index,
+        int _delta_index,
+        int _number_of_moved_actors);
 
     void Undo() override;
 

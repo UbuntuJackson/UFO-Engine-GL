@@ -138,8 +138,15 @@ void Text::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){
         shader_key, 0.0f
     );
     else{
+        //To do: Pass in actor's global rectangle and parent's global rectangle?
+
+        auto parent_widget = parent->DynamicCast<Widget>();
+
         if(!engine->asset_manager.bit_map_fonts.count(bit_map_font_key)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, missing bitmap_font_key",bit_map_font_key);
         else engine->asset_manager.bit_map_fonts.at(bit_map_font_key).Draw(
+            engine,
+            true,
+            parent_widget ? parent_widget : nullptr,
             _graphics,
             language_to_text[engine->language],
             _camera->Transform(GetGlobalPosition()),

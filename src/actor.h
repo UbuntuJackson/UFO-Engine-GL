@@ -4,6 +4,7 @@
 #include <string>
 #include "../ufo_maths/ufo_maths.h"
 #include "../shapes/rectangle.h"
+#include "frame_buffer_texture.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "actor_undo_and_redo.h"
@@ -28,6 +29,7 @@ class GarbageCollector;
 class Graphics;
 class Level;
 class Camera;
+class Widget;
 
 //Using rule of 0 3 and 5 for all actors
 class Actor{
@@ -121,9 +123,15 @@ public:
 
     virtual void OnIrregularUpdate();
 
-    void WidgetDraw(ufo::Graphics* _graphics);
+    virtual void CreateWidgetTexture(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent,unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max);
+    virtual void DrawToTexture(ufo::Graphics *_graphics, ufo::Widget* _widget){}
 
-    virtual void OnWidgetDraw(ufo::Graphics* _graphics);
+    virtual void DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTexture& _texture, ufo::Widget* _parent){}
+    virtual FrameBufferTexture FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent, unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max){}
+
+    virtual void WidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera);
+
+    virtual void OnWidgetDraw(ufo::Graphics* _graphics, ufo::Camera* _camera);
 
     virtual void Draw(ufo::Graphics* _graphics, Camera* _camera);
 
@@ -188,7 +196,10 @@ public:
     static inline int editor_id_counter = 0;
     int editor_id = 0;
 
-ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
+    ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12.0f, 12.0f));
+
+    virtual bool ClickableArea();
+    virtual void OnClickableArea();
 
 #ifdef UFO_ENGINE_STUDIO
 
@@ -271,6 +282,8 @@ ufo::Rectangle editor_hitbox = ufo::Rectangle(Vector2f(-6.0f, -6.0f),Vector2f(12
 
     bool is_permanently_non_selectable = false;
     bool is_selectable = true;
+    //Bad naming. To be renamed: IsMovableInViewport
+    virtual bool IsMovable();
     bool IsSelectable();
     void GetSelectedActors(std::vector<int>& _selected_actors, ufo::Rectangle _selection_rectangle_world_space);
 
@@ -311,5 +324,6 @@ protected:
 };
 
 void MoveActor(Actor::MovedActor& _inserted_actor);
+void PurgeNullPointers(std::vector<std::unique_ptr<ufo::Actor>>& _v);
 
 }

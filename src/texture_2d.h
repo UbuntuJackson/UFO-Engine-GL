@@ -5,14 +5,15 @@
 
 namespace ufo{
 
+//TODO: INvestigate if constructor needs to be virtual, probably doesn't
 class Texture2D{
 public:
     //Holds the ID of the texture object used for texture operations.
     unsigned int id = 0;
     unsigned int width;
     unsigned int height;
-    unsigned int internal_format; //Format of texture object apparently?
-    unsigned int image_format; //Format of loaded image?
+    unsigned int internal_format = GL_RGBA; //Format of texture object apparently?
+    unsigned int image_format = GL_RGBA; //Format of loaded image?
     unsigned int wrapping_mode_s_axis = GL_REPEAT;
     unsigned int wrapping_mode_t_axis = GL_REPEAT;
     unsigned int filter_mode_min = GL_NEAREST; //Filtering mode if texture pixles < screen pixels?

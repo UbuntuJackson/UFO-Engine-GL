@@ -8,6 +8,7 @@
 #include <SDL3/SDL.h>
 #include "engine.h"
 #include "../ufo_maths/ufo_maths.h"
+#include "ufo_macros.h"
 
 namespace ufo{
 
@@ -394,10 +395,16 @@ void OpenGLv4_5_Graphics::DrawPartialSprite(const std::string& _texture_key, Vec
 
 }
 
+void OpenGLv4_5_Graphics::SetFrameBufferObject(int _fbo){
+
+}
+int OpenGLv4_5_Graphics::GetFrameBufferObject(){
+    return frame_buffer_object;
+}
 
 void OpenGLv4_5_Graphics::CreateFrameBuffer(){
-    glGenFramebuffers(1, &FBO);
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+    glGenFramebuffers(1, &frame_buffer_object);
+    glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object);
 
     glGenTextures(1, &texture_id);
     glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -409,15 +416,15 @@ void OpenGLv4_5_Graphics::CreateFrameBuffer(){
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id,0);
 
-    glGenRenderbuffers(1, &RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glGenRenderbuffers(1, &render_buffer_object);
+    glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_object);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
         (uint32_t)engine->width, (uint32_t)engine->height);
 
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, render_buffer_object);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE){
-        Console::PrintLine("Error, framebuffer no good");
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, framebuffer no good");
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -428,8 +435,8 @@ void OpenGLv4_5_Graphics::CreateFrameBuffer(){
 }
 
 void OpenGLv4_5_Graphics::BindFrameBuffer(){
-    glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-    //Console::PrintLine(FBO, RBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, frame_buffer_object);
+    //Console::PrintLine(frame_buffer_object, render_buffer_object);
 }
 
 void OpenGLv4_5_Graphics::UnbindFrameBuffer(){
@@ -443,12 +450,12 @@ void OpenGLv4_5_Graphics::RescaleFrameBuffer(int _width, int _height){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_id,0);
 
-    glGenRenderbuffers(1, &RBO);
-    glBindRenderbuffer(GL_RENDERBUFFER, RBO);
+    glGenRenderbuffers(1, &render_buffer_object);
+    glBindRenderbuffer(GL_RENDERBUFFER, render_buffer_object);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
         _width, _height);
 
-    glDeleteRenderbuffers(1, &RBO);
+    glDeleteRenderbuffers(1, &render_buffer_object);
 }
 
 }

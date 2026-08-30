@@ -92,6 +92,7 @@ Keyboard::Key& Keyboard::GetKey(unsigned int _key_id){
 
 void Keyboard::CheckEvents(SDL_Event& event){
     if(event.key.type == SDL_EVENT_KEY_DOWN){
+        keys_pressed_this_frame.insert(event.key.key);
 
         if(!keys.count(event.key.key)){
             keys.emplace(event.key.key, Keyboard::Key{false, false, false});

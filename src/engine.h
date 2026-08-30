@@ -59,6 +59,10 @@ public:
     int width;
     int height;
 
+    //Compatible with the editor, useful for getting the actual width of the vieweable area of the game.
+    int game_width;
+    int game_height;
+
     float elapsedTime = 0.0f;
     float fLastElapsed = 0.0f;
     std::chrono::time_point<std::chrono::system_clock> m_tp1, m_tp2;

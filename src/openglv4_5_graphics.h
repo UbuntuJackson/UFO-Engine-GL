@@ -51,9 +51,13 @@ public:
 
     void InitialiseRenderData(Engine* _engine);
 
-    unsigned int FBO;
-    unsigned int RBO;
-    GLuint texture_id;
+    //To do: Free this
+    unsigned int frame_buffer_object;
+    unsigned int render_buffer_object;
+    GLuint texture_id; //For framebuffer
+
+    void SetFrameBufferObject(int _fbo) override;
+    int GetFrameBufferObject() override;
 
     void CreateFrameBuffer();
 

@@ -207,6 +207,7 @@ void Engine::Start(){
         SDL_Event event;
 
         mouse.ResetTemporaryStates();
+        keyboard.keys_pressed_this_frame.clear();
 
         while(SDL_PollEvent(&event)){
 

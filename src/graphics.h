@@ -42,6 +42,9 @@ public:
 
     //virtual void DrawText();
 
+    virtual void SetFrameBufferObject(int _fbo) = 0;
+    virtual int GetFrameBufferObject() = 0;
+
     virtual void CreateFrameBuffer() = 0;
 
     virtual void BindFrameBuffer() = 0;

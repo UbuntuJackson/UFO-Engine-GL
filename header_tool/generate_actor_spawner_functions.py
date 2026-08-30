@@ -23,6 +23,18 @@ def get_base_class_of(_inheritence_map, _class_name):
 
     return get_base_class_of(_inheritence_map, _inheritence_map[_class_name])
 
+def get_base_class_of_or_null(_inheritence_map, _class_name):
+
+    if _class_name not in _inheritence_map:
+
+        print("_inheritence_map.values",list(_inheritence_map.values()))
+
+        if _class_name in list(_inheritence_map.values()): return _class_name
+
+        return None
+
+    return get_base_class_of_or_null(_inheritence_map, _inheritence_map[_class_name])
+
 
 def is_custom_class(_inheritence_map, _actor_name):
     return _actor_name != get_base_class_of(_inheritence_map, _actor_name)
@@ -482,8 +494,8 @@ def get_actor_loading_code(_base_class_name, _instance, actor_json):
 
 
 # Entry point for this feature. This is called from function ufo_engine_header_tool.make_generated_file
-def main(_working_directory, _structured_classes_dict):
-    inheritence_map = get_inheritence_map(_structured_classes_dict)
+def main(_working_directory, _structured_classes_dict, _inheritence_map):
+    inheritence_map = _inheritence_map
 
     # Counter to generate unique identifiers present in <project>/generated.h, inside namespace ufo::Generated
     class ActorCounter:

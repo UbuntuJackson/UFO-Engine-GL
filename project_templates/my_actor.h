@@ -23,7 +23,7 @@ public:
     MyActor(Vector2f _);
 
     // Called when actor enters level
-    void OnSpawn();
+    void OnSpawn() override;
 
     // Called every time engine updates level
     void OnUpdate(float _delta_time) override;

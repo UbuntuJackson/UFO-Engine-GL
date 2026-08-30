@@ -13,6 +13,7 @@
 #include <level_loader.h>
 #include <file_utils.h>
 #include <shared_json.h>
+#include <string>
 
 int main(int _arg_count, char** _arg_variables){
 

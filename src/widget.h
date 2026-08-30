@@ -4,7 +4,9 @@
 #include <memory>
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
+#include "frame_buffer_texture.h"
 #include "graphics.h"
+#include "rectangle.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "viewport_editing_utils.h"
@@ -21,6 +23,19 @@ class Graphics;
 
 class Widget : public Actor{
 public:
+    enum ContentsLayoutMode{
+        HORIZONTAL_LIST,
+        VERTICAL_LIST,
+        FREE_STYLE
+    };
+    enum ContentsResizeMode{
+        DISTRIBUTE_SIZE_EQUALLY,
+        DO_NOT_RESIZE
+    };
+
+    ContentsLayoutMode contents_layout_mode = HORIZONTAL_LIST;
+    ContentsResizeMode contents_resize_mode = DO_NOT_RESIZE;
+
     bool visible = true;
     std::string texture_key = "placeholder_icon";
     Vector2f offset;
@@ -35,17 +50,43 @@ public:
     bool has_header = false;
     int header_height = 16;
 
+    //For how long you've scrolled, if scollbar is triggered.
+    float scroll_x = 0.0f;
+    float scroll_y = 0.0f;
+    float contents_to_window_ratio_x = 1.0f;
+    float contents_to_window_ratio_y = 1.0f;
+    std::string scroll_bar_texture_key = "white_square";
+    float scroll_bar_thickness = 16.0f;
+    float scroll_bar_corner_counding = 4.0f;
+    std::string scroll_bar_shader_key = "partial_sprite_shader";
+    ufo::Colour scroll_bar_tint = ufo::Colour(0,0,0,255);
+
+    FrameBufferTexture frame_buffer_texture;
+
     Widget(Vector2f _);
 
+    void OnSpawn() override;
+
     ufo::Rectangle GetLocalRectangle() override;
+    ufo::Rectangle GetRectangle() override;
+
+    void OnIrregularUpdate() override;
+    void UpdateContentLayoutAndSize();
+    void Update(float _delta_time) override;
+    bool ClickableArea() override;
+    void OnClickableArea() override;
 
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
+    void Draw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;
+    void DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTexture& _texture, ufo::Widget* _parent) override;
+    FrameBufferTexture FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent, unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max) override;
+    void OnWidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     #ifdef UFO_ENGINE_STUDIO
-
+    bool IsMovable() override;
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 
     void OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;

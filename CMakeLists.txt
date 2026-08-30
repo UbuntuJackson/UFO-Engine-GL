@@ -44,6 +44,7 @@ set(
     src/engine.cpp
     src/generic_generator.cpp
     src/texture_2d.cpp
+    src/frame_buffer_texture.cpp
     src/level.cpp
     src/input.cpp
     src/actor.cpp

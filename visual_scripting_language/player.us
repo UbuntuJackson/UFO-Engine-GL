@@ -1,5 +1,7 @@
 //class takes like, two arguments. class-name, inherits-from
 
+namespace Game{
+
 ufo_category 'MyGame' ufo_actor_config 'player.ason'
 class Player ufo::Actor
 {
@@ -32,5 +34,7 @@ class Player ufo::Actor
             sprite.scale = direction
         }
     }
+
+}
 
 }

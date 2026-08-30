@@ -89,6 +89,8 @@ void Level::UpdatePhase(float _delta_time){
 }
 
 void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
+    engine->game_width = _width;
+    engine->game_height = _height;
 
     if(engine->multi_player){
         if(active_camera_handles.size() == 1){
@@ -156,10 +158,6 @@ void Level::DrawPhase(ufo::Graphics* _graphics, int _width, int _height){
 
     glViewport(0,0,_width,_height);
     _graphics->SetProjection(0.0f, _width,_height, 0.0f);
-
-    for(const auto& actor : actors){
-        actor->WidgetDraw(_graphics);
-    }
 
 }
 

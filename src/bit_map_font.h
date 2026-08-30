@@ -10,17 +10,23 @@
 #include "../shapes/rectangle.h"
 #include <bitset>
 #include "graphics.h"
+#include "frame_buffer_texture.h"
 
 namespace ufo{
 
 class OpenGLv4_5_AssetManager;
 class Graphics;
+class Engine;
+class Widget;
 
 class BitMapFont{
 public:
+    FrameBufferTexture frame_buffer_texture;
 
     //Letter, Width
     std::map<char, int> width_for_characters;
+
+    ufo::Texture2D cached_texture;
 
     OpenGLv4_5_AssetManager* asset_manager = nullptr;
     int character_width = 0;
@@ -39,6 +45,9 @@ public:
     GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
     void Draw(
+        ufo::Engine* _engine,
+        bool _refresh,
+        ufo::Widget* _parent,
         ufo::Graphics* _graphics,
         const std::string& _text,
         Vector2f _position,

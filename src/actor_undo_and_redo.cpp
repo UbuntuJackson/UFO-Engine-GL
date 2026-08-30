@@ -4,19 +4,30 @@
 #include "../ufo_maths/ufo_maths.h"
 #include "actor.h"
 #include "actor_undo_and_redo.h"
+#include "console.h"
 #include "editor_property.h"
 #include "level.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 
 namespace ufo{
 
-ActorChange_Move::ActorChange_Move(UFOEngineStudio::LevelEditorTab* _level_editor_tab,int _actor_id, int _former_parent_id, int _former_order_index, int _current_parent_id, int _current_order_index) :
+ActorChange_Move::ActorChange_Move(
+    UFOEngineStudio::LevelEditorTab* _level_editor_tab,
+    int _actor_id,
+    int _former_parent_id,
+    int _former_order_index,
+    int _current_parent_id,
+    int _current_order_index,
+    int _delta_index,
+    int _number_of_moved_actors) :
 level_editor_tab{_level_editor_tab},
 actor_id{_actor_id},
 former_parent_id{_former_parent_id},
 former_order_index{_former_order_index},
 current_parent_id{_current_parent_id},
-current_order_index{_current_order_index}
+current_order_index{_current_order_index},
+delta_index{_delta_index},
+number_of_moved_actors{_number_of_moved_actors}
 {
 
 }
@@ -26,17 +37,20 @@ void ActorChange_Move::Undo(){
     ufo::Actor* current_parent = level_editor_tab->this_level->actors_with_stable_id.at(current_parent_id);
     ufo::Actor* former_parent = level_editor_tab->this_level->actors_with_stable_id.at(former_parent_id);
 
-    actor->level->EnumerateActorsAnew();
-
     //Isn't the value I first assign completely fine? Why update it?
     //current_order_index = actor->order_index;
+
+    int calculated_former_index = current_order_index-delta_index;
+
+    Console::PrintLine("calculated_former_index",calculated_former_index);
+    Console::PrintLine("former_order_index",former_order_index);
 
     level_editor_tab->this_level->inserted_actors.push_back(Actor::MovedActor{
         actor,
         current_parent,
         current_order_index,
         former_parent,
-        former_order_index,
+        former_order_index
     });
 
     actor->level->moving_actor_with_undo_and_redo = true;
@@ -336,7 +350,8 @@ ActorChange_MultipleActorChange::ActorChange_MultipleActorChange(bool _undo_in_r
 :undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree{_undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree}{}
 
 void ActorChange_MultipleActorChange::Undo() {
-    for(int a = (int)changes.size()-1; a != -1; a--) changes[a]->Undo();
+    if(!undo_in_reverse_specifically_for_redoing_actor_move_in_actor_tree) for(int a = 0; a < (int)changes.size(); a++) changes[a]->Undo();
+    else for(int a = (int)changes.size()-1; a != -1; a--) changes[a]->Undo();
 
 }
 
