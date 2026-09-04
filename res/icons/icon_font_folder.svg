@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="icon_font_folder.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#512a5d"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.75722503"
+     inkscape:cx="382.317"
+     inkscape:cy="594.27513"
+     inkscape:window-width="1920"
+     inkscape:window-height="1052"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path5"
+       style="fill:#ffffff;stroke-width:1.602;stroke-linecap:round;paint-order:stroke fill markers"
+       d="M 149.03622,244.00285 V 204.51947 L 132.9633,188.44655 v -55.20696 h -9.88001 c -1.108,0 -1.99988,0.89187 -1.99988,1.99987 v 106.76351 c 0,1.108 0.89188,1.99988 1.99988,1.99988 z m 0,0 h -25.95293 c -1.108,0 -1.99988,-0.89188 -1.99988,-1.99988 V 135.23946 c 0,-1.108 0.89188,-1.99987 1.99988,-1.99987 h 9.88001 V 122.05836 L 47.164413,97.845356 c -2.132702,-0.601862 -3.99976,1.78427 -3.99976,4.000274 v 126.17369 c 0,2.216 1.848612,3.46809 3.99976,4.00027 l 97.872057,24.213 c 2.15115,0.53218 3.99975,-1.78427 3.99975,-4.00027 z"
+       sodipodi:nodetypes="ccccssssccssssccssssssc" />
+    <path
+       d="m 164.06091,133.84182 c 0,-14.38592 0.34348,-25.96581 -0.76452,-25.96581 h -26.83897 v 79.17289 l 16.07292,16.07292 v 39.48338 h 9.53069 c 1.108,0 1.99988,-0.89188 1.99988,-1.99988 z"
+       style="fill:#ffffff;stroke-width:1.602;stroke-linecap:round;paint-order:stroke fill markers"
+       id="path3"
+       sodipodi:nodetypes="ssccccsss" />
+    <rect
+       style="fill:#ffffff;stroke-width:0.583672;stroke-linecap:round;paint-order:stroke fill markers"
+       id="rect2-9"
+       width="110.76353"
+       height="5.2411752"
+       x="107.92372"
+       y="-172.62268"
+       rx="2"
+       ry="2"
+       transform="rotate(90)" />
+    <rect
+       style="fill:#ffffff;stroke-width:0.384655;stroke-linecap:round;paint-order:stroke fill markers"
+       id="rect2-9-3"
+       width="110.76353"
+       height="2.2763181"
+       x="107.9112"
+       y="-178.52765"
+       rx="2"
+       ry="2"
+       transform="rotate(90)" />
+    <rect
+       style="fill:#f9f9f9;stroke-width:1.602;stroke-linecap:round;paint-order:stroke fill markers"
+       id="rect15"
+       width="112.17043"
+       height="6.9180002"
+       x="46.943569"
+       y="97.346138"
+       rx="2"
+       ry="2" />
+  </g>
+</svg>
