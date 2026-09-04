@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="pause_icon.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#631d57"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.37861252"
+     inkscape:cx="442.40482"
+     inkscape:cy="472.77888"
+     inkscape:window-width="1920"
+     inkscape:window-height="1052"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     showgrid="true">
+    <inkscape:grid
+       id="grid1"
+       units="mm"
+       originx="0"
+       originy="0"
+       spacingx="0.99999998"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs1" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="path1"
+       style="fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:1.602;stroke-linecap:round;stroke-opacity:1;paint-order:stroke fill markers"
+       d="M 104.99979 44.025736 C 48.361662 44.025709 2.4473715 89.939998 2.4473958 146.57813 C 2.4473682 203.21627 48.361659 249.13056 104.99979 249.13053 C 161.63792 249.13055 207.55222 203.21626 207.55219 146.57813 C 207.55221 89.940001 161.63792 44.025714 104.99979 44.025736 z M 43.154989 79.316606 L 81.674601 79.316606 C 82.782601 79.316606 83.674479 80.208484 83.674479 81.316484 L 83.674479 211.83978 C 83.674479 212.94778 82.782601 213.83966 81.674601 213.83966 L 43.154989 213.83966 C 42.046989 213.83966 41.154594 212.94778 41.154594 211.83978 L 41.154594 81.316484 C 41.154594 80.208484 42.046989 79.316606 43.154989 79.316606 z M 128.3255 79.316606 L 166.84511 79.316606 C 167.95311 79.316606 168.84499 80.208484 168.84499 81.316484 L 168.84499 211.83978 C 168.84499 212.94778 167.95311 213.83966 166.84511 213.83966 L 128.3255 213.83966 C 127.2175 213.83966 126.32562 212.94778 126.32562 211.83978 L 126.32562 81.316484 C 126.32562 80.208484 127.2175 79.316606 128.3255 79.316606 z " />
+  </g>
+</svg>

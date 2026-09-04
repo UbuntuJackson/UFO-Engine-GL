@@ -20,6 +20,7 @@
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
 #include "../ufo_engine_studio/imgui_utils.h"
+#include "../ufo_engine_studio/ufo_icon_font.h"
 #endif //UFO_ENGINE_STUDIO
 
 namespace ufo{
@@ -355,7 +356,7 @@ void Animation::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_
 
         std::string removed_costume_key;
 
-        if(ImGui::Button(preview ? "||" : ">")){
+        if(ImGui::Button(preview ? UFO_ICON_FONT_PLAY_BUTTON : UFO_ICON_FONT_PAUSE_BUTTON)){
             preview = !preview;
         }
 
