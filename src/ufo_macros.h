@@ -66,3 +66,8 @@
 //Unimplemented but conceptually could be usefull to guard against parts you don't want to parse.
 #define begin_parsing()
 #define end_parsing()
+
+//This is for a new feature I've been brainstorming that works more faithfully to godot script,
+// I am uncertain how it will turn out. For now, just in case, use actors instead.
+
+#define ufo_script()

@@ -21,7 +21,7 @@ void AssetJson::Read(const std::string& _path, const std::string& _opened_direct
 
             //Here the first two characters are removed, which always have to be ..
             // would be simpler if the default path was just the project root after all
-            _asset_manager->LoadTexture(_opened_directory_path+"/"+relative_texture_path,relative_texture_path,true);
+            _asset_manager->LoadTexture(_opened_directory_path,relative_texture_path,relative_texture_path,true);
             if(_asset_manager->textures.count(relative_texture_path)) _asset_manager->textures.at(relative_texture_path).is_savable = true;
         }
     }

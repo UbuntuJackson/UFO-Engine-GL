@@ -12,6 +12,7 @@
 #include "../shapes/rectangle.h"
 #include "../tilemap/tileset_manager.h"
 #include "text.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/im_vec.h"
@@ -50,6 +51,17 @@ ufo::Controls* Level::GetControls(){
 void
 Level::Load(){
 
+}
+
+Level::~Level(){
+    for(auto& texture : local_textures){
+        if(!engine->asset_manager.textures.count(texture)){
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__,texture, "does not exist when trying to remove it");
+            continue;
+        }
+        engine->asset_manager.textures.at(texture).Delete();
+        engine->asset_manager.textures.erase(texture);
+    }
 }
 
 void Level::Update([[maybe_unused]] float _delta_time){}
@@ -187,33 +199,46 @@ void Level::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
             }
         );
     }
-    if(_json->map.count("level_textures")){
-        ufo::gc::Json* j_level_textures = _json->map.at("level_textures");
-        for(ufo::gc::Json* j_texture : j_level_textures->AsArray()){
+    if(_json->map.count("local_textures")){
+        ufo::gc::Json* j_local_textures = _json->map.at("local_textures");
+        for(auto& [texture_name,j_texture] : j_local_textures->AsMap()){
 
-            if(!engine->asset_manager.textures.count(j_texture->AsString())){
+            if(!engine->asset_manager.textures.count(texture_name)){
 
                 #ifdef UFO_ENGINE_STUDIO
-                engine->asset_manager.LoadTexture(engine->editor.opened_directory_path + "/" + j_texture->AsString(), j_texture->AsString(), true);
+                engine->asset_manager.LoadTexture(engine->editor.opened_directory_path,j_texture->AsString(), texture_name, true);
                 #else
-                engine->asset_manager.LoadTexture(engine->game_directory + "/" + j_texture->AsString(), j_texture->AsString(), true);
+                engine->asset_manager.LoadTexture(engine->game_directory,j_texture->AsString(), texture_name, true);
                 #endif
 
-                if(!engine->asset_manager.textures.count(j_texture->AsString())) continue;
-
-                engine->asset_manager.textures.at(j_texture->AsString()).is_global_asset = false;
-                engine->asset_manager.textures.at(j_texture->AsString()).is_savable = true;
+                if(!engine->asset_manager.textures.count(texture_name)){
+                    Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, could not load level texture with name",texture_name);
+                    continue;
+                }
+                engine->asset_manager.textures.at(texture_name).path_relative_to_project = j_texture->AsString();
+                engine->asset_manager.textures.at(texture_name).is_global_asset = false;
+                engine->asset_manager.textures.at(texture_name).is_savable = true;
+            }
+            else{
+                Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, local texture",texture_name,"already exists");
             }
 
-            Console::PrintLine("j_level_texture",j_texture->AsString());
-
-            level_textures.insert(j_texture->AsString());
+            local_textures.insert(texture_name);
 
         }
 
-        for(std::string s : level_textures){
-            Console::PrintLine("level_texture",s);
+        for(std::string s : local_textures){
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Loaded local texture:",s);
         }
+    }
+
+    if(engine){
+        if(_json->map.count("local_asset_counter")){
+            engine->local_asset_counter = _json->map.at("local_asset_counter")->AsFloat();
+        }
+    }
+    else{
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Engine is nullptr here, you dum-dum");
     }
 
 }
@@ -239,14 +264,21 @@ ufo::gc::JsonMap* Level::GetAsJson(ufo::GarbageCollector* _gc){
 
     parent_class_as_json->map.emplace("tilesets",tilesets);
 
-    ufo::gc::JsonArray* j_level_textures = _gc->New<ufo::gc::JsonArray>();
-    for(const auto& texture : level->level_textures){
+    ufo::gc::JsonMap* j_local_textures = _gc->New<ufo::gc::JsonMap>();
+    for(const auto& texture : level->local_textures){
 
-        j_level_textures->array.push_back(_gc->New<ufo::gc::JsonString>(texture));
+        if(!engine->asset_manager.textures.count(texture)){
+            Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, there is no texture",texture,"to save");
+            continue;
+        }
+
+        j_local_textures->map.emplace(texture,_gc->New<ufo::gc::JsonString>(engine->asset_manager.textures.at(texture).path_relative_to_project));
 
     }
 
-    parent_class_as_json->map.emplace("level_textures",j_level_textures);
+    parent_class_as_json->map.emplace("local_asset_counter",_gc->New<ufo::gc::JsonNumber>(engine->local_asset_counter));
+
+    parent_class_as_json->map.emplace("local_textures",j_local_textures);
 
     parent_class_as_json->map.emplace("size_x",_gc->New<ufo::gc::JsonNumber>(size.x));
     parent_class_as_json->map.emplace("size_y",_gc->New<ufo::gc::JsonNumber>(size.y));

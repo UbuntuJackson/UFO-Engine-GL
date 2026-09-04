@@ -50,17 +50,60 @@ void EndWindow(){
 void TextureOptions(ufo::Level* _level, const std::string _texture_name, ufo::Texture2D& _texture){
     if(_texture.is_savable){
 
-        bool is_level_asset_dummy = _level->level_textures.count(_texture_name);
+        bool is_level_asset_dummy = _level->local_textures.count(_texture_name);
 
         const bool is_level_asset_result = is_level_asset_dummy;
 
         if(ImGui::Checkbox(std::string("Is Level Asset###IsLevelTextureCheckBox"+_texture_name).c_str(),&is_level_asset_dummy)){
-            if(is_level_asset_result) _level->level_textures.erase(_texture_name);
-            else _level->level_textures.insert(_texture_name);
+            if(is_level_asset_result) _level->local_textures.erase(_texture_name);
+            else _level->local_textures.insert(_texture_name);
         }
         ImGui::Checkbox(std::string("Is Global Asset###IsGlobalTextureCheckBox"+_texture_name).c_str(),&_texture.is_global_asset);
 
     }
+}
+
+void TextureSavabilityAndAvailabilityDetails(ufo::Engine* _engine,ufo::Level* _level, const std::string _texture_name, ufo::Texture2D& _texture){
+    std::string savable_status = _texture.is_savable ? "Savable" : "Not Savable";
+    std::string locality_status = _texture.is_global_asset ? "Global" : "Local";
+
+    const std::string status_text = "Status: "+savable_status+", "+locality_status;
+
+    ImGui::Text("%s",status_text.c_str());
+
+    if(ImGui::Button(std::string("Create Local Texture###"+_texture_name).c_str())){
+        const std::string local_texture_name = _texture_name+"_local"+std::to_string(_engine->local_asset_counter++);
+
+        if(!_engine->asset_manager.textures.count(local_texture_name)){
+            _engine->asset_manager.LoadTexture(_engine->editor.opened_directory_path,_texture.path_relative_to_project, local_texture_name, true);
+
+            if(!_engine->asset_manager.textures.count(local_texture_name)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, could not create local texture");
+            else{
+                _level->local_textures.insert(local_texture_name);
+                _engine->asset_manager.textures.at(local_texture_name).is_global_asset = false;
+                _engine->asset_manager.textures.at(local_texture_name).is_savable = true;
+            }
+        }
+        else Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, local texture with name",local_texture_name,"already exists");
+
+    }
+}
+
+bool IsTextureAvailableInAssetBrowser(LevelEditorTab* _level_editor_tab, ufo::Level* _level, const std::string _texture_name, ufo::Texture2D& _texture){
+    if(!_texture.is_global_asset){
+        if(!_level->local_textures.count(_texture_name)) return false;
+    }
+
+    if(_level_editor_tab->asset_view_mode != UFOEngineStudio::LevelEditorTab::ALL){
+        if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::LOCAL){
+            if(!_level->local_textures.count(_texture_name)) return false;
+        }
+        if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::GLOBAL){
+            if(!_texture.is_global_asset) return false;
+        }
+    }
+
+    return true;
 }
 
 /*void TextureTab(UFOEngineStudio::LevelEditorTab* _level_editor_tab, ufo::Engine* _engine, ufo::Level* _level, std::map<std::string, std::string&> _keys_to_set){

@@ -76,10 +76,11 @@ public:
     UFOEngineStudio::Editor editor;
 
 #endif
-    //ufo::TextRenderer text_renderer;
 
     //For opengl 4.5
     OpenGLv4_5_AssetManager asset_manager;
+    int local_asset_counter = 0;
+
     // watch out, nullptr
     std::unique_ptr<Graphics> graphics = nullptr;
     Keyboard keyboard;

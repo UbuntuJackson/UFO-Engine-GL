@@ -11,6 +11,7 @@
 #include "graphics.h"
 #include "sprite_utils.h"
 #include "texture_2d.h"
+#include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
 #include "../ufo_engine_studio/level_editor_tab.h"
@@ -218,16 +219,10 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
 
             for(const std::string& name : texture_names){
 
-                auto& texture = engine->asset_manager.textures.at(name);
+                ufo::Texture2D& texture = engine->asset_manager.textures.at(name);
 
-                if(_level_editor_tab->asset_view_mode != UFOEngineStudio::LevelEditorTab::ALL){
-                    if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::LOCAL){
-                        if(!level->level_textures.count(name)) continue;
-                    }
-                    if(_level_editor_tab->asset_view_mode == UFOEngineStudio::LevelEditorTab::GLOBAL){
-                        if(!texture.is_global_asset) continue;
-                    }
-                }
+                bool is_available_in_asset_browser = UFOEngineStudio::IsTextureAvailableInAssetBrowser(_level_editor_tab, level, name, texture);
+                if(!is_available_in_asset_browser) continue;
 
                 float w = (float)texture.width;
                 float h = (float)texture.height;
@@ -262,8 +257,8 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
                     }
                     ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
                     ImGui::Text(("name: "+name).c_str(),"%s");
-                    ImGui::Text(texture.is_savable ? "Status: Savable" : "Status: Not Savable");
-                    UFOEngineStudio::TextureOptions(level, name, texture);
+
+                    UFOEngineStudio::TextureSavabilityAndAvailabilityDetails(engine,level,name,texture);
                 }
 
             }
@@ -325,6 +320,7 @@ void Sprite::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_edito
             if(shader_was_erased && name_of_erased_shader != "partial_sprite_shader"){
                 engine->asset_manager.shaders.at(name_of_erased_shader).Delete();
                 engine->asset_manager.shaders.erase(name_of_erased_shader);
+                if(level->local_textures.count(name_of_erased_shader)) level->local_textures.erase(name_of_erased_shader);
                 for(const auto& loaded_level : engine->loaded_levels_for_editor) loaded_level->ResourcesEdited();
 
                 if(shader_key == name_of_erased_shader) shader_key = "partial_sprite_shader";

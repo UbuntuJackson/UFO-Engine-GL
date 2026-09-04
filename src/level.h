@@ -55,7 +55,7 @@ public:
 
     virtual void Load();
 
-    virtual ~Level(){}
+    virtual ~Level();
 
     void Update(float _delta_time) override;
 
@@ -75,7 +75,7 @@ public:
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 
-    std::set<std::string> level_textures;
+    std::set<std::string> local_textures;
 
 #ifdef UFO_ENGINE_STUDIO
     bool moving_actor_with_undo_and_redo = false;

@@ -28,7 +28,7 @@ TilesetManager::TilesetManager(){
 void TilesetManager::InitialiseTextures(){
     if(!engine->in_editor){
         for(const auto& tileset : tileset_data){
-            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture("../"+tileset.name,tileset.name,true);
+            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(engine->game_directory,tileset.name,tileset.name,true);
         }
     }
 #ifdef UFO_ENGINE_STUDIO
@@ -38,7 +38,7 @@ void TilesetManager::InitialiseTextures(){
         for(const auto& tileset : tileset_data){
             std::string path = editor->opened_directory_path + "/" + tileset.name;
             Console::PrintLine("Full Tileset Path",path);
-            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+            if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(editor->opened_directory_path,tileset.name,tileset.name,true);
 
             if(!engine->asset_manager.textures.count(tileset.name)){
                 //...
@@ -92,7 +92,7 @@ void TilesetManager::InitialiseTexturesEditor(UFOEngineStudio::Editor* _editor){
     for(const auto& tileset : tileset_data){
         std::string path = _editor->opened_directory_path + "/" + tileset.name;
         Console::PrintLine("Full Tileset Path",path);
-        if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(path,tileset.name,true);
+        if(tileset.is_loaded_from_path) engine->asset_manager.LoadTexture(_editor->opened_directory_path,tileset.name,tileset.name,true);
 
         if(!engine->asset_manager.textures.count(tileset.name)){
             //...
@@ -105,7 +105,7 @@ void TilesetManager::AddTileset(const std::string& _path, UFOEngineStudio::Level
 
         std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-        engine->asset_manager.LoadTexture(_path, relative_path, true);
+        engine->asset_manager.LoadTexture(_level_editor_tab->editor->opened_directory_path,relative_path, relative_path, true);
         int width = engine->asset_manager.textures.at(relative_path).width;
         int height = engine->asset_manager.textures.at(relative_path).height;
 
@@ -136,7 +136,7 @@ void TilesetManager::RecoverTileset(int _index,const std::string& _path, UFOEngi
     try{
         std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _level_editor_tab->editor->opened_directory_path);
 
-        engine->asset_manager.LoadTexture(_path, relative_path, true);
+        engine->asset_manager.LoadTexture(_level_editor_tab->editor->opened_directory_path,relative_path, relative_path, true);
         int width = engine->asset_manager.textures.at(relative_path).width;
         int height = engine->asset_manager.textures.at(relative_path).height;
 

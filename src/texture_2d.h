@@ -19,8 +19,11 @@ public:
     unsigned int filter_mode_min = GL_NEAREST; //Filtering mode if texture pixles < screen pixels?
     unsigned int filter_mode_max = GL_NEAREST; //Filtering mode if texture pixles > screen pixels?
 
+    std::string path_relative_to_project;
+    std::string path_to_project;
+
     //To be deprecated
-    bool is_savable = false; //If the asset is supposed to be preloaded and saved
+    bool is_savable = false; //If the asset is supposed to be preloaded and saveds
     void Update();
 
     bool is_global_asset = true;

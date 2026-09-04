@@ -48,22 +48,6 @@ public:
     // Overridden in generated.h
     virtual std::unique_ptr<Actor> FromJson(ufo::gc::JsonMap* _json);
 
-    /*
-
-       FromMinimalJson , for loading from a minimal json structure, like
-
-        {
-            "class_name":"..."
-            "base_class_name":"..."
-            "custom_editor_properties":{
-                "..." : "...",
-                ...
-            }
-
-        }
-
-     */
-
     std::unique_ptr<Actor> FromJsonInGame(ufo::gc::JsonMap* _json);
 
     virtual ~GenericGenerator() = default;

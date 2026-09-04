@@ -89,7 +89,7 @@ void OpenGLv4_5_Graphics::InitialiseRenderData(Engine* _engine){
 
     Console::PrintLine("Shader program id:",sprite_shader.shader_program_id);
 
-    _engine->asset_manager.LoadTexture(_engine->engine_path+"/res/face.png", "face", true);
+    _engine->asset_manager.LoadTexture(_engine->engine_path,"res/face.png", "face", true);
 
     circle_shader.Use();
     circle_shader.SetMatrix4("projection", projection);

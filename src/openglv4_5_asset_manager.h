@@ -70,7 +70,7 @@ public:
     std::unordered_map<std::string, ufo::Texture2D> textures;
 
     //Todo: This one doesn't only load a texture, but it also emplaces it, warranting a namechange.
-    void LoadTexture(const std::string& _path, const std::string& _name, bool _alpha);
+    void LoadTexture(const std::string& _path_to_project, const std::string& _path_relative_to_project, const std::string& _name, bool _alpha);
 
     //Here all shaders are stored and I want to keep it like that.
     std::unordered_map<std::string, ufo::Shader> shaders;

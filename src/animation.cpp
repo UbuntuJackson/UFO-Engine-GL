@@ -236,7 +236,8 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
 
             auto& texture = engine->asset_manager.textures.at(name);
 
-            if(!texture.is_global_asset && !level->level_textures.count(name)) continue;
+            bool is_available_in_asset_browser = UFOEngineStudio::IsTextureAvailableInAssetBrowser(_level_editor_tab, level, name, texture);
+            if(!is_available_in_asset_browser) continue;
 
             float w = (float)texture.width;
             float h = (float)texture.height;
@@ -269,8 +270,8 @@ void Animation::OnUtiliseAssetManager(UFOEngineStudio::LevelEditorTab* _level_ed
                 }
                 ImGui::Text(std::string("width: " + std::to_string(w) + " height: "+std::to_string(h)).c_str(),"%s");
                 ImGui::Text(("name:"+name).c_str(),"%s");
-                ImGui::Text(texture.is_savable ? "Status: Savable" : "Status: Savable");
-                UFOEngineStudio::TextureOptions(level, name, texture);
+
+                UFOEngineStudio::TextureSavabilityAndAvailabilityDetails(engine,level,name,texture);
             }
 
         }

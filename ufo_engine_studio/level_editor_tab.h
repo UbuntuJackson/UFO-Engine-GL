@@ -19,6 +19,7 @@ namespace UFOEngineStudio{
 class LevelEditorTab : public Tab{
 public:
 
+    //To be implemented
     const static int STATIC_GIZMO_COLOUR = 0xFFFFFFFF;
     const static int MOVABLE_GIZMO_COLOUR = 0xFFFFFF00;
     const static int RESIZABLE_GIZMO_COLOUR = 0xFFFF00FF;

@@ -27,10 +27,10 @@ void OpenGLv4_5_AssetManager::Initialise(ufo::Engine* _engine){
         "[UFO-Engine] OpenGLv4_5_AssetManager::Initialise: Called when in editor. Use Initialise_UFOEngineStudio instead."
     );
 
-    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
-    LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
-    LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
-    LoadTexture(_engine->engine_path+"/res/white_square.png", "white_square", true);
+    LoadTexture(_engine->engine_path,"res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture(_engine->engine_path,"res/icons/icon_font_actor_icon_trace.png","actor_icon", true);
+    LoadTexture(_engine->engine_path,"res/unifont.png", "bitmap_unifont", true);
+    LoadTexture(_engine->engine_path,"res/white_square.png", "white_square", true);
 
     AddBitMapFont("bitmap_unifont", 18, 18);
 
@@ -66,9 +66,12 @@ OpenGLv4_5_AssetManager::~OpenGLv4_5_AssetManager(){
 
 }
 
-void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::string& _name, bool _alpha){
-    if(!ufo::FileSystem::FileExists(_path)){
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, could not find image at path",_path);
+void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path_to_project, const std::string& _path_relative_to_project, const std::string& _name, bool _alpha){
+
+    const std::string path = _path_to_project + "/" + _path_relative_to_project;
+
+    if(!ufo::FileSystem::FileExists(path)){
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__,"Error, could not find image at path",path);
         return;
     }
 
@@ -90,15 +93,15 @@ void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::s
     // This doesn't seem to do anything but setting it, which implies a mistake
     // Instead I have decided that I'll request a number of channels based on the _alpha boolean
     // replacing 0 with _alpha ? 4 : 3
-    unsigned char* data = stbi_load(_path.c_str(), &width, &height, &number_of_channels, _alpha ? 4 : 3);
+    unsigned char* data = stbi_load(path.c_str(), &width, &height, &number_of_channels, _alpha ? 4 : 3);
 
 
     if(data == nullptr){
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", _path);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", path);
     }
 
     if(width == 0 || height == 0){
-        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", _path);
+        Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Failed to load texture from path", path);
         stbi_image_free(data);
 
         return;
@@ -110,15 +113,18 @@ void OpenGLv4_5_AssetManager::LoadTexture(const std::string& _path, const std::s
 
     stbi_image_free(data);
 
+    texture.path_to_project = _path_to_project;
+    texture.path_relative_to_project = _path_relative_to_project;
+
     textures[_name] = texture;
 }
 
 #ifdef UFO_ENGINE_STUDIO
 void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor* _editor,ufo::Engine* _engine){
-    LoadTexture(_engine->engine_path+"/res/placeholder_icon.png", "placeholder_icon", true);
-    LoadTexture(_engine->engine_path+"/res/actor_icon.png","actor_icon", true);
-    LoadTexture(_engine->engine_path+"/res/unifont.png", "bitmap_unifont", true);
-    LoadTexture(_engine->engine_path+"/res/white_square.png", "white_square", true);
+    LoadTexture(_engine->engine_path,"res/placeholder_icon.png", "placeholder_icon", true);
+    LoadTexture(_engine->engine_path,"res/icons/icon_font_actor_icon_trace.png","actor_icon", true);
+    LoadTexture(_engine->engine_path,"res/unifont.png", "bitmap_unifont", true);
+    LoadTexture(_engine->engine_path,"res/white_square.png", "white_square", true);
 
     AddBitMapFont("bitmap_unifont", 18, 18);
 
@@ -154,7 +160,7 @@ void OpenGLv4_5_AssetManager::Initialise_UFOEngineStudio(UFOEngineStudio::Editor
 void OpenGLv4_5_AssetManager::OnAddTexture(const std::string& _path, UFOEngineStudio::Editor* _editor){
     try{
         std::string relative_path = ufo::FileSystem::GetRelativePath(_path, _editor->opened_directory_path);
-        _editor->engine->asset_manager.LoadTexture(_path, relative_path, true);
+        _editor->engine->asset_manager.LoadTexture(_editor->opened_directory_path, relative_path, relative_path, true);
         _editor->engine->asset_manager.textures.at(relative_path).is_savable = true;
 
     } catch (const std::runtime_error& _error){

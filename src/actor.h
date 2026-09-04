@@ -79,6 +79,8 @@ public:
         auto actor_ptr = u_actor.get();
         actor_ptr->parent = this;
         new_actor_queue.push_back(std::move(u_actor));
+        actor_ptr->engine = engine;
+        actor_ptr->level = level;
         return actor_ptr;
     }
 
@@ -86,6 +88,8 @@ public:
         auto actor_ptr = _u_actor.get();
         actor_ptr->parent = this;
         new_actor_queue.push_back(std::move(_u_actor));
+        actor_ptr->engine = engine;
+        actor_ptr->level = level;
         return actor_ptr;
     }
 

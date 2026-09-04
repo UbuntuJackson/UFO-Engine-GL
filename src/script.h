@@ -2,16 +2,27 @@
 
 namespace ufo{
 
-class Actor;
+class GenericGenerator;
 
 class Script{
 public:
-
-    Actor* base = nullptr;
+    friend class GenericGenerator;
 
     virtual void OnSpawn(){}
 
     virtual void OnUpdate(float _delta_time){}
+
+};
+
+template<typename tActorType>
+class TemplateScript : public Script{
+private:
+
+    tActorType* host_actor = nullptr;
+public:
+    tActorType* GetHostActor(){
+        return host_actor;
+    }
 
 };
 

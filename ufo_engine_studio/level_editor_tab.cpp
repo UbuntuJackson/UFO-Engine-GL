@@ -681,10 +681,10 @@ void LevelEditorTab::MoveActors(){
         for(auto& moved_actor : this_level->inserted_actors){
             int calculated_to_index = to_index;
             int calculated_from_index = from_index;
-            if(move_to_id == move_from_id){
+            /*if(move_to_id == move_from_id){
                 if(to_index > from_index) calculated_to_index -= number_of_moved_actors;
                 else calculated_from_index+=number_of_moved_actors;
-            }
+            }*/
 
             multiple_actor_change->changes.push_back(
                 std::make_unique<ufo::ActorChange_Move>(

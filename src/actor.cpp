@@ -20,6 +20,7 @@
 #include "engine.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/ufo_icon_font.h"
 #include "../ufo_engine_studio/advanced_actor_spawner.h"
 #include "../imgui/imgui.h"
 #include "../imgui/misc/cpp/imgui_stdlib.h"
@@ -528,7 +529,15 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     std::string imported_or_not_str = (import_mode != ImportModes::CUSTOM_CLASS) ? "" : "(.ason)";
 
-    std::string visible_text = std::string(editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
+    std::string icon = UFO_ICON_FONT_ACTOR;
+
+    if(base_class_name == "ufo::Actor") icon = UFO_ICON_FONT_ACTOR;
+    if(base_class_name == "ufo::Sprite") icon = UFO_ICON_FONT_SPRITE;
+    if(base_class_name == "ufo::Animation") icon = UFO_ICON_FONT_SPRITE;
+    if(base_class_name == "ufo::BackgroundSprite") icon = UFO_ICON_FONT_SPRITE;
+    if(base_class_name == "ufo::TileMap") icon = UFO_ICON_FONT_TILE_MAP;
+
+    std::string visible_text = std::string(icon + " "+ editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
 
     std::string unique_id_actor = editing_name ?
         std::string("###Actor"+std::to_string(editor_id)).c_str() :

@@ -40,17 +40,20 @@ void ActorChange_Move::Undo(){
     //Isn't the value I first assign completely fine? Why update it?
     //current_order_index = actor->order_index;
 
-    int calculated_former_index = current_order_index-delta_index;
+    int calculated_to_index = current_order_index;
+    int calculated_from_index = former_order_index;
 
-    Console::PrintLine("calculated_former_index",calculated_former_index);
-    Console::PrintLine("former_order_index",former_order_index);
+    if(current_parent_id == former_parent_id){
+        if(current_order_index > former_order_index) calculated_to_index -= number_of_moved_actors;
+        else calculated_from_index+=number_of_moved_actors;
+    }
 
     level_editor_tab->this_level->inserted_actors.push_back(Actor::MovedActor{
         actor,
         current_parent,
-        current_order_index,
+        calculated_to_index,
         former_parent,
-        former_order_index
+        calculated_from_index
     });
 
     actor->level->moving_actor_with_undo_and_redo = true;
