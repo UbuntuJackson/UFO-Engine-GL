@@ -18,6 +18,7 @@
 #include "../src/ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/ufo_icon_font.h"
 #include "../ufo_engine_studio/im_vec.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../ufo_engine_studio/editor.h"
@@ -1101,7 +1102,7 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
 void TileMap::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
-    std::string visible_or_not_string = visible ? "<o>###" : "</>###";
+    std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
     if(ImGui::Button(
         (visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))
     ){

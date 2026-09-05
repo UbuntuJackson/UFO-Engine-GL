@@ -527,7 +527,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
 
     //DragDropMiddleButton(_editor, _level_editor_tab, _index);
 
-    std::string imported_or_not_str = (import_mode != ImportModes::CUSTOM_CLASS) ? "" : "(.ason)";
+    //std::string imported_or_not_str = (import_mode != ImportModes::CUSTOM_CLASS) ? "" : "(.ason)";
 
     std::string icon = UFO_ICON_FONT_ACTOR;
 
@@ -537,7 +537,7 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
     if(base_class_name == "ufo::BackgroundSprite") icon = UFO_ICON_FONT_SPRITE;
     if(base_class_name == "ufo::TileMap") icon = UFO_ICON_FONT_TILE_MAP;
 
-    std::string visible_text = std::string(icon + " "+ editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") "+imported_or_not_str);
+    std::string visible_text = std::string(icon + " "+ editor_name+/*" "+std::to_string(order_index)+*/ " ("+class_name+") ");
 
     std::string unique_id_actor = editing_name ?
         std::string("###Actor"+std::to_string(editor_id)).c_str() :
@@ -645,10 +645,10 @@ void Actor::UpdateEditorTree(UFOEngineStudio::Editor* _editor, UFOEngineStudio::
                         }
                     }*/
 
-                    _level_editor_tab->reset_selection_status = true;
-
                 }
             }
+
+            _level_editor_tab->reset_selection_status = true;
 
         }
 
