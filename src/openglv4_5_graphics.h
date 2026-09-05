@@ -52,7 +52,7 @@ public:
     void InitialiseRenderData(Engine* _engine);
 
     //To do: Free this
-    unsigned int frame_buffer_object;
+    unsigned int frame_buffer_object = 0;
     unsigned int render_buffer_object;
     GLuint texture_id; //For framebuffer
 
