@@ -2,6 +2,7 @@
 #include "bit_map_font.h"
 #include "console.h"
 #include "ufo_macros.h"
+#include "ufo_maths.h"
 #include "widget.h"
 #include <SDL3_ttf/SDL_ttf.h>
 #include <SDL3/SDL.h>
@@ -55,6 +56,10 @@ Text::~Text(){
 
 void Text::OnIrregularUpdate(){
     if(language_to_text[engine->language] == "") return;
+
+    if(parent){
+        rectangle = parent->rectangle;
+    }
 
     //Bitmap font text wrapping?
     {
@@ -121,6 +126,43 @@ void Text::OnIrregularUpdate(){
         SDL_DestroySurface(surface);
     }
 
+}
+
+void Text::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
+    if(language_to_text[engine->language] == "") return;
+
+    if(!use_bit_map_font) _graphics->DrawPartialSprite(
+        texture,
+        Vector2f(0.0f, 0.0f),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(1.0f, 1.0f),
+        Vector2f(0.0f, 0.0f),
+        Vector2f(texture.width, texture.height),
+        0.0f,
+        ufo::Colour(255,255,255,255),
+        shader_key, 0.0f
+    );
+    else{
+        //To do: Pass in actor's global rectangle and parent's global rectangle?
+
+        auto parent_widget = parent->DynamicCast<Widget>();
+
+        if(!engine->asset_manager.bit_map_fonts.count(bit_map_font_key)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, missing bitmap_font_key",bit_map_font_key);
+        else engine->asset_manager.bit_map_fonts.at(bit_map_font_key).Draw(
+            engine,
+            true,
+            parent_widget ? parent_widget : nullptr,
+            _graphics,
+            language_to_text[engine->language],
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            shader_key,
+            ufo::Colour(255,255,255,255),
+            parent->GetLocalRectangle(),
+            is_wrapping,
+            parent ? parent->rectangle.size.x : 1000
+        );
+    }
 }
 
 void Text::OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera){

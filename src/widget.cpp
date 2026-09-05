@@ -52,6 +52,30 @@ void Widget::OnIrregularUpdate(){
 
 void Widget::Update(float _delta_time){
     ClickableArea();
+
+    if(contents_to_window_ratio_y < 1.0f){
+
+        Vector2f mouse_position = engine->mouse.position;
+    #ifdef UFO_ENGINE_STUDIO
+        auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+        mouse_position = level_editor_tab->mouse_position_over_screenspace;
+    #endif
+
+        if(is_scroll_bar_held){
+            float delta_mouse_position_in_world = (engine->mouse.position-engine->mouse.former_position).y/level->active_camera_handles.back()->scale;
+
+            if(rectangle.size.y != 0.0f && contents_to_window_ratio_y != 0.0f) scroll_y += delta_mouse_position_in_world/(rectangle.size.y*contents_to_window_ratio_y);
+
+            if(scroll_y < 0.0f) scroll_y = 0.0f;
+            if(scroll_y > 1.0f) scroll_y = 1.0f;
+
+            level->IrregularUpdate();
+        }
+
+        if(is_scroll_bar_held){
+            if(engine->mouse.is_left_button_released) is_scroll_bar_held = false;
+        }
+    }
 }
 
 ufo::Rectangle Widget::GetRectangle(){
@@ -82,7 +106,43 @@ bool Widget::ClickableArea(){
     return false;
 }
 
+bool Widget::IsScrollBarHovered(){
+    Vector2f mouse_position = engine->mouse.position;
+#ifdef UFO_ENGINE_STUDIO
+    auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+    mouse_position = level_editor_tab->mouse_position_over_screenspace;
+#endif
+
+    ufo::Rectangle scrollbar_rect = ufo::Rectangle(
+        GetGlobalPosition() + Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y/contents_to_window_ratio_y)*scroll_y),
+        Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y)
+    );
+
+    if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
+        return true;
+    }
+
+    return false;
+}
+
 void Widget::OnClickableArea(){
+    if(contents_to_window_ratio_y < 1.0f){
+        Vector2f mouse_position = engine->mouse.position;
+    #ifdef UFO_ENGINE_STUDIO
+        auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+        mouse_position = level_editor_tab->mouse_position_over_screenspace;
+    #endif
+
+        ufo::Rectangle scrollbar_rect = ufo::Rectangle(
+            GetGlobalPosition() + Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
+            Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y)
+        );
+
+        if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
+            if(engine->mouse.is_left_button_pressed) is_scroll_bar_held = true;
+        }
+    }
+
     Console::PrintLine("OnClickableArea",editor_name);
 }
 
@@ -156,30 +216,58 @@ void Widget::Draw(ufo::Graphics *_graphics, ufo::Camera *_camera){
 }
 
 void Widget::OnWidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera){
-    FrameBufferTexture flattened_tex = FlattenWidgetTextures(
-        _graphics,
-        _camera,
-        this,
-        _graphics->GetFrameBufferObject(),
-        Vector2f(engine->game_width, engine->game_height), //Size
-        Vector2f(0.0f, engine->game_height), //Projection min
-        Vector2f(engine->game_width, 0.0f) //Projection max
-    );
+    bool failed_to_create_frame_buffer_object = false;
+    FrameBufferTexture local_frame_buffer_texture;
+
+    //Make ADDITIONAL framebuffer so that the other widget is to scale with pixel size of inner widgets. The size of the framebuffer affects that.
+    unsigned int local_frame_buffer_object = local_frame_buffer_texture.CreateFrameBuffer(rectangle.size.x, rectangle.size.y, failed_to_create_frame_buffer_object);
+    local_frame_buffer_texture.BindFrameBuffer(local_frame_buffer_object);
+    {
+        FrameBufferTexture flattened_tex = FlattenWidgetTextures(
+            _graphics,
+            _camera,
+            this,
+            local_frame_buffer_object,
+            Vector2f(local_frame_buffer_texture.width, local_frame_buffer_texture.height), //Size
+            Vector2f(0.0f, 0.0f), //Projection min
+            Vector2f(local_frame_buffer_texture.width, local_frame_buffer_texture.height) //Projection max
+        );
+
+        _graphics->DrawPartialSprite(
+            flattened_tex,
+            Vector2f(0.0f, 0.0f),
+            Vector2f(0.0f, 0.0f),
+            scale,
+            Vector2f(0.0f, 0.0f),
+            Vector2f(flattened_tex.width,flattened_tex.height),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        glDeleteTextures(1, &flattened_tex.id);
+
+        glBindFramebuffer(GL_FRAMEBUFFER,_graphics->GetFrameBufferObject());
+        glViewport(0,0,engine->game_width, engine->game_height);
+        _graphics->SetProjection(0, engine->game_width,engine->game_height, 0);
+    }
 
     _graphics->DrawPartialSprite(
-        flattened_tex,
+        local_frame_buffer_texture,
         _camera->Transform(GetGlobalPosition()),
         Vector2f(0.0f, 0.0f),
         scale * _camera->scale,
         Vector2f(0.0f, 0.0f),
-        Vector2f(flattened_tex.width,flattened_tex.height),
+        Vector2f(local_frame_buffer_texture.width,local_frame_buffer_texture.height),
         0,
         tint,
         shader_key,
-        corner_rounding
+        0
     );
 
-    glDeleteTextures(1, &flattened_tex.id);
+    if(!failed_to_create_frame_buffer_object) glDeleteFramebuffers(1, &local_frame_buffer_object);
+    glDeleteTextures(1, &local_frame_buffer_texture.id);
 }
 
 void Widget::DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTexture& _texture, ufo::Widget* _parent){
@@ -187,6 +275,22 @@ void Widget::DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTextu
     _graphics->DrawPartialSprite(
         _texture,
         local_position,
+        offset,
+        scale,
+        rectangle.position,
+        rectangle.size,
+        0,
+        tint,
+        shader_key,
+        corner_rounding
+    );
+}
+
+void Widget::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
+    _graphics->DrawPartialSprite(
+        texture_key,
+        //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+        Vector2f(0.0f, 0.0f),
         offset,
         scale,
         rectangle.position,
@@ -213,32 +317,35 @@ FrameBufferTexture Widget::FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::
     glViewport(0,0,local_frame_buffer_texture.width, local_frame_buffer_texture.height);
     _graphics->SetProjection(0.0f, local_frame_buffer_texture.width, 0.0f, local_frame_buffer_texture.height);
 
-    _graphics->DrawPartialSprite(
-        texture_key,
-        //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
-        Vector2f(0.0f, 0.0f),
-        offset,
-        scale,
-        rectangle.position,
-        rectangle.size,
-        0,
-        tint,
-        shader_key,
-        corner_rounding
-    );
+    DrawUnscaled(_graphics, _camera);
 
-    if(contents_to_window_ratio_y < 1.0f) _graphics->DrawPartialSprite(
-        scroll_bar_texture_key,
-        Vector2f(rectangle.size.x-scroll_bar_thickness, 0.0f),
-        Vector2f(0.0f, 0.0f),
-        Vector2f(1.0f, 1.0f),
-        Vector2f(0.0f, 0.0f),
-        Vector2f(scroll_bar_thickness, rectangle.size.y),
-        0.0f,
-        scroll_bar_tint,
-        scroll_bar_shader_key,
-        scroll_bar_corner_counding
-    );
+    if(contents_to_window_ratio_y < 1.0f){
+        _graphics->DrawPartialSprite(
+            scroll_bar_texture_key,
+            Vector2f(rectangle.size.x-scroll_bar_thickness, 0.0f),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(scroll_bar_thickness, rectangle.size.y),
+            0.0f,
+            scroll_bar_tint,
+            scroll_bar_shader_key,
+            scroll_bar_corner_counding
+        );
+
+        _graphics->DrawPartialSprite(
+            scroll_bar_texture_key,
+            Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y),
+            0.0f,
+            ufo::Colour(255,255,0,255),
+            scroll_bar_shader_key,
+            scroll_bar_corner_counding
+        );
+    }
 
     for(const auto& actor : actors){
 
@@ -312,6 +419,7 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 #ifdef UFO_ENGINE_STUDIO
 
 bool Widget::IsMovable(){
+    if(is_scroll_bar_held || IsScrollBarHovered()) return false;
     if(!parent) return true;
     Widget* widget_parent = parent->DynamicCast<Widget>();
     if(!widget_parent) return true;

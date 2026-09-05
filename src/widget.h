@@ -61,6 +61,8 @@ public:
     std::string scroll_bar_shader_key = "partial_sprite_shader";
     ufo::Colour scroll_bar_tint = ufo::Colour(0,0,0,255);
 
+    bool is_scroll_bar_held = false;
+
     FrameBufferTexture frame_buffer_texture;
 
     Widget(Vector2f _);
@@ -73,11 +75,13 @@ public:
     void OnIrregularUpdate() override;
     void UpdateContentLayoutAndSize();
     void Update(float _delta_time) override;
+    bool IsScrollBarHovered();
     bool ClickableArea() override;
     void OnClickableArea() override;
 
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
     void Draw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;
+    virtual void DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera);
     void DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTexture& _texture, ufo::Widget* _parent) override;
     FrameBufferTexture FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent, unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max) override;
     void OnWidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;

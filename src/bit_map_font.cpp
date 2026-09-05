@@ -178,16 +178,6 @@ void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent,
 
         }
 
-        bool failed_to_create_frame_buffer = false;
-
-        if(frame_buffer_texture.is_initialised) glDeleteTextures(1,&frame_buffer_texture.id);
-
-        unsigned int frame_buffer_object = frame_buffer_texture.CreateFrameBuffer(number_of_characters_in_longest_row, current_character_y, failed_to_create_frame_buffer);
-        frame_buffer_texture.BindFrameBuffer(frame_buffer_object);
-
-        glViewport(0,0,frame_buffer_texture.width, frame_buffer_texture.height);
-        _graphics->SetProjection(0.0f, frame_buffer_texture.width, 0.0f, frame_buffer_texture.height);
-
         for(Character& character : characters){
             ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(texture_key,character.code_point,Vector2f(character_width, character_height));
 
@@ -204,40 +194,10 @@ void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent,
             );
         }
 
-        glDeleteFramebuffers(1, &frame_buffer_object);
-
-        glBindFramebuffer(GL_FRAMEBUFFER ,_graphics->GetFrameBufferObject());
-
         //I realised that I need to delete the frame buffer object here, and there also is no point in storing it. I have to restructure this
         // to be a utility function or something instead of a class. No storing invalid FBOs!
 
     }
-
-    glViewport(0,0,_engine->game_width, _engine->game_height);
-    _graphics->SetProjection(0.0f, _engine->game_width,_engine->game_height, 0.0f);
-
-    Vector2f partial_rendered_text_texture_size = Vector2f(frame_buffer_texture.width, frame_buffer_texture.height);
-    if(_rectangle.size.x < partial_rendered_text_texture_size.x) partial_rendered_text_texture_size.x = _rectangle.size.x;
-    if(_rectangle.size.y < partial_rendered_text_texture_size.y) partial_rendered_text_texture_size.y = _rectangle.size.y;
-
-    //This is first when we know if a scrollbar is even needed or not. So toggling the scrollbar here would be appropriate
-
-    _parent->contents_to_window_ratio_x = partial_rendered_text_texture_size.x/_rectangle.size.x;
-    _parent->contents_to_window_ratio_y = partial_rendered_text_texture_size.y/_rectangle.size.y;
-
-    Console::PrintLine(_parent->contents_to_window_ratio_x, _parent->contents_to_window_ratio_y);
-
-    _graphics->DrawPartialSprite(frame_buffer_texture,
-        Vector2f(_position.x, _position.y),
-        Vector2f(0.0f, 0.0f),
-        _scale,
-        _rectangle.position,
-        partial_rendered_text_texture_size,
-        0.0f,
-        _tint,
-        _shader_key,
-        0.0f
-    );
 
     //...
 }

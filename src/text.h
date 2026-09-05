@@ -49,6 +49,7 @@ public:
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 
+    void DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera) override;
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
 
 #ifdef UFO_ENGINE_STUDIO
