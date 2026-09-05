@@ -128,6 +128,8 @@ void Text::OnIrregularUpdate(){
 
 }
 
+bool Text::ClickableArea(){return false;}
+
 void Text::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
     if(language_to_text[engine->language] == "") return;
 
