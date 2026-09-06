@@ -241,7 +241,6 @@ void Widget::OnClickableArea(){
         }
     }
 
-    Console::PrintLine("OnClickableArea",editor_name);
 }
 
 void Widget::UpdateContentLayoutAndSize(){
