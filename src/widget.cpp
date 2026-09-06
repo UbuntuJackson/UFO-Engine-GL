@@ -145,6 +145,30 @@ bool Widget::ClickableArea(){
     return false;
 }
 
+ufo::Actor* Widget::GetHoveredWidget(){
+
+    Vector2f mouse_position = engine->mouse.position;
+#ifdef UFO_ENGINE_STUDIO
+    auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+    mouse_position = level_editor_tab->mouse_position_over_screenspace;
+#endif
+
+    if(ufo::Maths::RectangleVsPoint(GetRectangle(), level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
+
+        for(const auto& actor : actors){
+            ufo::Actor* hovered_result = actor->GetHoveredWidget();
+            if(hovered_result){
+                return hovered_result;
+            }
+
+        }
+
+        return this;
+    }
+
+    return nullptr;
+}
+
 bool Widget::IsVerticalScrollBarHovered(){
     Vector2f mouse_position = engine->mouse.position;
 #ifdef UFO_ENGINE_STUDIO
@@ -768,7 +792,7 @@ void Widget::OnAdditionalButtonsForTreeItem(){
 
     std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
 
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
+    if(ImGui::Button((visible_or_not_string+"###Visible"+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
         visible = !visible;
     }
 }

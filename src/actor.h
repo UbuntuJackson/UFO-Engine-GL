@@ -128,6 +128,8 @@ public:
 
     virtual void OnIrregularUpdate();
 
+    virtual ufo::Actor* GetHoveredWidget();
+
     virtual void CreateWidgetTexture(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent,unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max);
     virtual void DrawToTexture(ufo::Graphics *_graphics, ufo::Widget* _widget){}
 

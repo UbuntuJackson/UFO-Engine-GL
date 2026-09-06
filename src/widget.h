@@ -93,6 +93,7 @@ public:
     bool IsVerticalScrollBarHovered();
     bool ClickableArea() override;
     void OnClickableArea() override;
+    ufo::Actor* GetHoveredWidget() override;
 
     void OnDraw(ufo::Graphics* _graphics, ufo::Camera* _camera) override;
     void Draw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;

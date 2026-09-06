@@ -252,6 +252,10 @@ void Actor::OnIrregularUpdate(){
 
 }
 
+ufo::Actor* Actor::GetHoveredWidget(){
+
+}
+
 void Actor::CreateWidgetTexture(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent,unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max){
 
 }
