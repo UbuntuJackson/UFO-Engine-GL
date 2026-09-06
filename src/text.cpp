@@ -51,7 +51,7 @@ void Text::OnSpawn(){
 }
 
 Text::~Text(){
-    texture.Delete();
+    //texture.Delete();
 }
 
 void Text::OnIrregularUpdate(){

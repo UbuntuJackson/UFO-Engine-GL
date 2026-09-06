@@ -45,7 +45,6 @@ public:
     int nine_patch_rect_lower_bound = 3;
     int nine_patch_rect_upper_bound = 4;
 
-    bool visible = true;
     std::string texture_key = "placeholder_icon";
     Vector2f offset;
     float current_frame_index = 0;
@@ -103,6 +102,9 @@ public:
     void OnWidgetDraw(ufo::Graphics *_graphics, ufo::Camera *_camera) override;
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
+
+    void OnAdditionalButtonsForTreeItem() override;
+
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     #ifdef UFO_ENGINE_STUDIO

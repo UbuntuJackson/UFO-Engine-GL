@@ -16,6 +16,7 @@
 #include "ufo_macros.h"
 
 #ifdef UFO_ENGINE_STUDIO
+#include "../ufo_engine_studio/ufo_icon_font.h"
 #include "../ufo_engine_studio/level_editor_tab.h"
 #include "../imgui/imgui_internal.h"
 #include "../imgui/imgui.h"
@@ -35,7 +36,7 @@ Widget::Widget(Vector2f _) : Actor(_){
 }
 
 void Widget::OnSpawn(){
-    IrregularUpdate();
+    level->IrregularUpdate();
 }
 
 ufo::Rectangle Widget::GetLocalRectangle(){
@@ -243,8 +244,9 @@ void Widget::UpdateContentLayoutAndSize(){
                 height_incrementation+=item_spacing;
             }
             height_incrementation-=item_spacing;
+            height_incrementation+=padding;
 
-            contents_to_window_ratio_y = rectangle.size.y/(height_incrementation+padding);
+            contents_to_window_ratio_y = rectangle.size.y/(height_incrementation);
             if(contents_to_window_ratio_y < 1.0f){
                 for(int c = 0; c < actors.size(); c++){
                     Actor* act = actors[c].get();
@@ -297,8 +299,9 @@ void Widget::UpdateContentLayoutAndSize(){
                 horizontal_incrementation+=item_spacing;
             }
             horizontal_incrementation-=item_spacing;
+            horizontal_incrementation+=padding;
 
-            contents_to_window_ratio_x = rectangle.size.x/(horizontal_incrementation+padding);
+            contents_to_window_ratio_x = rectangle.size.x/(horizontal_incrementation);
             if(contents_to_window_ratio_x < 1.0f){
                 for(int c = 0; c < actors.size(); c++){
                     Actor* act = actors[c].get();
@@ -435,6 +438,8 @@ void Widget::DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTextu
 }
 
 void Widget::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
+    if(!visible) return;
+
     if(!use_nine_patch_rectangle) _graphics->DrawPartialSprite(
         texture_key,
         //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
@@ -718,7 +723,29 @@ void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
     }
 
     _json->TryToGetValueAsFloat("corner_rounding", corner_rounding, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsInt("item_spacing", item_spacing, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsInt("padding", padding, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
     _json->TryToGetValueAsString("texture_key", texture_key, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsBool("visible", visible, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    _json->TryToGetValueAsBool("use_nine_patch_rectangle", use_nine_patch_rectangle, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    int dummy_contents_layout_mode = contents_layout_mode;
+    _json->TryToGetValueAsInt("contents_layout_mode", dummy_contents_layout_mode, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    contents_layout_mode = (ContentsLayoutMode)dummy_contents_layout_mode;
+
+    int dummy_contents_resize_mode = contents_resize_mode;
+    _json->TryToGetValueAsInt("contents_resize_mode", dummy_contents_resize_mode, GetInfo()+" "+__UFO_PRETTY_FUNCTION__);
+    contents_resize_mode = (ContentsResizeMode)dummy_contents_resize_mode;
+
+}
+
+void Widget::OnAdditionalButtonsForTreeItem(){
+    ImGui::SameLine();
+
+    std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
+
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
+        visible = !visible;
+    }
 }
 
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
@@ -734,6 +761,12 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
     parent_class_as_json->map.emplace("texture_key", _gc->New<ufo::gc::JsonString>(texture_key));
     parent_class_as_json->map.emplace("rectangle", j_rectangle);
     parent_class_as_json->map.emplace("corner_rounding", _gc->New<ufo::gc::JsonNumber>(corner_rounding));
+    parent_class_as_json->map.emplace("item_spacing", _gc->New<ufo::gc::JsonNumber>(item_spacing));
+    parent_class_as_json->map.emplace("padding", _gc->New<ufo::gc::JsonNumber>(padding));
+    parent_class_as_json->map.emplace("visible", _gc->New<ufo::gc::JsonNumber>((float)visible));
+    parent_class_as_json->map.emplace("use_nine_patch_rectangle", _gc->New<ufo::gc::JsonNumber>((float)use_nine_patch_rectangle));
+    parent_class_as_json->map.emplace("contents_layout_mode", _gc->New<ufo::gc::JsonNumber>((float)contents_layout_mode));
+    parent_class_as_json->map.emplace("contents_resize_mode", _gc->New<ufo::gc::JsonNumber>((float)contents_resize_mode));
 
     return parent_class_as_json;
 }
@@ -904,6 +937,7 @@ void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* 
         ImGui::InputInt("nine_patch_rect_upper_bound",&nine_patch_rect_upper_bound);
     }
     ImGui::InputInt("padding", &padding);
+    ImGui::InputInt("item_spacing", &item_spacing);
 
     std::string contents_layout_mode_preview_values[] = {"Horizontal list", "Vertical list", "Free Style"};
 
@@ -912,7 +946,7 @@ void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* 
             bool is_selected = ImGui::Selectable(contents_layout_mode_preview_values[mode_index].c_str());
             if(is_selected){
                 contents_layout_mode = (ContentsLayoutMode)mode_index;
-                IrregularUpdate();
+                level->IrregularUpdate();
             }
         }
 
@@ -927,7 +961,7 @@ void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* 
             bool is_selected = ImGui::Selectable(contents_resize_mode_preview_values[mode_index].c_str());
             if(is_selected){
                 contents_resize_mode = (ContentsResizeMode)mode_index;
-                IrregularUpdate();
+                level->IrregularUpdate();
             }
         }
 

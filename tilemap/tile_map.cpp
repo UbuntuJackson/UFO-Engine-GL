@@ -1102,10 +1102,10 @@ void TileMap::OnUpdateEditorViewport(UFOEngineStudio::Editor* _editor, UFOEngine
 
 void TileMap::OnAdditionalButtonsForTreeItem(){
     ImGui::SameLine();
+
     std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
-    if(ImGui::Button(
-        (visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,ImGui::GetFontSize()))
-    ){
+
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
         visible = !visible;
     }
 }

@@ -47,6 +47,7 @@ public:
     ufo::Rectangle former_rectangle = ufo::Rectangle(Vector2f(0.0f, 0.0f),Vector2f(0.0f, 0.0f));
 
     bool is_dead = false;
+    bool visible = true;
 
     Actor(Vector2f _local_position);
 

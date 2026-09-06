@@ -17,7 +17,6 @@ public:
     Vector2f scale = {1.0f, 1.0f};
     float rotation = 0.0f;
     float current_frame_index = 0.0f;
-    bool visible = true;
     ufo::Colour tint = olc::WHITE;
 
     float number_of_frames = 1.0f;

@@ -24,8 +24,6 @@ namespace ufo{
 class TileMap : public Actor{
 public:
 
-    bool visible = true;
-
     std::vector<int> tilemap_data;
     int number_of_columns = 50;
     int number_of_rows = 10;
