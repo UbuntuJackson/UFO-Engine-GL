@@ -78,6 +78,8 @@ void Widget::OnIrregularUpdate(){
 }
 
 void Widget::Update(float _delta_time){
+    Actor::Update(_delta_time);
+
     ClickableArea();
 
     if(contents_to_window_ratio_y < 1.0f){
