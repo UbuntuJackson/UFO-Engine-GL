@@ -103,11 +103,11 @@ public:
 
     void OnLoadDefaultProperties(ufo::gc::JsonMap* _json) override;
 
-    void OnAdditionalButtonsForTreeItem() override;
-
     ufo::gc::JsonMap* GetAsJson(ufo::GarbageCollector* _gc) override;
 
     #ifdef UFO_ENGINE_STUDIO
+    void OnAdditionalButtonsForTreeItem() override;
+
     bool IsMovable() override;
     void OnDrawGizmos(ufo::Graphics* _graphics, Camera* _camera, UFOEngineStudio::LevelEditorTab* _level_editor_tab) override;
 

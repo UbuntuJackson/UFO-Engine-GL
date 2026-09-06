@@ -738,16 +738,6 @@ void Widget::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 
 }
 
-void Widget::OnAdditionalButtonsForTreeItem(){
-    ImGui::SameLine();
-
-    std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
-
-    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
-        visible = !visible;
-    }
-}
-
 ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 
     ufo::gc::JsonMap* parent_class_as_json = Actor::GetAsJson(_gc);
@@ -772,6 +762,16 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 }
 
 #ifdef UFO_ENGINE_STUDIO
+
+void Widget::OnAdditionalButtonsForTreeItem(){
+    ImGui::SameLine();
+
+    std::string visible_or_not_string = visible ? UFO_ICON_FONT_VISIBLE : UFO_ICON_FONT_INVISIBLE;
+
+    if(ImGui::Button((visible_or_not_string+std::to_string(editor_id)).c_str(), ImVec2(0,0))){
+        visible = !visible;
+    }
+}
 
 bool Widget::IsMovable(){
     if(is_horizontal_scroll_bar_held || is_vertical_scroll_bar_held || IsVerticalScrollBarHovered() || IsHorizontalScrollBarHovered()) return false;
