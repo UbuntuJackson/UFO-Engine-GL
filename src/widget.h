@@ -33,8 +33,17 @@ public:
         DO_NOT_RESIZE
     };
 
-    ContentsLayoutMode contents_layout_mode = HORIZONTAL_LIST;
+    ContentsLayoutMode contents_layout_mode = VERTICAL_LIST;
     ContentsResizeMode contents_resize_mode = DO_NOT_RESIZE;
+    int item_spacing = 3;
+
+    int padding = 5;
+
+    bool use_nine_patch_rectangle = false;
+    int nine_patch_rect_left_bound = 3;
+    int nine_patch_rect_right_bound = 4;
+    int nine_patch_rect_lower_bound = 3;
+    int nine_patch_rect_upper_bound = 4;
 
     bool visible = true;
     std::string texture_key = "placeholder_icon";
@@ -56,12 +65,18 @@ public:
     float contents_to_window_ratio_x = 1.0f;
     float contents_to_window_ratio_y = 1.0f;
     std::string scroll_bar_texture_key = "white_square";
-    float scroll_bar_thickness = 16.0f;
+    float vertical_scroll_bar_width = 16.0f;
+    float horizontal_scroll_bar_height = 16.0f;
     float scroll_bar_corner_counding = 4.0f;
     std::string scroll_bar_shader_key = "partial_sprite_shader";
     ufo::Colour scroll_bar_tint = ufo::Colour(0,0,0,255);
+    bool IsHorizontalScrollBarActive();
+    bool IsVerticalScrollBarActive();
+    float GetHorizontalFreeSpace();
+    float GetVerticalFreeSpace();
 
-    bool is_scroll_bar_held = false;
+    bool is_vertical_scroll_bar_held = false;
+    bool is_horizontal_scroll_bar_held = false;
 
     FrameBufferTexture frame_buffer_texture;
 
@@ -75,7 +90,8 @@ public:
     void OnIrregularUpdate() override;
     void UpdateContentLayoutAndSize();
     void Update(float _delta_time) override;
-    bool IsScrollBarHovered();
+    bool IsHorizontalScrollBarHovered();
+    bool IsVerticalScrollBarHovered();
     bool ClickableArea() override;
     void OnClickableArea() override;
 

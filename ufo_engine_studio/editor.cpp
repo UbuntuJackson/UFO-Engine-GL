@@ -593,6 +593,7 @@ void Editor::OnUpdate(float _delta_time){
                 engine->loaded_levels_for_editor.push_back(std::make_unique<ufo::Level>());
 
                 u_level_tab->Initialise(engine->loaded_levels_for_editor.back()->DynamicCast<ufo::Level>(), file_name+".ason");
+                u_level_tab->this_level->editor_name = "Root";
                 tabs.push_back(std::move(u_level_tab));
             }
 

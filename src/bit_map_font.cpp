@@ -73,16 +73,11 @@ BitMapFont::GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2
         _frame_size); //1 can only give y = 1
 }
 
-void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent, ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint, const ufo::Rectangle& _rectangle, bool _is_wrapping, int _wrap_width){
-    struct Character{
-        int code_point;
-        int x;
-        int y;
-    };
+BitMapFont::UTF8Text BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent, ufo::Graphics* _graphics, const std::string& _text, Vector2f _position, Vector2f _scale, const std::string& _shader_key, const ufo::Colour& _tint, const ufo::Rectangle& _rectangle, bool _is_wrapping, int _wrap_width){
 
     std::vector<Character> characters;
 
-    int number_of_characters_in_longest_row = 0;
+    int width_of_longest_row = 0;
 
     if(_refresh){
         int current_character_x = 0;
@@ -93,14 +88,6 @@ void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent,
         std::string::const_iterator it = _text.begin();
 
         while(it != _text.end()){
-            if(_is_wrapping){
-                if(current_character_x >= _wrap_width){
-                    if(current_character_x > number_of_characters_in_longest_row) number_of_characters_in_longest_row = current_character_x;
-
-                    current_character_y += character_height;
-                    current_character_x = 0;
-                }
-            }
 
             int prefix = 0;
             int number_of_bytes = 1;
@@ -137,7 +124,7 @@ void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent,
             //I think 1 byte is most likely ascii
             if(number_of_bytes == 1){
                 if(character == '\n'){
-                    if(current_character_x > number_of_characters_in_longest_row) number_of_characters_in_longest_row = current_character_x;
+                    if(current_character_x > width_of_longest_row) width_of_longest_row = current_character_x;
                     current_character_x = 0;
                     current_character_y += character_height;
                     it+=1;
@@ -171,35 +158,40 @@ void BitMapFont::Draw(ufo::Engine* _engine, bool _refresh, ufo::Widget* _parent,
 
             int code_point = std::stoi(s_code_point, nullptr, 2);
 
-            current_character_x += character_width;
+            if(_is_wrapping){
+                if(current_character_x >= _wrap_width-_parent->padding){
+
+                    if(current_character_x > width_of_longest_row) width_of_longest_row = current_character_x;
+
+                    current_character_y += character_height;
+                    current_character_x = 0;
+                }
+            }
+
             characters.push_back(Character{code_point, current_character_x, current_character_y});
+
+            current_character_x += character_width;
 
             it+=number_of_bytes;
 
         }
 
-        for(Character& character : characters){
-            ufo::Rectangle sample_rectangle = GetFrameFromSpriteSheet(texture_key,character.code_point,Vector2f(character_width, character_height));
-
-            _graphics->DrawPartialSprite(
-                texture_key,
-                Vector2f(character.x, character.y),
-                Vector2f(0.0f, 0.0f),
-                Vector2f(1.0f, 1.0f),
-                sample_rectangle.position,
-                sample_rectangle.size,
-                0.0f,
-                _tint,
-                _shader_key, 0.0f
-            );
-        }
-
         //I realised that I need to delete the frame buffer object here, and there also is no point in storing it. I have to restructure this
         // to be a utility function or something instead of a class. No storing invalid FBOs!
 
+
+        current_character_y+=character_height;
+        if(width_of_longest_row == 0) width_of_longest_row = current_character_x;
+
+        return UTF8Text{Vector2f(width_of_longest_row, current_character_y),characters};
     }
 
     //...
+
+    if(width_of_longest_row == 0) width_of_longest_row = 1;
+
+    return UTF8Text{Vector2f(width_of_longest_row, character_height), characters};
+
 }
 
 }

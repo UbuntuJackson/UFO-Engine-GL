@@ -21,6 +21,17 @@ class Widget;
 
 class BitMapFont{
 public:
+    struct Character{
+        int code_point;
+        int x;
+        int y;
+    };
+
+    struct UTF8Text{
+        Vector2f area;
+        std::vector<Character> characters;
+    };
+
     FrameBufferTexture frame_buffer_texture;
 
     //Letter, Width
@@ -44,7 +55,7 @@ public:
     ufo::Rectangle
     GetFrameFromSpriteSheet(std::string _sprite_key, int _frame, Vector2f _frame_size);
 
-    void Draw(
+    UTF8Text Draw(
         ufo::Engine* _engine,
         bool _refresh,
         ufo::Widget* _parent,

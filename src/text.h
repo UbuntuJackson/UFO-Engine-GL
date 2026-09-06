@@ -17,6 +17,7 @@ private:
     //std::string text = "Hello world";
 
     Texture2D texture;
+    std::vector<BitMapFont::Character> characters;
 
 public:
     bool use_bit_map_font = true;

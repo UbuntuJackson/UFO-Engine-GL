@@ -45,6 +45,32 @@ ufo::Rectangle Widget::GetLocalRectangle(){
     return ufo::Rectangle(Vector2f(rectangle.position.x, rectangle.position.y+(float)header_height),rectangle.size-Vector2f(0.0f, (float)header_height));
 }
 
+bool Widget::IsHorizontalScrollBarActive(){
+    return contents_to_window_ratio_x < 1.0f;
+}
+
+bool Widget::IsVerticalScrollBarActive(){
+    return contents_to_window_ratio_y < 1.0f;
+}
+
+float Widget::GetHorizontalFreeSpace(){
+    float horizontal_free_space = rectangle.size.x-padding*2;
+
+    if(IsVerticalScrollBarActive()){
+        horizontal_free_space-=vertical_scroll_bar_width;
+    }
+
+    return horizontal_free_space;
+}
+
+float Widget::GetVerticalFreeSpace(){
+    float vertical_free_space = rectangle.size.y-padding*2;
+    if(IsHorizontalScrollBarActive()){
+        vertical_free_space -= horizontal_scroll_bar_height;
+    }
+    return vertical_free_space;
+}
+
 void Widget::OnIrregularUpdate(){
     UpdateContentLayoutAndSize();
     editor_hitbox = rectangle;
@@ -55,13 +81,7 @@ void Widget::Update(float _delta_time){
 
     if(contents_to_window_ratio_y < 1.0f){
 
-        Vector2f mouse_position = engine->mouse.position;
-    #ifdef UFO_ENGINE_STUDIO
-        auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
-        mouse_position = level_editor_tab->mouse_position_over_screenspace;
-    #endif
-
-        if(is_scroll_bar_held){
+        if(is_vertical_scroll_bar_held){
             float delta_mouse_position_in_world = (engine->mouse.position-engine->mouse.former_position).y/level->active_camera_handles.back()->scale;
 
             if(rectangle.size.y != 0.0f && contents_to_window_ratio_y != 0.0f) scroll_y += delta_mouse_position_in_world/(rectangle.size.y*contents_to_window_ratio_y);
@@ -72,8 +92,26 @@ void Widget::Update(float _delta_time){
             level->IrregularUpdate();
         }
 
-        if(is_scroll_bar_held){
-            if(engine->mouse.is_left_button_released) is_scroll_bar_held = false;
+        if(is_vertical_scroll_bar_held){
+            if(engine->mouse.is_left_button_released) is_vertical_scroll_bar_held = false;
+        }
+
+    }
+
+    if(contents_to_window_ratio_x < 1.0f){
+        if(is_horizontal_scroll_bar_held){
+            float delta_mouse_position_in_world = (engine->mouse.position-engine->mouse.former_position).x/level->active_camera_handles.back()->scale;
+
+            if(rectangle.size.x != 0.0f && contents_to_window_ratio_x != 0.0f) scroll_x += delta_mouse_position_in_world/(rectangle.size.x*contents_to_window_ratio_x);
+
+            if(scroll_x < 0.0f) scroll_x = 0.0f;
+            if(scroll_x > 1.0f) scroll_x = 1.0f;
+
+            level->IrregularUpdate();
+        }
+
+        if(is_horizontal_scroll_bar_held){
+            if(engine->mouse.is_left_button_released) is_horizontal_scroll_bar_held = false;
         }
     }
 }
@@ -106,7 +144,7 @@ bool Widget::ClickableArea(){
     return false;
 }
 
-bool Widget::IsScrollBarHovered(){
+bool Widget::IsVerticalScrollBarHovered(){
     Vector2f mouse_position = engine->mouse.position;
 #ifdef UFO_ENGINE_STUDIO
     auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
@@ -114,8 +152,27 @@ bool Widget::IsScrollBarHovered(){
 #endif
 
     ufo::Rectangle scrollbar_rect = ufo::Rectangle(
-        GetGlobalPosition() + Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y/contents_to_window_ratio_y)*scroll_y),
-        Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y)
+        GetGlobalPosition() + Vector2f(rectangle.size.x-vertical_scroll_bar_width, (rectangle.size.y-rectangle.size.y/contents_to_window_ratio_y)*scroll_y),
+        Vector2f(vertical_scroll_bar_width, rectangle.size.y*contents_to_window_ratio_y)
+    );
+
+    if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
+        return true;
+    }
+
+    return false;
+}
+
+bool Widget::IsHorizontalScrollBarHovered(){
+    Vector2f mouse_position = engine->mouse.position;
+#ifdef UFO_ENGINE_STUDIO
+    auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+    mouse_position = level_editor_tab->mouse_position_over_screenspace;
+#endif
+
+    ufo::Rectangle scrollbar_rect = ufo::Rectangle(
+        GetGlobalPosition() + Vector2f((rectangle.size.x-rectangle.size.x*contents_to_window_ratio_x)*scroll_x, rectangle.size.y-horizontal_scroll_bar_height),
+        Vector2f(rectangle.size.x*contents_to_window_ratio_x,horizontal_scroll_bar_height)
     );
 
     if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
@@ -126,20 +183,34 @@ bool Widget::IsScrollBarHovered(){
 }
 
 void Widget::OnClickableArea(){
+
+    Vector2f mouse_position = engine->mouse.position;
+#ifdef UFO_ENGINE_STUDIO
+    auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
+    mouse_position = level_editor_tab->mouse_position_over_screenspace;
+#endif
+
     if(contents_to_window_ratio_y < 1.0f){
-        Vector2f mouse_position = engine->mouse.position;
-    #ifdef UFO_ENGINE_STUDIO
-        auto level_editor_tab = dynamic_cast<UFOEngineStudio::LevelEditorTab*>(engine->editor.active_tab);
-        mouse_position = level_editor_tab->mouse_position_over_screenspace;
-    #endif
 
         ufo::Rectangle scrollbar_rect = ufo::Rectangle(
-            GetGlobalPosition() + Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
-            Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y)
+            GetGlobalPosition() + Vector2f(rectangle.size.x-vertical_scroll_bar_width, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
+            Vector2f(vertical_scroll_bar_width, rectangle.size.y*contents_to_window_ratio_y)
         );
 
         if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
-            if(engine->mouse.is_left_button_pressed) is_scroll_bar_held = true;
+            if(engine->mouse.is_left_button_pressed) is_vertical_scroll_bar_held = true;
+        }
+    }
+
+    if(contents_to_window_ratio_x < 1.0f){
+
+        ufo::Rectangle scrollbar_rect = ufo::Rectangle(
+            GetGlobalPosition() + Vector2f((rectangle.size.x-rectangle.size.x*contents_to_window_ratio_x)*scroll_x, rectangle.size.y-horizontal_scroll_bar_height),
+            Vector2f(rectangle.size.x*contents_to_window_ratio_x,horizontal_scroll_bar_height)
+        );
+
+        if(ufo::Maths::RectangleVsPoint(scrollbar_rect, level->active_camera_handles.back()->TransformScreenToWorld(mouse_position))){
+            if(engine->mouse.is_left_button_pressed) is_horizontal_scroll_bar_held = true;
         }
     }
 
@@ -147,11 +218,19 @@ void Widget::OnClickableArea(){
 }
 
 void Widget::UpdateContentLayoutAndSize(){
-    if(contents_layout_mode == ContentsLayoutMode::HORIZONTAL_LIST){
+    if(actors.empty()) return;
+
+    if(contents_resize_mode == ContentsResizeMode::DISTRIBUTE_SIZE_EQUALLY){
+        contents_to_window_ratio_x = 1.0f;
+        contents_to_window_ratio_y = 1.0f;
+    }
+
+    if(contents_layout_mode == ContentsLayoutMode::VERTICAL_LIST){
+        contents_to_window_ratio_x = 1.0f;
         if(contents_resize_mode == ContentsResizeMode::DO_NOT_RESIZE){
 
-            float local_horizontal_position_for_widget_column = 0.0f;
-            float height_incrementation = 0.0f;
+            float local_horizontal_position_for_widget_column = padding;
+            float height_incrementation = padding;
 
             for(int c = 0; c < actors.size(); c++){
                 Actor* act = actors[c].get();
@@ -159,10 +238,13 @@ void Widget::UpdateContentLayoutAndSize(){
                 act->local_position.x = local_horizontal_position_for_widget_column;
                 act->local_position.y = height_incrementation;
                 act->rectangle.position = Vector2f(0.0f, 0.0f);
+                if(act->rectangle.size.x > GetHorizontalFreeSpace()) act->rectangle.size.x = GetHorizontalFreeSpace();
                 height_incrementation+=act->rectangle.size.y;
+                height_incrementation+=item_spacing;
             }
+            height_incrementation-=item_spacing;
 
-            contents_to_window_ratio_y = rectangle.size.y/height_incrementation;
+            contents_to_window_ratio_y = rectangle.size.y/(height_incrementation+padding);
             if(contents_to_window_ratio_y < 1.0f){
                 for(int c = 0; c < actors.size(); c++){
                     Actor* act = actors[c].get();
@@ -174,17 +256,83 @@ void Widget::UpdateContentLayoutAndSize(){
             }
         }
         if(contents_resize_mode == ContentsResizeMode::DISTRIBUTE_SIZE_EQUALLY){
-            float local_horizontal_position_for_widget_column = 0.0f;
-            float height_incrementation = 0.0f;
+            float local_horizontal_position_for_widget_column = padding;
+            float height_incrementation = padding;
+            float vertical_free_space = rectangle.size.y-padding*2;
+            float horizontal_free_space = GetHorizontalFreeSpace();
 
             for(int c = 0; c < actors.size(); c++){
                 Actor* act = actors[c].get();
 
                 act->local_position.x = local_horizontal_position_for_widget_column;
-                act->local_position.y = c*rectangle.size.y/(float)actors.size();
+
+                act->local_position.y = height_incrementation;
                 act->rectangle.position = Vector2f(0.0f, 0.0f);
-                act->rectangle.size.y = rectangle.size.y/(float)actors.size();
+
+                act->rectangle.size.x = horizontal_free_space;
+                act->rectangle.size.y = (vertical_free_space-(float)item_spacing*(actors.size()-1))/actors.size();
+
+                height_incrementation+=act->rectangle.size.y+item_spacing;
+
             }
+
+        }
+    }
+
+    if(contents_layout_mode == ContentsLayoutMode::HORIZONTAL_LIST){
+        contents_to_window_ratio_y = 1.0f;
+        if(contents_resize_mode == ContentsResizeMode::DO_NOT_RESIZE){
+
+            float position_y = padding;
+            float horizontal_incrementation = padding;
+
+            for(int c = 0; c < actors.size(); c++){
+                Actor* act = actors[c].get();
+
+                act->local_position.y = position_y;
+                act->local_position.x = horizontal_incrementation;
+                act->rectangle.position = Vector2f(0.0f, 0.0f);
+                if(act->rectangle.size.y > GetVerticalFreeSpace()) act->rectangle.size.y = GetVerticalFreeSpace();
+                horizontal_incrementation+=act->rectangle.size.x;
+                horizontal_incrementation+=item_spacing;
+            }
+            horizontal_incrementation-=item_spacing;
+
+            contents_to_window_ratio_x = rectangle.size.x/(horizontal_incrementation+padding);
+            if(contents_to_window_ratio_x < 1.0f){
+                for(int c = 0; c < actors.size(); c++){
+                    Actor* act = actors[c].get();
+                    act->local_position.x-=((horizontal_incrementation-rectangle.size.x) * scroll_x);
+                }
+            }
+            else{
+                scroll_x = 0.0f;
+            }
+        }
+
+        if(contents_resize_mode == ContentsResizeMode::DISTRIBUTE_SIZE_EQUALLY){
+
+            float position_y = padding;
+            float horizontal_incrementation = padding;
+            float horizontal_free_space = GetHorizontalFreeSpace();
+            float vertical_free_space = GetVerticalFreeSpace();
+
+            for(int c = 0; c < actors.size(); c++){
+                Actor* act = actors[c].get();
+
+                act->local_position.y = position_y;
+
+                act->local_position.x = horizontal_incrementation;
+                act->rectangle.position = Vector2f(0.0f, 0.0f);
+
+                act->rectangle.size.x = (horizontal_free_space-(float)item_spacing*(actors.size()-1))/actors.size();
+                act->rectangle.size.y = vertical_free_space;
+
+                horizontal_incrementation+=act->rectangle.size.x+item_spacing;
+
+            }
+            contents_to_window_ratio_x = 1.0f;
+
         }
     }
 }
@@ -287,7 +435,7 @@ void Widget::DrawFlattenWidgetTexture(ufo::Graphics *_graphics, FrameBufferTextu
 }
 
 void Widget::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
-    _graphics->DrawPartialSprite(
+    if(!use_nine_patch_rectangle) _graphics->DrawPartialSprite(
         texture_key,
         //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
         Vector2f(0.0f, 0.0f),
@@ -300,6 +448,151 @@ void Widget::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
         shader_key,
         corner_rounding
     );
+    else{
+
+        ufo::Texture2D& texture = engine->asset_manager.textures.at(texture_key);
+
+        //Top left corner
+
+        int width_right = texture.width-nine_patch_rect_right_bound;
+        int height_upper = texture.height-nine_patch_rect_upper_bound;
+        Vector2f middle_size = Vector2f(rectangle.size-Vector2f(nine_patch_rect_left_bound,nine_patch_rect_lower_bound)-Vector2f(texture.Size()-Vector2f(nine_patch_rect_right_bound,nine_patch_rect_upper_bound)));
+
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(0.0f, 0.0f),
+            offset,
+            scale,
+            Vector2f(0.0f, 0.0f),
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Top middle corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(nine_patch_rect_left_bound, 0.0f),
+            offset,
+            Vector2f(middle_size.x,1.0f),
+            Vector2f(nine_patch_rect_left_bound, 0.0f),
+            Vector2f(nine_patch_rect_right_bound-nine_patch_rect_left_bound, nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Top right corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(rectangle.size.x-width_right, 0.0f),
+            offset,
+            scale,
+            Vector2f(nine_patch_rect_right_bound, 0.0f),
+            Vector2f(width_right, nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Left middle corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(0.0f, nine_patch_rect_lower_bound),
+            offset,
+            Vector2f(1.0f, middle_size.y),
+            Vector2f(0.0f, nine_patch_rect_lower_bound),
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_upper_bound-nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Middle middle corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_lower_bound),
+            offset,
+            middle_size,
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_lower_bound),
+            Vector2f(nine_patch_rect_right_bound-nine_patch_rect_left_bound, nine_patch_rect_upper_bound-nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Middle right
+
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(rectangle.size.x-width_right, nine_patch_rect_lower_bound),
+            offset,
+            Vector2f(1.0f,middle_size.y),
+            Vector2f(nine_patch_rect_right_bound, nine_patch_rect_lower_bound),
+            Vector2f(width_right, nine_patch_rect_upper_bound-nine_patch_rect_lower_bound),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Bottom left corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(0.0f, nine_patch_rect_lower_bound+middle_size.y),
+            offset,
+            scale,
+            Vector2f(0.0f, nine_patch_rect_upper_bound),
+            Vector2f(nine_patch_rect_left_bound, height_upper),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //Bottom middle corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_lower_bound+middle_size.y),
+            offset,
+            Vector2f(middle_size.x,1.0f),
+            Vector2f(nine_patch_rect_left_bound, nine_patch_rect_upper_bound),
+            Vector2f(nine_patch_rect_right_bound-nine_patch_rect_left_bound, height_upper),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+
+        //bottom right corner
+        _graphics->DrawPartialSprite(
+            texture_key,
+            //Relative coordinate for speite will always be 0, because the framebuffer is the same dimensions as the texture of this widget
+            Vector2f(nine_patch_rect_left_bound+middle_size.x, nine_patch_rect_left_bound+middle_size.y),
+            offset,
+            scale,
+            Vector2f(nine_patch_rect_right_bound, nine_patch_rect_upper_bound),
+            Vector2f(width_right, height_upper),
+            0,
+            tint,
+            shader_key,
+            corner_rounding
+        );
+    }
 }
 
 FrameBufferTexture Widget::FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::Camera *_camera, ufo::Widget *_parent, unsigned int _former_frame_buffer_object, Vector2f _former_frame_buffer_size, Vector2f _former_frame_buffer_projection_min,Vector2f _former_frame_buffer_projection_max){
@@ -322,11 +615,11 @@ FrameBufferTexture Widget::FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::
     if(contents_to_window_ratio_y < 1.0f){
         _graphics->DrawPartialSprite(
             scroll_bar_texture_key,
-            Vector2f(rectangle.size.x-scroll_bar_thickness, 0.0f),
+            Vector2f(rectangle.size.x-vertical_scroll_bar_width, 0.0f),
             Vector2f(0.0f, 0.0f),
             Vector2f(1.0f, 1.0f),
             Vector2f(0.0f, 0.0f),
-            Vector2f(scroll_bar_thickness, rectangle.size.y),
+            Vector2f(vertical_scroll_bar_width, rectangle.size.y),
             0.0f,
             scroll_bar_tint,
             scroll_bar_shader_key,
@@ -335,11 +628,40 @@ FrameBufferTexture Widget::FlattenWidgetTextures(ufo::Graphics *_graphics, ufo::
 
         _graphics->DrawPartialSprite(
             scroll_bar_texture_key,
-            Vector2f(rectangle.size.x-scroll_bar_thickness, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
+            Vector2f(rectangle.size.x-vertical_scroll_bar_width, (rectangle.size.y-rectangle.size.y*contents_to_window_ratio_y)*scroll_y),
             Vector2f(0.0f, 0.0f),
             Vector2f(1.0f, 1.0f),
             Vector2f(0.0f, 0.0f),
-            Vector2f(scroll_bar_thickness, rectangle.size.y*contents_to_window_ratio_y),
+            Vector2f(vertical_scroll_bar_width, rectangle.size.y*contents_to_window_ratio_y),
+            0.0f,
+            ufo::Colour(255,255,0,255),
+            scroll_bar_shader_key,
+            scroll_bar_corner_counding
+        );
+    }
+
+    //Horizontal scrollbar
+    if(contents_to_window_ratio_x < 1.0f){
+        _graphics->DrawPartialSprite(
+            scroll_bar_texture_key,
+            Vector2f(0.0f, rectangle.size.y-horizontal_scroll_bar_height),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(rectangle.size.x, horizontal_scroll_bar_height),
+            0.0f,
+            scroll_bar_tint,
+            scroll_bar_shader_key,
+            scroll_bar_corner_counding
+        );
+
+        _graphics->DrawPartialSprite(
+            scroll_bar_texture_key,
+            Vector2f((rectangle.size.x-rectangle.size.x*contents_to_window_ratio_x)*scroll_x, rectangle.size.y-horizontal_scroll_bar_height),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            Vector2f(0.0f, 0.0f),
+            Vector2f(rectangle.size.x*contents_to_window_ratio_x, horizontal_scroll_bar_height),
             0.0f,
             ufo::Colour(255,255,0,255),
             scroll_bar_shader_key,
@@ -419,7 +741,7 @@ ufo::gc::JsonMap* Widget::GetAsJson(ufo::GarbageCollector* _gc){
 #ifdef UFO_ENGINE_STUDIO
 
 bool Widget::IsMovable(){
-    if(is_scroll_bar_held || IsScrollBarHovered()) return false;
+    if(is_horizontal_scroll_bar_held || is_vertical_scroll_bar_held || IsVerticalScrollBarHovered() || IsHorizontalScrollBarHovered()) return false;
     if(!parent) return true;
     Widget* widget_parent = parent->DynamicCast<Widget>();
     if(!widget_parent) return true;
@@ -574,6 +896,29 @@ void Widget::OnViewProperties([[maybe_unused]] UFOEngineStudio::LevelEditorTab* 
 
     ImGui::InputFloat("corner_rounding", &corner_rounding);
     ImGui::Checkbox("Has header",&has_header);
+    ImGui::Checkbox("use_nine_patch_rectangle", &use_nine_patch_rectangle);
+    if(use_nine_patch_rectangle){
+        ImGui::InputInt("nine_patch_rect_left_bound",&nine_patch_rect_left_bound);
+        ImGui::InputInt("nine_patch_rect_right_bound",&nine_patch_rect_right_bound);
+        ImGui::InputInt("nine_patch_rect_lower_bound",&nine_patch_rect_lower_bound);
+        ImGui::InputInt("nine_patch_rect_upper_bound",&nine_patch_rect_upper_bound);
+    }
+    ImGui::InputInt("padding", &padding);
+
+    std::string contents_layout_mode_preview_values[] = {"Horizontal list", "Vertical list", "Free Style"};
+
+    if(ImGui::BeginCombo(std::string("Contents Layout Mode###Contents Layout Mode"+std::to_string(editor_id)).c_str(),contents_layout_mode_preview_values[contents_layout_mode].c_str())){
+        for(int mode_index = 0; mode_index < 2; mode_index++){
+            bool is_selected = ImGui::Selectable(contents_layout_mode_preview_values[mode_index].c_str());
+            if(is_selected){
+                contents_layout_mode = (ContentsLayoutMode)mode_index;
+                IrregularUpdate();
+            }
+        }
+
+        ImGui::EndCombo();
+    }
+
 
     std::string contents_resize_mode_preview_values[] = {"Destribute Size Equally","Do Not Resize"};
 

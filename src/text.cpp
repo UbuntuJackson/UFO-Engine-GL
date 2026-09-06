@@ -57,8 +57,28 @@ Text::~Text(){
 void Text::OnIrregularUpdate(){
     if(language_to_text[engine->language] == "") return;
 
-    if(parent){
-        rectangle = parent->rectangle;
+    auto parent_widget = parent->DynamicCast<Widget>();
+
+    if(!engine->asset_manager.bit_map_fonts.count(bit_map_font_key)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, missing bitmap_font_key",bit_map_font_key);
+    else{
+        BitMapFont& that_bit_map_font = engine->asset_manager.bit_map_fonts.at(bit_map_font_key);
+
+        BitMapFont::UTF8Text text = that_bit_map_font.Draw(
+            engine,
+            true,
+            parent_widget ? parent_widget : nullptr,
+            engine->graphics.get(),
+            language_to_text[engine->language],
+            Vector2f(0.0f, 0.0f),
+            Vector2f(1.0f, 1.0f),
+            shader_key,
+            ufo::Colour(255,255,255,255),
+            parent->GetLocalRectangle(),
+            is_wrapping,
+            parent ? parent->rectangle.size.x-padding*2 : 1000
+        );
+        rectangle.size = text.area;
+        characters = text.characters;
     }
 
     //Bitmap font text wrapping?
@@ -150,20 +170,26 @@ void Text::DrawUnscaled(ufo::Graphics *_graphics, ufo::Camera *_camera){
         auto parent_widget = parent->DynamicCast<Widget>();
 
         if(!engine->asset_manager.bit_map_fonts.count(bit_map_font_key)) Console::PrintLine(__UFO_PRETTY_FUNCTION__, "Error, missing bitmap_font_key",bit_map_font_key);
-        else engine->asset_manager.bit_map_fonts.at(bit_map_font_key).Draw(
-            engine,
-            true,
-            parent_widget ? parent_widget : nullptr,
-            _graphics,
-            language_to_text[engine->language],
-            Vector2f(0.0f, 0.0f),
-            Vector2f(1.0f, 1.0f),
-            shader_key,
-            ufo::Colour(255,255,255,255),
-            parent->GetLocalRectangle(),
-            is_wrapping,
-            parent ? parent->rectangle.size.x : 1000
-        );
+        else{
+            BitMapFont& that_bit_map_font = engine->asset_manager.bit_map_fonts.at(bit_map_font_key);
+
+            for(BitMapFont::Character& character : characters){
+                ufo::Rectangle sample_rectangle = that_bit_map_font.GetFrameFromSpriteSheet(that_bit_map_font.texture_key,character.code_point,Vector2f(that_bit_map_font.character_width, that_bit_map_font.character_height));
+
+                _graphics->DrawPartialSprite(
+                    that_bit_map_font.texture_key,
+                    Vector2f(character.x, character.y),
+                    Vector2f(0.0f, 0.0f),
+                    Vector2f(1.0f, 1.0f),
+                    sample_rectangle.position,
+                    sample_rectangle.size,
+                    0.0f,
+                    tint,
+                    shader_key, 0.0f
+                );
+            }
+
+        }
     }
 }
 
@@ -240,7 +266,7 @@ void Text::OnLoadDefaultProperties(ufo::gc::JsonMap* _json){
 void Text::OnViewProperties(UFOEngineStudio::LevelEditorTab* _level_editor_tab, int _index){
     Widget::OnViewProperties(_level_editor_tab, _index);
 
-    if(ImGui::InputTextMultiline("Text", &language_to_text[engine->language])) OnIrregularUpdate();
+    if(ImGui::InputTextMultiline("Text", &language_to_text[engine->language])) level->IrregularUpdate();
     if(ImGui::Checkbox("Wrap", &is_wrapping), ImVec2(0.0f,0.0f), ImGuiInputTextFlags_WordWrap){
         OnIrregularUpdate();
     }
